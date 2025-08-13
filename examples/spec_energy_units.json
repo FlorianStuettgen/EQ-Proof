@@ -1,0 +1,38 @@
+{
+  "name": "energy_units_demo",
+  "version": "0.1",
+  "variables": [
+    "E",
+    "h",
+    "f"
+  ],
+  "units": {
+    "E": "J",
+    "h": "J*s",
+    "f": "Hz"
+  },
+  "constraints": [
+    {
+      "type": "equality",
+      "expr": "Eq(E, h*f)",
+      "symbols": [
+        "E",
+        "h",
+        "f"
+      ],
+      "solve_for": "E",
+      "tol": 1e-09
+    },
+    {
+      "type": "bounds",
+      "var": "h",
+      "lower": 6.62607015e-34,
+      "upper": 6.62607015e-34
+    }
+  ],
+  "probes": [
+    {
+      "expr": "Eq(E, h*f)"
+    }
+  ]
+}

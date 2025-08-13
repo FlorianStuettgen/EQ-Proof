@@ -1,0 +1,18 @@
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "eq-proof"
+version = "0.1.0"
+description = "Equation-Governed Output Repair & Attestation (Offline)"
+readme = "README.md"
+authors = [{ name = "Your Name" }]
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+dependencies = ["sympy", "numpy", "matplotlib"]
+
+[project.scripts]
+eq-proof = "cli:main"
+eq-proof-verify = "verify_cli:main"

@@ -1,0 +1,94 @@
+{
+  "name": "portfolio_with_sector_caps",
+  "version": "0.1",
+  "variables": [
+    "wA",
+    "wB",
+    "wC",
+    "wD",
+    "wE",
+    "capTech",
+    "capEnergy"
+  ],
+  "units": {
+    "wA": "1",
+    "wB": "1",
+    "wC": "1",
+    "wD": "1",
+    "wE": "1",
+    "capTech": "1",
+    "capEnergy": "1"
+  },
+  "constraints": [
+    {
+      "type": "bounds",
+      "var": "wA",
+      "lower": 0.0,
+      "upper": 1.0
+    },
+    {
+      "type": "bounds",
+      "var": "wB",
+      "lower": 0.0,
+      "upper": 1.0
+    },
+    {
+      "type": "bounds",
+      "var": "wC",
+      "lower": 0.0,
+      "upper": 1.0
+    },
+    {
+      "type": "bounds",
+      "var": "wD",
+      "lower": 0.0,
+      "upper": 1.0
+    },
+    {
+      "type": "bounds",
+      "var": "wE",
+      "lower": 0.0,
+      "upper": 1.0
+    },
+    {
+      "type": "bounds",
+      "var": "capTech",
+      "lower": 0.0,
+      "upper": 1.0
+    },
+    {
+      "type": "bounds",
+      "var": "capEnergy",
+      "lower": 0.0,
+      "upper": 1.0
+    },
+    {
+      "type": "simplex",
+      "vars": [
+        "wA",
+        "wB",
+        "wC",
+        "wD",
+        "wE"
+      ]
+    },
+    {
+      "type": "sum_leq",
+      "vars": [
+        "wA",
+        "wB",
+        "wC"
+      ],
+      "cap_var": "capTech"
+    },
+    {
+      "type": "sum_leq",
+      "vars": [
+        "wD",
+        "wE"
+      ],
+      "cap_var": "capEnergy"
+    }
+  ],
+  "probes": []
+}

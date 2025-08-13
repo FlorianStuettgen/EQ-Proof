@@ -1,0 +1,52 @@
+{
+  "name": "budget_cap_scale",
+  "version": "0.1",
+  "variables": [
+    "x1",
+    "x2",
+    "x3",
+    "cap"
+  ],
+  "units": {
+    "x1": "1",
+    "x2": "1",
+    "x3": "1",
+    "cap": "1"
+  },
+  "constraints": [
+    {
+      "type": "bounds",
+      "var": "x1",
+      "lower": 0.0,
+      "upper": null
+    },
+    {
+      "type": "bounds",
+      "var": "x2",
+      "lower": 0.0,
+      "upper": null
+    },
+    {
+      "type": "bounds",
+      "var": "x3",
+      "lower": 0.0,
+      "upper": null
+    },
+    {
+      "type": "bounds",
+      "var": "cap",
+      "lower": 0.0,
+      "upper": null
+    },
+    {
+      "type": "sum_leq",
+      "vars": [
+        "x1",
+        "x2",
+        "x3"
+      ],
+      "cap_var": "cap"
+    }
+  ],
+  "probes": []
+}

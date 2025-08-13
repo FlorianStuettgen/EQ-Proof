@@ -1,0 +1,43 @@
+{
+  "name": "probability_simplex_3",
+  "version": "0.1",
+  "variables": [
+    "p1",
+    "p2",
+    "p3"
+  ],
+  "units": {
+    "p1": "1",
+    "p2": "1",
+    "p3": "1"
+  },
+  "constraints": [
+    {
+      "type": "bounds",
+      "var": "p1",
+      "lower": 0.0,
+      "upper": 1.0
+    },
+    {
+      "type": "bounds",
+      "var": "p2",
+      "lower": 0.0,
+      "upper": 1.0
+    },
+    {
+      "type": "bounds",
+      "var": "p3",
+      "lower": 0.0,
+      "upper": 1.0
+    },
+    {
+      "type": "simplex",
+      "vars": [
+        "p1",
+        "p2",
+        "p3"
+      ]
+    }
+  ],
+  "probes": []
+}
