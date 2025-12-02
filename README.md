@@ -1,5 +1,5 @@
 
-#Equation-Governed Output Repair & Attestation (Offline)
+#**Fully Offline Equation-Governed Output Repair & Attestation**
 
 EQ-PROOF validates and **repairs** numeric outputs against a JSON spec of constraints (bounds, equalities, simplex, monotonicity, sum≤cap), then emits a signed proof artifact (JSON/MD/PDF). Runs **offline** by default (network disabled).
 
