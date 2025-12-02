@@ -8,7 +8,7 @@ name = "eq-proof"
 version = "0.1.0"
 description = "Equation-Governed Output Repair & Attestation (Offline)"
 readme = "README.md"
-authors = [{ name = "Your Name" }]
+authors = [{ name = "Florian Stuettgen" }]
 license = { file = "LICENSE" }
 requires-python = ">=3.9"
 dependencies = ["sympy", "numpy", "matplotlib"]
