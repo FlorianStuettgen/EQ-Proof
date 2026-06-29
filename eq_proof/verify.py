@@ -1,4 +1,6 @@
 
+from __future__ import annotations
+
 import json, hashlib, hmac
 def _payload(att: dict) -> bytes:
     core = {k:v for k,v in att.items() if k not in ("signature","algo","pubkey")}

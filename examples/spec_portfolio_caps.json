@@ -19,6 +19,10 @@
     "capTech": "1",
     "capEnergy": "1"
   },
+  "fixed": [
+    "capTech",
+    "capEnergy"
+  ],
   "constraints": [
     {
       "type": "bounds",

@@ -7,6 +7,7 @@ from .constraints import equality_residual, equality_solve_for
 from .repair import project_simplex, clip_bounds, isotonic_increasing
 from .qp import alternating_proj_equality_bounds
 from .units import coerce_inputs_to_spec_units
+from .projection import project_spec
 
 TOLS = {
     "equality": 1e-9,
@@ -33,6 +34,40 @@ def diagnose_and_repair(spec: Spec, values: Dict[str, float], *, spec_path: str 
     original = dict(coerced); repaired = dict(coerced)
     report = {"violations": [], "steps": []}
     report["steps"].extend(unit_steps)
+
+    projection = project_spec(spec, coerced, max_iter=TOLS["altproj_iters"] * 50, tol=TOLS["altproj_tol"])
+    if not projection.unsupported:
+        repaired = projection.values
+        changed = {
+            k: {"before": original.get(k), "after": repaired.get(k)}
+            for k in sorted(set(original) | set(repaired))
+            if abs(float(original.get(k, 0.0)) - float(repaired.get(k, 0.0))) > 1e-9
+        }
+        report["steps"].append(
+            {
+                "op": "minimal_feasible_projection",
+                "changed": changed,
+                "delta_l2": projection.delta_l2,
+                "iterations": projection.iterations,
+                "converged": projection.converged,
+                "max_residual": projection.max_residual,
+            }
+        )
+        report["projection_residuals"] = projection.residuals
+        if (not projection.converged) or projection.max_residual > 1e-7:
+            report["violations"].append(
+                {
+                    "type": "projection",
+                    "max_residual": projection.max_residual,
+                    "converged": projection.converged,
+                }
+            )
+        elapsed_ms = int((time.time()-started)*1000)
+        report["meta"] = {
+            "elapsed_ms": elapsed_ms,
+            "env": {"python": platform.python_version(), "platform": platform.platform()}
+        }
+        return {"original": original, "repaired": repaired, "report": report}
 
     # Collect bounds upfront
     bounds={}
@@ -89,7 +124,7 @@ def diagnose_and_repair(spec: Spec, values: Dict[str, float], *, spec_path: str 
             elif s>cap:
                 report["steps"].append({"op":"sum_leq_soft_allow","vars":vars_,"cap":cap,"sum":s,"slack_frac":(s/cap-1.0)})
 
-    # P60: simplex (balanced softness: allow sum within ±1e-6)
+    # P60: simplex (balanced softness: allow a small sum window)
     for c in spec.constraints:
         if c.get("type")=="simplex":
             vars_=c["vars"]; y=[float(repaired.get(v,0.0)) for v in vars_]

@@ -9,10 +9,22 @@ version = "0.1.0"
 description = "Equation-Governed Output Repair & Attestation (Offline)"
 readme = "README.md"
 authors = [{ name = "Florian Stuettgen" }]
-license = { file = "LICENSE" }
+license = "Apache-2.0"
 requires-python = ">=3.9"
 dependencies = ["sympy", "numpy", "matplotlib"]
+
+[project.optional-dependencies]
+dev = ["pytest", "nbformat"]
 
 [project.scripts]
 eq-proof = "cli:main"
 eq-proof-verify = "verify_cli:main"
+
+[tool.setuptools]
+py-modules = ["cli", "verify_cli"]
+
+[tool.setuptools.packages.find]
+include = ["eq_proof*"]
+
+[tool.setuptools.package-data]
+eq_proof = ["schema.json"]

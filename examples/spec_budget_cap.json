@@ -13,6 +13,9 @@
     "x3": "1",
     "cap": "1"
   },
+  "fixed": [
+    "cap"
+  ],
   "constraints": [
     {
       "type": "bounds",

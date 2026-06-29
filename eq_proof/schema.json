@@ -44,6 +44,12 @@
       "additionalProperties": {
         "type": "string"
       }
+    },
+    "fixed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   }
 }
