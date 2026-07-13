@@ -1,18 +1,39 @@
 # Security policy
 
-Please report security issues privately through GitHub's security advisory interface rather than a public issue.
+## Reporting
 
-## Supported version
+Please report suspected vulnerabilities privately through GitHub's security advisory interface. Do not open a public issue containing exploit details, private keys, or sensitive proof artifacts.
+
+## Supported versions
 
 | Version | Supported |
 | --- | --- |
-| 1.x | Yes |
+| 1.1.x | Yes |
+| 1.0.x | Security fixes only |
 | < 1.0 | No |
+
+## Security properties
+
+Full verification checks three distinct properties:
+
+1. canonical payload integrity through SHA-256;
+2. optional Ed25519 signature validity and trusted-key matching;
+3. semantic replay of the encoded specification, submission, result, movement, objective, and diagnostics.
+
+A signature alone is not treated as proof of numerical correctness.
 
 ## Key handling
 
-EQ-Proof never needs network access. Keep private keys outside the repository, restrict filesystem permissions, and supply trusted public-key fingerprints through a separate channel. The checked-in evidence key is explicitly a deterministic demonstration key and must never be used for real identity or authorization.
+- Keep private keys outside the repository and normal output directories.
+- Restrict filesystem access; generated private keys use mode `0600` on POSIX systems.
+- Distribute trusted public keys or fingerprints through an independent channel.
+- Rotate keys according to the surrounding organization's policy.
+- Never use the deterministic demonstration key for real authentication, authorization, or provenance.
 
-## Security boundary
+EQ-Proof is not a key-management service and does not provide HSM, KMS, certificate, revocation, or organizational identity infrastructure.
 
-A valid proof establishes integrity of the encoded artifact and, in Ed25519 mode, possession of the matching private key. It does not establish that the constraints are correct, that the input was truthful, or that the signer is who they claim to be without an independently trusted key fingerprint.
+## Runtime boundary
+
+The package requires no network access. Equations are parsed through an allow-listed AST compiler and are never evaluated as Python. Unsupported, nonlinear, executable, oversized, and ambiguous syntax fails closed.
+
+See [Threat model](docs/THREAT_MODEL.md) for assets, adversaries, controls, and exclusions.

@@ -1,20 +1,15 @@
 {
   "schema_version": "1.0",
   "name": "budget-guardrail",
-  "description": "Keep total forecast spend within the approved cap and preserve non-negative work packages.",
+  "description": "Bring a discipline budget inside the approved cap while preserving ordering and non-negativity.",
+  "metadata": {"domain": "project-controls"},
   "variables": {
-    "civil": {"lower": 0},
-    "mechanical": {"lower": 0},
-    "electrical": {"lower": 0}
+    "civil": {"lower": 0, "label": "Civil", "unit": "CAD"},
+    "mechanical": {"lower": 0, "label": "Mechanical", "unit": "CAD"},
+    "electrical": {"lower": 0, "label": "Electrical", "unit": "CAD"}
   },
   "equations": [
-    {
-      "id": "approved-cap",
-      "expression": "civil + mechanical + electrical <= 1000000"
-    },
-    {
-      "id": "discipline-order",
-      "expression": "electrical <= mechanical"
-    }
+    {"id": "approved-cap", "expression": "civil + mechanical + electrical <= 1000000"},
+    {"id": "electrical-not-above-mechanical", "expression": "electrical <= mechanical"}
   ]
 }

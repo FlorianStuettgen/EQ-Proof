@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0",
+  "name": "capacity-plan",
+  "description": "Repair a quarterly capacity plan while preserving a committed first-quarter baseline.",
+  "metadata": {"domain": "operations-planning"},
+  "variables": {
+    "q1": {"lower": 0, "upper": 120, "fixed": true, "unit": "FTE"},
+    "q2": {"lower": 0, "upper": 140, "unit": "FTE"},
+    "q3": {"lower": 0, "upper": 160, "unit": "FTE"},
+    "q4": {"lower": 0, "upper": 180, "unit": "FTE"}
+  },
+  "equations": [
+    {"id": "annual-cap", "expression": "q1 + q2 + q3 + q4 <= 520"},
+    {"id": "ramp-q2", "expression": "q2 >= q1"},
+    {"id": "ramp-q3", "expression": "q3 >= q2"},
+    {"id": "ramp-q4", "expression": "q4 >= q3"}
+  ]
+}

@@ -1,10 +1,10 @@
 {
   "attestation": {
     "mode": "Ed25519",
-    "payload_sha256": "721474e0e345a46422148e9ba2794fedfeaaccc8c9dd700745b3f66c40727aeb",
-    "public_key_base64": "sldagaljBCVKrMB/OIlqm+lMEtb5n6K31l+houvlnWc=",
-    "signature_base64": "yGQhTS6yBuWMbxVzwIfuQLYpD018gMOjYHatLBTZzk/q+D39LJ9+qqdZyPbn0TuyIlvDmqzKV1QyaXIBusDSDA==",
-    "signer_fingerprint_sha256": "cb6991cf3bd81a482995b73f34d11d0a60546917d790a38d82c32461ea6c2292",
+    "payload_sha256": "e44627303962a0f7ad8402a0e225b2afa92d64ca1b9cb8ad920edc5d5191a021",
+    "public_key_base64": "R1XeX/j66GjniFEO3QifAVCrfRerUf81Qr2/Wddlk9c=",
+    "signature_base64": "ypLoI8ZbOPs2E8u/sOAm/kGibcSDwMAXOQU9pjcGNjmSB6DJh+nm8VEF4AhDcOxWYSo7asBVYI3ygHMdUL7RAw==",
+    "signer_fingerprint_sha256": "aab09c9a9e2586699021cba3d7e7d1e6300267e90c922b07fdd9eb3081199148",
     "trust_note": "Verification proves possession of this key. Identity requires an independently trusted fingerprint."
   },
   "created_utc": "2026-07-13T00:00:00Z",
@@ -141,17 +141,19 @@
     ]
   },
   "engine": {
-    "algorithm": "Dykstra Euclidean projection",
+    "algorithm": "dykstra-l2-v1",
     "iterations": 2,
+    "max_iterations": 20000,
     "name": "EQ-Proof",
     "tolerance": 1e-10,
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "proof_schema": "eq-proof/proof@1",
   "result": {
     "max_violation_after": 0.0,
     "max_violation_before": 0.10000000000000009,
     "movement_l2": 0.07071067811865478,
+    "objective_value": 0.002500000000000002,
     "status": "repaired",
     "values": {
       "forecast_a": 0.5,
@@ -160,29 +162,40 @@
     }
   },
   "specification": {
-    "digest_sha256": "f084314548b90e037d04945ddcc1d5596667ddced2bb43b702a15a6973c9c24e",
+    "digest_sha256": "479993b4f52d752b7d1d1043fe3613d67ee5c31b4b70a487ebfabce7d61490a7",
     "document": {
       "description": "Repair an allocation to 100% while preserving the approved reserve.",
       "equations": [
         {
+          "description": "The complete allocation must equal 100%.",
           "expression": "forecast_a + forecast_b + forecast_c == 1",
           "id": "allocation-total"
         }
       ],
+      "metadata": {
+        "domain": "forecasting",
+        "owner": "portfolio-controls"
+      },
       "name": "portfolio-allocation",
       "schema_version": "1.0",
       "variables": {
         "forecast_a": {
+          "label": "Forecast A",
           "lower": 0,
+          "unit": "share",
           "upper": 1
         },
         "forecast_b": {
+          "label": "Forecast B",
           "lower": 0,
+          "unit": "share",
           "upper": 1
         },
         "forecast_c": {
           "fixed": true,
+          "label": "Approved reserve",
           "lower": 0,
+          "unit": "share",
           "upper": 1
         }
       }

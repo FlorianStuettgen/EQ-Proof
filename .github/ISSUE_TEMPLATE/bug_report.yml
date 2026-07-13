@@ -1,0 +1,33 @@
+name: Bug report
+description: Report a reproducible defect in validation, repair, proof generation, or verification
+title: "[bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Do not include private keys or sensitive proof data. Report security issues through a private advisory.
+  - type: input
+    id: version
+    attributes:
+      label: EQ-Proof version
+      placeholder: 1.1.0
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include a minimized specification, input, command, and observed output.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Python version, operating system, NumPy version, and installation method.

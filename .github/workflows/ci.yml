@@ -17,7 +17,6 @@ jobs:
       fail-fast: false
       matrix:
         python-version: ["3.10", "3.11", "3.12", "3.13"]
-
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -26,13 +25,27 @@ jobs:
           cache: pip
       - name: Install
         run: python -m pip install --upgrade pip && python -m pip install -e '.[dev]'
-      - name: Test and measure coverage
+      - name: Test with branch coverage
         run: python -m pytest --cov=eq_proof --cov-report=term-missing --cov-report=xml
       - name: Compile all modules
         run: python -m compileall -q src
-      - name: Verify checked-in evidence is reproducible
+      - name: Build wheel
+        run: python -m pip wheel . --no-deps -w dist
+
+  evidence:
+    name: Reproducible evidence and signed CLI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - name: Install
+        run: python -m pip install --upgrade pip && python -m pip install -e '.[dev]'
+      - name: Regenerate authoritative evidence
         run: python scripts/regenerate_evidence.py && git diff --exit-code
-      - name: Exercise signed CLI workflow
+      - name: Exercise signed workflow
         run: |
           mkdir -p /tmp/eq-proof
           eq-proof keygen --private-key /tmp/eq-proof/private.pem --public-key /tmp/eq-proof/public.pem
@@ -40,6 +53,6 @@ jobs:
             --spec examples/portfolio_allocation/spec.json \
             --input examples/portfolio_allocation/input.json \
             --proof /tmp/eq-proof/proof.json \
-            --report /tmp/eq-proof/proof.md \
+            --report /tmp/eq-proof/report.md \
             --private-key /tmp/eq-proof/private.pem
           eq-proof verify /tmp/eq-proof/proof.json --public-key /tmp/eq-proof/public.pem

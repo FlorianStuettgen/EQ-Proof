@@ -1,23 +1,13 @@
-# Python
+.venv/
 __pycache__/
 *.py[cod]
-*.egg-info/
 .pytest_cache/
 .coverage
 coverage.xml
 htmlcov/
 build/
 dist/
-.venv/
-
-# Local keys and generated scratch output
+*.egg-info/
 keys/
-*.private.pem
-*.key
 outputs/
-
-# Editors and OS
-.vscode/
-.idea/
 .DS_Store
-Thumbs.db

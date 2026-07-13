@@ -1,0 +1,47 @@
+{
+  "disclaimer": "Local microbenchmark only; not a throughput SLA.",
+  "environment": {
+    "platform": "Linux-4.4.0-x86_64-with-glibc2.41",
+    "processor": "not reported",
+    "python": "3.13.5"
+  },
+  "method": "Median wall-clock time after one warm-up; bounded variables plus one equality.",
+  "results": [
+    {
+      "constraints": 21,
+      "iterations": 2,
+      "max_ms": 0.135711,
+      "median_ms": 0.090624,
+      "min_ms": 0.086528,
+      "repeats": 20,
+      "variables": 10
+    },
+    {
+      "constraints": 101,
+      "iterations": 2,
+      "max_ms": 0.584122,
+      "median_ms": 0.289112,
+      "min_ms": 0.27756,
+      "repeats": 20,
+      "variables": 50
+    },
+    {
+      "constraints": 201,
+      "iterations": 2,
+      "max_ms": 0.781374,
+      "median_ms": 0.532932,
+      "min_ms": 0.519917,
+      "repeats": 20,
+      "variables": 100
+    },
+    {
+      "constraints": 501,
+      "iterations": 19,
+      "max_ms": 1.815772,
+      "median_ms": 1.424324,
+      "min_ms": 1.383032,
+      "repeats": 20,
+      "variables": 250
+    }
+  ]
+}

@@ -1,11 +1,30 @@
 # Changelog
 
+All notable changes are documented here. The project follows semantic versioning for the Python package; proof and specification contracts are versioned independently inside artifacts.
+
+## 1.1.0 — 2026-07-13
+
+### Added
+
+- Independent semantic replay during proof verification.
+- Explicit compiler, specification, diagnostics, solver, proof, API, and domain layers.
+- `validate` CLI command with a dedicated constraint-violation exit code.
+- High-level Python API for repair, proof creation, and verification.
+- Published JSON Schemas for specifications and proofs.
+- Atomic output writes and restrictive private-key permissions.
+- Capacity-planning example, benchmark methodology, ADRs, threat model, and version-controlled wiki source.
+
+### Changed
+
+- Proofs now record objective value, maximum iteration budget, and stable algorithm identifier.
+- Verification distinguishes integrity, authenticity, and semantic correctness.
+- Unknown configuration fields and Python-keyword variable names are rejected.
+- Syntax complexity limits support legitimate higher-dimensional linear models while retaining abuse controls.
+
+### Security
+
+- A false numerical result is rejected even when its artifact is internally rehashed or validly signed.
+
 ## 1.0.0 — 2026-07-13
 
-- Reconstructed the repository around a single `src/eq_proof` package.
-- Added a safe AST-based compiler for linear `==`, `<=`, and `>=` equations.
-- Added Euclidean projection through Dykstra's algorithm with bounds and fixed variables.
-- Added deterministic JSON proof artifacts, SHA-256 integrity, and Ed25519 attestation.
-- Added one CLI for key generation, repair, reporting, and verification.
-- Added reproducible evidence, architecture documentation, threat boundaries, and CI across Python 3.10–3.13.
-- Added a 54-test quality gate with measured branch coverage above 96% at reconstruction time.
+- Initial reconstructed package with safe linear compilation, Euclidean repair, deterministic proof artifacts, Ed25519 attestation, examples, and CI.

@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/FlorianStuettgen/EQ-Proof/schemas/specification.schema.json",
+  "title": "EQ-Proof Specification",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "name", "variables"],
+  "properties": {
+    "schema_version": {"const": "1.0"},
+    "name": {"type": "string", "minLength": 1},
+    "description": {"type": "string"},
+    "metadata": {"type": "object"},
+    "variables": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {"pattern": "^[A-Za-z_][A-Za-z0-9_]*$"},
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "lower": {"type": "number"},
+          "upper": {"type": "number"},
+          "fixed": {"type": "boolean"},
+          "label": {"type": "string", "minLength": 1},
+          "unit": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "equations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["expression"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "expression": {"type": "string", "minLength": 1, "maxLength": 4096},
+          "description": {"type": "string"}
+        }
+      }
+    }
+  }
+}

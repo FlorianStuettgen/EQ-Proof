@@ -7,12 +7,13 @@
 | Specification | `portfolio-allocation` |
 | Status | `repaired` |
 | Euclidean movement | `0.0707106781187` |
+| Objective value | `0.0025` |
 | Maximum violation before | `0.1` |
 | Maximum violation after | `0` |
-| Algorithm | `Dykstra Euclidean projection` |
+| Algorithm | `dykstra-l2-v1` |
 | Iterations | `2` |
 | Attestation | `Ed25519` |
-| Signer fingerprint | `cb6991cf3bd81a482995b73f34d11d0a60546917d790a38d82c32461ea6c2292` |
+| Signer fingerprint | `aab09c9a9e2586699021cba3d7e7d1e6300267e90c922b07fdd9eb3081199148` |
 
 ## Values
 
@@ -28,4 +29,4 @@
 
 ## Verification boundary
 
-This report is a convenience view. The JSON proof is authoritative. Verification establishes artifact integrity and, for Ed25519 mode, possession of the corresponding private key. It does not establish that the business rules are correct or that the key belongs to a particular organization unless the fingerprint is trusted independently.
+The JSON proof is authoritative. Full verification checks payload integrity, optional Ed25519 authenticity, and semantic replay of the encoded specification and submission. It does not establish that the business rules are correct, that the source data is truthful, or that a signing key belongs to a claimed identity without an independently trusted fingerprint.

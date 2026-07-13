@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/FlorianStuettgen/EQ-Proof/schemas/proof.schema.json",
+  "title": "EQ-Proof Proof Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["proof_schema", "created_utc", "engine", "specification", "submission", "result", "diagnostics", "attestation"],
+  "properties": {
+    "proof_schema": {"const": "eq-proof/proof@1"},
+    "created_utc": {"type": "string"},
+    "engine": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "version", "algorithm", "tolerance", "max_iterations", "iterations"],
+      "properties": {
+        "name": {"const": "EQ-Proof"},
+        "version": {"type": "string"},
+        "algorithm": {"const": "dykstra-l2-v1"},
+        "tolerance": {"type": "number", "exclusiveMinimum": 0},
+        "max_iterations": {"type": "integer", "minimum": 1},
+        "iterations": {"type": "integer", "minimum": 0}
+      }
+    },
+    "specification": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "schema_version", "digest_sha256", "document"],
+      "properties": {
+        "name": {"type": "string"},
+        "schema_version": {"const": "1.0"},
+        "digest_sha256": {"$ref": "#/$defs/sha256"},
+        "document": {"type": "object"}
+      }
+    },
+    "submission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["digest_sha256", "values"],
+      "properties": {
+        "digest_sha256": {"$ref": "#/$defs/sha256"},
+        "values": {"$ref": "#/$defs/numericMap"}
+      }
+    },
+    "result": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "values", "movement_l2", "objective_value", "max_violation_before", "max_violation_after"],
+      "properties": {
+        "status": {"enum": ["already_feasible", "repaired"]},
+        "values": {"$ref": "#/$defs/numericMap"},
+        "movement_l2": {"type": "number", "minimum": 0},
+        "objective_value": {"type": "number", "minimum": 0},
+        "max_violation_before": {"type": "number", "minimum": 0},
+        "max_violation_after": {"type": "number", "minimum": 0}
+      }
+    },
+    "diagnostics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["before", "after"],
+      "properties": {
+        "before": {"type": "array", "items": {"$ref": "#/$defs/check"}},
+        "after": {"type": "array", "items": {"$ref": "#/$defs/check"}}
+      }
+    },
+    "attestation": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "payload_sha256", "warning"],
+          "properties": {
+            "mode": {"const": "digest-only"},
+            "payload_sha256": {"$ref": "#/$defs/sha256"},
+            "warning": {"type": "string"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "payload_sha256", "signature_base64", "public_key_base64", "signer_fingerprint_sha256", "trust_note"],
+          "properties": {
+            "mode": {"const": "Ed25519"},
+            "payload_sha256": {"$ref": "#/$defs/sha256"},
+            "signature_base64": {"type": "string"},
+            "public_key_base64": {"type": "string"},
+            "signer_fingerprint_sha256": {"$ref": "#/$defs/sha256"},
+            "trust_note": {"type": "string"}
+          }
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "numericMap": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"type": "number"}
+    },
+    "check": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "source", "relation", "lhs", "rhs", "violation", "satisfied"],
+      "properties": {
+        "id": {"type": "string"},
+        "source": {"type": "string"},
+        "relation": {"type": "string"},
+        "lhs": {"type": "number"},
+        "rhs": {"type": "number"},
+        "violation": {"type": "number", "minimum": 0},
+        "satisfied": {"type": "boolean"}
+      }
+    }
+  }
+}

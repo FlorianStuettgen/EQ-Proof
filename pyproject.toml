@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eq-proof"
-version = "1.0.0"
-description = "Offline constraint repair with minimal-change projection and verifiable proof artifacts"
+version = "1.1.0"
+description = "Offline minimal-change constraint repair with semantic proof replay"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
@@ -20,21 +20,22 @@ classifiers = [
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
   "Topic :: Scientific/Engineering :: Mathematics",
-  "Topic :: Security :: Cryptography",
+  "Topic :: Security :: Cryptography"
 ]
 dependencies = [
   "cryptography>=42",
-  "numpy>=1.24",
+  "numpy>=1.24"
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8", "pytest-cov>=5"]
+dev = ["pytest>=8", "pytest-cov>=5", "jsonschema>=4.21"]
 
 [project.scripts]
 eq-proof = "eq_proof.cli:main"
 
 [project.urls]
 Repository = "https://github.com/FlorianStuettgen/EQ-Proof"
+Documentation = "https://github.com/FlorianStuettgen/EQ-Proof/tree/main/docs"
 Issues = "https://github.com/FlorianStuettgen/EQ-Proof/issues"
 
 [tool.setuptools]
@@ -55,4 +56,4 @@ omit = ["src/eq_proof/__main__.py"]
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-fail_under = 90
+fail_under = 92
