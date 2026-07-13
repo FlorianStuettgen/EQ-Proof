@@ -2,6 +2,7 @@
 
 from .api import prove_document, repair_document, verify_document
 from .compiler import compile_equation
+from .controls import Analysis, ControlsError, Equation, Finding, analyze, parse_xer
 from .domain import (
     ConstraintCheck,
     LinearConstraint,
@@ -15,11 +16,15 @@ from .proof import build_proof, generate_keypair, render_markdown, verify_proof
 from .solver import repair
 from .specification import load_specification, parse_specification
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 __all__ = [
+    "Analysis",
     "ConstraintCheck",
+    "ControlsError",
     "EQProofError",
+    "Equation",
+    "Finding",
     "InfeasibleProblem",
     "InvalidProof",
     "InvalidSpecification",
@@ -28,11 +33,13 @@ __all__ = [
     "Specification",
     "VariableRule",
     "VerificationResult",
+    "analyze",
     "build_proof",
     "compile_equation",
     "generate_keypair",
     "load_specification",
     "parse_specification",
+    "parse_xer",
     "prove_document",
     "render_markdown",
     "repair",
