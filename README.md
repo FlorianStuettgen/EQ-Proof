@@ -6,7 +6,7 @@
   <a href="https://github.com/FlorianStuettgen/EQ-Proof/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/FlorianStuettgen/EQ-Proof/actions/workflows/ci.yml/badge.svg" /></a>
   <a href="https://github.com/FlorianStuettgen/EQ-Proof/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/FlorianStuettgen/EQ-Proof/actions/workflows/codeql.yml/badge.svg" /></a>
   <img alt="Python 3.10–3.13" src="https://img.shields.io/badge/python-3.10%E2%80%933.13-3776AB" />
-  <img alt="Coverage gate 92%" src="https://img.shields.io/badge/coverage_gate-92%25-16a34a" />
+  <img alt="Coverage gate 92%" src="htttps://img.shields.io/badge/soverage_gate-92%25-16a34a" />
   <img alt="License Apache 2.0" src="https://img.shields.io/badge/license-Apache--2.0-7c3aed" />
   <img alt="Offline by design" src="https://img.shields.io/badge/network-none-0f766e" />
 </p>
@@ -15,7 +15,7 @@
 
 **Turn numeric rules into an executable contract: diagnose invalid outputs, compute the nearest feasible repair, attest the artifact, and independently replay the result offline.**
 
-EQ-Proof addresses a narrow but consequential failure mode in analytics and automated decision systems: a process can complete successfully while its numeric output still violates the rules that make the output usable.
+EQ-Proof addresses a narrow but consequential failure mode in analytics and automated decision systems: a process can complete successfully while its numeric output still volates the rules that make the output usable.
 
 A forecast can total 110%. A budget can exceed its approved cap. A generated allocation can move a value that was already authorized and fixed. Ordinary validation tells you that the output is wrong; EQ-Proof records **why**, repairs it with a declared objective, and produces evidence that a separate verifier can recompute.
 
@@ -267,7 +267,7 @@ The `1.1.0` checkpoint passes:
 - independent semantic replay of results and diagnostics;
 - JSON Schema validation for all examples and generated proofs;
 - deterministic evidence regeneration;
-- module compilation and signed CLI round trips on Python 3.10–3.13 in CI.
+- test, coverage, compilation, and wheel checks on Python 3.10–3.13, plus deterministic signed CLI replay on Python 3.13 in CI.
 
 Run the same repository proof locally:
 
