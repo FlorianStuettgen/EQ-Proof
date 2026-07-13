@@ -1,0 +1,12 @@
+[
+  {
+    "id": "portfolio.board_authorization",
+    "title": "Control-account EAC remains within delegated authorization",
+    "domain": "governance",
+    "expression": "EAC <= delegated_authorization",
+    "severity": "blocker",
+    "description": "Forecasts beyond delegated authority require escalation before the close is certified.",
+    "remediation": "Escalate the account forecast or supply an approved authorization change.",
+    "required_fields": ["EAC", "delegated_authorization"]
+  }
+]
