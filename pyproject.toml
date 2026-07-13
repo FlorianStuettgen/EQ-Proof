@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eq-proof"
-version = "1.1.0"
-description = "Offline minimal-change constraint repair with semantic proof replay"
+version = "1.2.0"
+description = "Project-controls equation workbench with P6 ingestion and replayable assurance"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Florian Stuettgen" }]
-keywords = ["constraints", "optimization", "attestation", "audit", "data-quality"]
+keywords = ["project-controls", "primavera-p6", "earned-value", "forecasting", "data-quality", "attestation"]
 classifiers = [
   "Development Status :: 4 - Beta",
   "License :: OSI Approved :: Apache Software License",
@@ -32,6 +32,7 @@ dev = ["pytest>=8", "pytest-cov>=5", "jsonschema>=4.21"]
 
 [project.scripts]
 eq-proof = "eq_proof.cli:main"
+eq-controls = "eq_proof.controls_cli:main"
 
 [project.urls]
 Repository = "https://github.com/FlorianStuettgen/EQ-Proof"
