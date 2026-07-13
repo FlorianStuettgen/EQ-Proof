@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "name": "budget-guardrail",
+  "description": "Keep total forecast spend within the approved cap and preserve non-negative work packages.",
+  "variables": {
+    "civil": {"lower": 0},
+    "mechanical": {"lower": 0},
+    "electrical": {"lower": 0}
+  },
+  "equations": [
+    {
+      "id": "approved-cap",
+      "expression": "civil + mechanical + electrical <= 1000000"
+    },
+    {
+      "id": "discipline-order",
+      "expression": "electrical <= mechanical"
+    }
+  ]
+}

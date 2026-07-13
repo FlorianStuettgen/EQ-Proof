@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "name": "portfolio-allocation",
+  "description": "Repair an allocation to 100% while preserving the approved reserve.",
+  "variables": {
+    "forecast_a": {"lower": 0, "upper": 1},
+    "forecast_b": {"lower": 0, "upper": 1},
+    "forecast_c": {"lower": 0, "upper": 1, "fixed": true}
+  },
+  "equations": [
+    {
+      "id": "allocation-total",
+      "expression": "forecast_a + forecast_b + forecast_c == 1"
+    }
+  ]
+}

@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">EQ-Proof constraint repair and attestation</title>
+  <desc id="desc">A submitted allocation violates a total constraint, is minimally repaired, and becomes a signed proof artifact.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#07111f"/><stop offset="1" stop-color="#12172a"/></linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#22d3ee"/><stop offset="1" stop-color="#8b5cf6"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="14" stdDeviation="18" flood-opacity=".35"/></filter>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <circle cx="1110" cy="-20" r="260" fill="#312e81" opacity=".22"/>
+  <circle cx="50" cy="650" r="250" fill="#0e7490" opacity=".16"/>
+  <text x="62" y="72" fill="#f8fafc" font-family="Inter,Segoe UI,Arial" font-size="34" font-weight="800">EQ-PROOF</text>
+  <rect x="62" y="91" width="220" height="5" rx="2.5" fill="url(#accent)"/>
+  <text x="62" y="132" fill="#94a3b8" font-family="Inter,Segoe UI,Arial" font-size="19">Equation-governed output repair &amp; offline attestation</text>
+
+  <g filter="url(#shadow)">
+    <rect x="62" y="178" width="306" height="350" rx="24" fill="#0f172a" stroke="#263247"/>
+    <rect x="447" y="178" width="306" height="350" rx="24" fill="#0f172a" stroke="#263247"/>
+    <rect x="832" y="178" width="306" height="350" rx="24" fill="#0f172a" stroke="#263247"/>
+  </g>
+
+  <text x="92" y="220" fill="#f59e0b" font-family="Inter,Segoe UI,Arial" font-size="14" font-weight="800" letter-spacing="1">01 · SUBMITTED</text>
+  <text x="92" y="260" fill="#e2e8f0" font-family="Inter,Segoe UI,Arial" font-size="18" font-weight="700">Allocation total</text>
+  <text x="338" y="260" fill="#fbbf24" font-family="Inter,Segoe UI,Arial" font-size="25" font-weight="800" text-anchor="end">110%</text>
+  <g font-family="Inter,Segoe UI,Arial" font-size="15">
+    <text x="92" y="315" fill="#cbd5e1">Forecast A</text><text x="338" y="315" fill="#f8fafc" text-anchor="end">55%</text>
+    <rect x="92" y="327" width="246" height="12" rx="6" fill="#1e293b"/><rect x="92" y="327" width="135" height="12" rx="6" fill="#38bdf8"/>
+    <text x="92" y="385" fill="#cbd5e1">Forecast B</text><text x="338" y="385" fill="#f8fafc" text-anchor="end">35%</text>
+    <rect x="92" y="397" width="246" height="12" rx="6" fill="#1e293b"/><rect x="92" y="397" width="86" height="12" rx="6" fill="#38bdf8"/>
+    <text x="92" y="455" fill="#cbd5e1">Forecast C · fixed</text><text x="338" y="455" fill="#f8fafc" text-anchor="end">20%</text>
+    <rect x="92" y="467" width="246" height="12" rx="6" fill="#1e293b"/><rect x="92" y="467" width="49" height="12" rx="6" fill="#f59e0b"/>
+  </g>
+
+  <text x="477" y="220" fill="#a78bfa" font-family="Inter,Segoe UI,Arial" font-size="14" font-weight="800" letter-spacing="1">02 · PROJECT</text>
+  <circle cx="600" cy="326" r="84" fill="none" stroke="#312e81" stroke-width="18"/>
+  <circle cx="600" cy="326" r="84" fill="none" stroke="url(#accent)" stroke-width="18" stroke-dasharray="408 528" stroke-linecap="round" transform="rotate(-90 600 326)"/>
+  <text x="600" y="318" fill="#f8fafc" font-family="Inter,Segoe UI,Arial" font-size="20" font-weight="800" text-anchor="middle">MIN L2</text>
+  <text x="600" y="345" fill="#94a3b8" font-family="Inter,Segoe UI,Arial" font-size="14" text-anchor="middle">nearest feasible point</text>
+  <rect x="487" y="443" width="226" height="50" rx="14" fill="#172554" stroke="#3730a3"/>
+  <text x="600" y="464" fill="#c4b5fd" font-family="Inter,Segoe UI,Arial" font-size="13" font-weight="700" text-anchor="middle">Fixed value preserved</text>
+  <text x="600" y="484" fill="#e0e7ff" font-family="Inter,Segoe UI,Arial" font-size="14" text-anchor="middle">Constraint residual ≤ 1e−10</text>
+
+  <text x="862" y="220" fill="#34d399" font-family="Inter,Segoe UI,Arial" font-size="14" font-weight="800" letter-spacing="1">03 · PROVE</text>
+  <rect x="862" y="253" width="246" height="116" rx="16" fill="#10251f" stroke="#166534"/>
+  <text x="885" y="284" fill="#86efac" font-family="Inter,Segoe UI,Arial" font-size="13" font-weight="700">REPAIRED RESULT</text>
+  <text x="885" y="323" fill="#f8fafc" font-family="Inter,Segoe UI,Arial" font-size="22" font-weight="800">50% · 30% · 20%</text>
+  <text x="885" y="349" fill="#a7f3d0" font-family="Inter,Segoe UI,Arial" font-size="14">Total = 100% · fixed = unchanged</text>
+  <rect x="862" y="395" width="246" height="98" rx="16" fill="#111827" stroke="#334155"/>
+  <path d="M890 428h24v32h-24z" fill="none" stroke="#22d3ee" stroke-width="2"/><path d="M896 428v-7h12v7" fill="none" stroke="#22d3ee" stroke-width="2"/>
+  <text x="930" y="432" fill="#f8fafc" font-family="Inter,Segoe UI,Arial" font-size="15" font-weight="700">Canonical proof.json</text>
+  <text x="930" y="456" fill="#94a3b8" font-family="Inter,Segoe UI,Arial" font-size="13">SHA-256 + Ed25519</text>
+  <text x="930" y="477" fill="#94a3b8" font-family="Inter,Segoe UI,Arial" font-size="13">offline verification</text>
+
+  <path d="M386 353h42" stroke="#64748b" stroke-width="3" stroke-linecap="round"/><path d="M420 345l10 8-10 8" fill="none" stroke="#64748b" stroke-width="3"/>
+  <path d="M771 353h42" stroke="#64748b" stroke-width="3" stroke-linecap="round"/><path d="M805 345l10 8-10 8" fill="none" stroke="#64748b" stroke-width="3"/>
+  <text x="62" y="585" fill="#64748b" font-family="Inter,Segoe UI,Arial" font-size="14">No network. No arbitrary evaluation. No silent approximation.</text>
+</svg>

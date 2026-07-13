@@ -1,0 +1,201 @@
+{
+  "attestation": {
+    "mode": "Ed25519",
+    "payload_sha256": "721474e0e345a46422148e9ba2794fedfeaaccc8c9dd700745b3f66c40727aeb",
+    "public_key_base64": "sldagaljBCVKrMB/OIlqm+lMEtb5n6K31l+houvlnWc=",
+    "signature_base64": "yGQhTS6yBuWMbxVzwIfuQLYpD018gMOjYHatLBTZzk/q+D39LJ9+qqdZyPbn0TuyIlvDmqzKV1QyaXIBusDSDA==",
+    "signer_fingerprint_sha256": "cb6991cf3bd81a482995b73f34d11d0a60546917d790a38d82c32461ea6c2292",
+    "trust_note": "Verification proves possession of this key. Identity requires an independently trusted fingerprint."
+  },
+  "created_utc": "2026-07-13T00:00:00Z",
+  "diagnostics": {
+    "after": [
+      {
+        "id": "bound:forecast_a:lower",
+        "lhs": 0.5,
+        "relation": ">=",
+        "rhs": 0.0,
+        "satisfied": true,
+        "source": "forecast_a >= 0.0",
+        "violation": 0.0
+      },
+      {
+        "id": "bound:forecast_a:upper",
+        "lhs": 0.5,
+        "relation": "<=",
+        "rhs": 1.0,
+        "satisfied": true,
+        "source": "forecast_a <= 1.0",
+        "violation": 0.0
+      },
+      {
+        "id": "bound:forecast_b:lower",
+        "lhs": 0.3,
+        "relation": ">=",
+        "rhs": 0.0,
+        "satisfied": true,
+        "source": "forecast_b >= 0.0",
+        "violation": 0.0
+      },
+      {
+        "id": "bound:forecast_b:upper",
+        "lhs": 0.3,
+        "relation": "<=",
+        "rhs": 1.0,
+        "satisfied": true,
+        "source": "forecast_b <= 1.0",
+        "violation": 0.0
+      },
+      {
+        "id": "bound:forecast_c:lower",
+        "lhs": 0.2,
+        "relation": ">=",
+        "rhs": 0.0,
+        "satisfied": true,
+        "source": "forecast_c >= 0.0",
+        "violation": 0.0
+      },
+      {
+        "id": "bound:forecast_c:upper",
+        "lhs": 0.2,
+        "relation": "<=",
+        "rhs": 1.0,
+        "satisfied": true,
+        "source": "forecast_c <= 1.0",
+        "violation": 0.0
+      },
+      {
+        "id": "allocation-total",
+        "lhs": 1.0,
+        "relation": "==",
+        "rhs": 1.0,
+        "satisfied": true,
+        "source": "forecast_a + forecast_b + forecast_c == 1",
+        "violation": 0.0
+      }
+    ],
+    "before": [
+      {
+        "id": "bound:forecast_a:lower",
+        "lhs": 0.55,
+        "relation": ">=",
+        "rhs": 0.0,
+        "satisfied": true,
+        "source": "forecast_a >= 0.0",
+        "violation": 0.0
+      },
+      {
+        "id": "bound:forecast_a:upper",
+        "lhs": 0.55,
+        "relation": "<=",
+        "rhs": 1.0,
+        "satisfied": true,
+        "source": "forecast_a <= 1.0",
+        "violation": 0.0
+      },
+      {
+        "id": "bound:forecast_b:lower",
+        "lhs": 0.35,
+        "relation": ">=",
+        "rhs": 0.0,
+        "satisfied": true,
+        "source": "forecast_b >= 0.0",
+        "violation": 0.0
+      },
+      {
+        "id": "bound:forecast_b:upper",
+        "lhs": 0.35,
+        "relation": "<=",
+        "rhs": 1.0,
+        "satisfied": true,
+        "source": "forecast_b <= 1.0",
+        "violation": 0.0
+      },
+      {
+        "id": "bound:forecast_c:lower",
+        "lhs": 0.2,
+        "relation": ">=",
+        "rhs": 0.0,
+        "satisfied": true,
+        "source": "forecast_c >= 0.0",
+        "violation": 0.0
+      },
+      {
+        "id": "bound:forecast_c:upper",
+        "lhs": 0.2,
+        "relation": "<=",
+        "rhs": 1.0,
+        "satisfied": true,
+        "source": "forecast_c <= 1.0",
+        "violation": 0.0
+      },
+      {
+        "id": "allocation-total",
+        "lhs": 1.1,
+        "relation": "==",
+        "rhs": 1.0,
+        "satisfied": false,
+        "source": "forecast_a + forecast_b + forecast_c == 1",
+        "violation": 0.10000000000000009
+      }
+    ]
+  },
+  "engine": {
+    "algorithm": "Dykstra Euclidean projection",
+    "iterations": 2,
+    "name": "EQ-Proof",
+    "tolerance": 1e-10,
+    "version": "1.0.0"
+  },
+  "proof_schema": "eq-proof/proof@1",
+  "result": {
+    "max_violation_after": 0.0,
+    "max_violation_before": 0.10000000000000009,
+    "movement_l2": 0.07071067811865478,
+    "status": "repaired",
+    "values": {
+      "forecast_a": 0.5,
+      "forecast_b": 0.3,
+      "forecast_c": 0.2
+    }
+  },
+  "specification": {
+    "digest_sha256": "f084314548b90e037d04945ddcc1d5596667ddced2bb43b702a15a6973c9c24e",
+    "document": {
+      "description": "Repair an allocation to 100% while preserving the approved reserve.",
+      "equations": [
+        {
+          "expression": "forecast_a + forecast_b + forecast_c == 1",
+          "id": "allocation-total"
+        }
+      ],
+      "name": "portfolio-allocation",
+      "schema_version": "1.0",
+      "variables": {
+        "forecast_a": {
+          "lower": 0,
+          "upper": 1
+        },
+        "forecast_b": {
+          "lower": 0,
+          "upper": 1
+        },
+        "forecast_c": {
+          "fixed": true,
+          "lower": 0,
+          "upper": 1
+        }
+      }
+    },
+    "name": "portfolio-allocation",
+    "schema_version": "1.0"
+  },
+  "submission": {
+    "digest_sha256": "19cfabb3970db06a31079038a8ef9a286f8e963ee2ed3d16414df9b7f065e73b",
+    "values": {
+      "forecast_a": 0.55,
+      "forecast_b": 0.35,
+      "forecast_c": 0.2
+    }
+  }
+}
