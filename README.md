@@ -1,88 +1,82 @@
 # EQ-PROOF
 
-**Repair invalid numerical outputs against declared constraints, minimize the change, and produce a proof artifact that can be verified offline.**
+**Repair invalid numerical outputs against declared constraints, minimize the permitted change, and produce an artifact that can be verified offline.**
 
-A forecast allocation totals 103%. One category exceeds its approved cap. Several values are fixed and must not move. EQ-PROOF turns those written rules into machine-checkable constraints, projects the invalid output onto the feasible set, and records exactly what changed.
+![EQ-Proof constraint repair and attestation dashboard](docs/assets/eq-proof-hero.svg)
 
-```mermaid
-flowchart LR
-    A[Written constraints] --> B[Compiled EQ-PROOF spec]
-    C[Invalid numeric output] --> D[Constraint validation]
-    B --> D
-    D --> E[Minimal-change projection]
-    E --> F[Repaired feasible output]
-    F --> G[Signed proof artifact]
-    G --> H[Independent offline verification]
-```
+*Worked example: the submitted allocation totals 110%. `Forecast C` is fixed at 20%, so the nearest feasible repair moves `Forecast A` to 50% and `Forecast B` to 30%.*
 
-## What You Know After One Run
+## The operating problem
 
-| Question | EQ-PROOF output |
+Forecasts, allocations, scoring models, and generated numeric outputs can violate rules even when their source process completes successfully.
+
+EQ-PROOF makes those rules explicit, validates the submitted output, projects invalid values onto the supported feasible set, and records the repair in a signed proof artifact.
+
+## What one run establishes
+
+| Question | Evidence produced |
 | --- | --- |
-| Was the original output feasible? | Constraint-by-constraint validation result |
+| Was the submitted output feasible? | Constraint-by-constraint validation |
 | What changed? | Original and repaired values |
-| How much changed? | Minimal Euclidean movement from the submitted output |
-| Which rules governed the repair? | Versioned constraint specification |
-| Can the result be checked later? | Signed JSON proof plus an offline verifier |
+| How much changed? | Numerical movement from the submitted output |
+| Which rules governed the result? | Preserved constraint specification |
+| Can the artifact be checked later? | Offline signature verification |
 
-## Example Decision Path
+## Worked example
 
-Input:
+Submitted values:
 
 ```text
-p1 = 0.55
-p2 = 0.35
-p3 = 0.20
+Forecast A = 0.55
+Forecast B = 0.35
+Forecast C = 0.20
 ```
 
 Rules:
 
 ```text
-0 <= p1 <= 1
-0 <= p2 <= 1
-0 <= p3 <= 1
-p1 + p2 + p3 = 1
+0 <= Forecast A <= 1
+0 <= Forecast B <= 1
+0 <= Forecast C <= 1
+Forecast A + Forecast B + Forecast C = 1
+fixed(Forecast C)
 ```
 
-The submitted vector sums to `1.10`. EQ-PROOF projects it onto the feasible set using the smallest supported numerical change, then emits the repaired values and the evidence required to verify the result.
+The submitted total is `1.10`. Because `Forecast C` is fixed at `0.20`, the minimum-change repair distributes the required reduction across the two movable values:
 
-The complete runnable walkthrough is in [`notebooks/EQ_Proof.ipynb`](notebooks/EQ_Proof.ipynb).
+```text
+Forecast A = 0.50
+Forecast B = 0.30
+Forecast C = 0.20
+```
 
-## Core Workflow
+The complete executable walkthrough is in [`notebooks/EQ_Proof.ipynb`](notebooks/EQ_Proof.ipynb).
 
-1. Write constraints such as `0 <= p1 <= 1`, `p1 + p2 + p3 = 1`, or `fixed(cap)`.
-2. Compile those constraints into an EQ-PROOF specification.
-3. Validate a submitted numerical output.
-4. Project infeasible values onto the feasible set with minimal Euclidean change.
-5. Write a machine-readable proof and a human-readable report.
-6. Verify the proof without a network connection.
+## Workflow
 
-## What This Is
+```mermaid
+flowchart LR
+    SPEC[Written constraints] --> COMPILE[Compile specification]
+    INPUT[Submitted values] --> CHECK[Validate]
+    COMPILE --> CHECK
+    CHECK --> REPAIR[Minimal-change projection]
+    REPAIR --> PROOF[Proof artifact]
+    PROOF --> SIGN[Local signature]
+    SIGN --> VERIFY[Offline verification]
+```
 
-- An offline constraint-validation and numerical-repair workflow.
-- A transparent projection process over declared feasible rules.
-- A way to preserve the submitted values, repaired values, governing specification, and attestation result together.
-- A foundation for controlled analytical outputs in forecasting, allocation, scoring, and model post-processing.
-
-## What This Is Not
-
-- A guarantee that the declared business rules are correct.
-- A substitute for model validation, source-data controls, or professional judgment.
-- A proof that the repaired output is uniquely desirable; it is the nearest supported feasible output under the configured objective.
-- A production key-management system.
-
-## Constraint Types
+## Supported constraint types
 
 | Type | Purpose |
 | --- | --- |
-| `bounds` | Lower and upper limits on a variable |
+| `bounds` | Lower and upper limits |
 | `linear_eq` | Linear equality relationships |
 | `linear_leq` | Linear inequality relationships |
-| `equality` | SymPy fallback for symbolic or nonlinear equality expressions |
-| `sum_leq` | Cap the combined value of selected variables |
-| `simplex` | Require nonnegative values that sum to one |
-| `monotone` | Require values to be nondecreasing |
-| `fixed` | Preserve selected variables during projection |
+| `equality` | Symbolic equality fallback |
+| `sum_leq` | Combined-value caps |
+| `simplex` | Nonnegative values summing to one |
+| `monotone` | Nondecreasing sequences |
+| `fixed` | Values excluded from projection |
 
 ## Install
 
@@ -105,84 +99,51 @@ macOS or Linux:
 python -m pip install -e '.[dev]'
 ```
 
-## Run the Notebook
+## Run
 
-Open [`notebooks/EQ_Proof.ipynb`](notebooks/EQ_Proof.ipynb) in Jupyter, VS Code, or another notebook environment and run it from top to bottom.
+Notebook:
 
-The notebook:
-
-- creates an example written specification;
-- repairs an infeasible output vector;
-- signs the result;
-- verifies the signature; and
-- writes proof artifacts under `outputs/`.
-
-## Run the CLI
-
-```powershell
-.venv\Scripts\python.exe cli.py examples\spec_budget_cap.json examples\inputs_budget_bad.json --out outputs\proof_budget.json --md outputs\proof_budget.md
-.venv\Scripts\python.exe verify_cli.py outputs\proof_budget.json
+```text
+notebooks/EQ_Proof.ipynb
 ```
 
-Installed command entry points are also available:
+CLI:
 
 ```bash
-eq-proof examples/spec_budget_cap.json examples/inputs_budget_bad.json --out outputs/proof_budget.json --md outputs/proof_budget.md
+eq-proof examples/spec_budget_cap.json examples/inputs_budget_bad.json \
+  --out outputs/proof_budget.json \
+  --md outputs/proof_budget.md
+
 eq-proof-verify outputs/proof_budget.json
 ```
 
-## Attestation Boundary
+## Attestation boundary
 
-```mermaid
-flowchart TD
-    A[Proof payload] --> B{Signing material available?}
-    B -->|Ed25519 key + PyNaCl| C[Ed25519 signature]
-    B -->|Fallback configuration| D[HMAC-SHA256 signature]
-    C --> E[Offline verifier]
-    D --> E
-    E --> F[Integrity result]
-```
+If `keys/ed25519_sk.hex` exists and PyNaCl is installed, EQ-PROOF uses Ed25519. Otherwise it can use an HMAC-SHA256 fallback through local configuration.
 
-If `keys/ed25519_sk.hex` exists and PyNaCl is installed, EQ-PROOF uses Ed25519. Otherwise it uses an HMAC-SHA256 fallback through `EQPROOF_KEY`, `keys/attest_key.txt`, or the demo key.
+The HMAC fallback supports local demonstration. It is not equivalent to managed production key infrastructure. Real keys are ignored by Git and must never be committed.
 
-The HMAC fallback is useful for local demonstrations but is not equivalent to managed production signing infrastructure. Real keys are ignored by Git and must never be committed.
-
-## Verify the Repository
+## Verify the repository
 
 ```bash
 pytest
 python -m compileall -q eq_proof cli.py verify_cli.py
 ```
 
-## Architecture
+## What this is not
 
-```mermaid
-flowchart TB
-    CLI[CLI or notebook] --> SPEC[Constraint specification]
-    CLI --> INPUT[Submitted values]
-    SPEC --> ENGINE[Projection and validation engine]
-    INPUT --> ENGINE
-    ENGINE --> PROOF[Proof document]
-    ENGINE --> REPORT[Markdown report]
-    PROOF --> SIGN[Local signing]
-    SIGN --> VERIFY[Independent verifier]
-```
+- It does not prove that the declared business rules are correct.
+- It does not validate source data or the upstream model.
+- It does not establish that the nearest feasible output is the best business decision.
+- It is not a production key-management service.
 
-The package is intentionally local and dependency-light. Constraint handling and projection live under `eq_proof/`; `cli.py` creates proof artifacts, while `verify_cli.py` checks them independently.
-
-## Current Status
+## Status
 
 **Version:** `0.1.0`  
 **Maturity:** working prototype  
 **Primary boundary:** offline numerical repair and attestation
 
-Next evidence priorities:
-
-- publish reproducible performance measurements by variable and constraint count;
-- add a versioned proof-schema compatibility policy;
-- document adversarial and malformed-proof cases;
-- create a formal tagged release; and
-- expand end-to-end examples for project forecasting and allocation controls.
+Next evidence priorities are versioned proof compatibility, malformed-proof tests, reproducible performance benchmarks, and a tagged release.
 
 ## License
 
