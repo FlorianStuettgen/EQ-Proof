@@ -1,29 +1,35 @@
 # EQ-Proof Wiki
 
-EQ-Proof turns declared numeric rules into an executable repair-and-verification contract.
+EQ-Proof is a project-controls equation workbench backed by a generic repair and verification engine.
 
-## Start here
+## Start with the operational product
 
-- [Quickstart](Quickstart.md) — install, validate, repair, verify
-- [Core concepts](Concepts.md) — feasible sets, fixed values, minimal change
+- [Project Controls Workbench](Project-Controls-Workbench.md) — P6 XER, cost exports, tested equations, user rules and close-gate outputs
+- [Quickstart](Quickstart.md) — install, validate, repair and verify
+
+## Core engine
+
+- [Core concepts](Concepts.md) — feasible sets, fixed values and minimal change
 - [Specification language](Specification-Language.md) — JSON fields and equation grammar
-- [Proof and verification](Proof-and-Verification.md) — integrity, signatures, semantic replay
-- [Architecture](Architecture.md) — modules, data flow, invariants
-- [Security model](Security-Model.md) — threats, controls, trust boundary
-- [Development](Development.md) — tests, evidence, benchmarks, release workflow
+- [Proof and verification](Proof-and-Verification.md) — integrity, signatures and semantic replay
+- [Architecture](Architecture.md) — modules, data flow and invariants
+- [Security model](Security-Model.md) — threats, controls and trust boundary
+- [Development](Development.md) — tests, evidence, benchmarks and release workflow
 
 ## Mental model
 
 ```text
-rules + submitted values
-        ↓
-diagnose violations
-        ↓
-nearest feasible repair
-        ↓
-canonical proof + optional signature
-        ↓
-independent semantic replay
+P6 XER + cost/control exports + equation catalogue + user equations
+                              ↓
+                    canonical field mapping
+                              ↓
+                  applicable equation selection
+                              ↓
+                 ranked controls exceptions
+                              ↓
+           close gate + CSV + JSON + review report
+                              ↓
+       optional constrained repair and proof attestation
 ```
 
-The JSON proof is authoritative. Reports and visuals are derived views.
+The workbench does not replace P6, the cost system or professional judgment. It makes the acceptance logic between those systems explicit, reusable and testable.
