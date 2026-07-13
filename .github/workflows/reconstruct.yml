@@ -3,14 +3,14 @@ name: reconstruct-eq-proof
 on:
   push:
     branches: [main]
-    paths: [".eqproof-reconstruction.b64"]
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
   reconstruct:
-    if: github.actor != 'github-actions[bot]'
+    if: github.actor != 'github-actions[bot]' && hashFiles('.eqproof-reconstruction.b64') != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
