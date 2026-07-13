@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   reconstruct:
-    if: github.actor != 'github-actions[bot]' && hashFiles('.eqproof-reconstruction.b64') != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
