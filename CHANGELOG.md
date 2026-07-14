@@ -2,6 +2,22 @@
 
 All notable changes are documented here. The Python package follows semantic versioning; proof, specification and Control Room payload contracts are versioned independently when their semantics change.
 
+## Unreleased
+
+### Added
+
+- Guided five-step, 90-second Control Room tour covering the gate, deterministic contradiction, material account, evidence lineage and action register.
+- Dynamic executive-story reconstruction on the public landing page.
+- Downloadable Markdown executive close brief containing portfolio states, ranked actions and source SHA-256 evidence.
+- Portfolio case study focused on the operational decision, product boundary and engineering proof.
+- Visible engineering-evidence strip covering automated tests, Python runtimes, telemetry, deterministic evidence and coverage enforcement.
+
+### Changed
+
+- Rebuilt the README as a product-first showcase with a direct guided-demo path.
+- Expanded social metadata, responsive presentation, call-to-action hierarchy and reduced-motion behavior.
+- Added the showcase JavaScript module to local and hosted repository validation.
+
 ## 1.4.0 — 2026-07-14
 
 ### Changed
