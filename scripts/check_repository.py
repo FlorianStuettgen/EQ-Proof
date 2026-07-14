@@ -29,7 +29,12 @@ def main() -> int:
     run(sys.executable, "scripts/regenerate_evidence.py")
     run(sys.executable, "scripts/regenerate_control_room_demo.py")
     if shutil.which("node"):
-        for script in ("app.js", "renderers.js", "workflow.js"):
+        for script in (
+            "app.js",
+            "renderers.js",
+            "workflow.js",
+            "showcase.js",
+        ):
             run("node", "--check", f"src/eq_proof/web/{script}")
     if (ROOT / ".git").exists():
         run("git", "diff", "--exit-code")
