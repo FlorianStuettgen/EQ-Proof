@@ -2,6 +2,7 @@
 
 from .api import prove_document, repair_document, verify_document
 from .compiler import compile_equation
+from .control_room import build_control_room
 from .controls import Analysis, ControlsError, Equation, Finding, analyze, parse_xer
 from .domain import (
     ConstraintCheck,
@@ -16,7 +17,7 @@ from .proof import build_proof, generate_keypair, render_markdown, verify_proof
 from .solver import repair
 from .specification import load_specification, parse_specification
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 
 __all__ = [
     "Analysis",
@@ -34,6 +35,7 @@ __all__ = [
     "VariableRule",
     "VerificationResult",
     "analyze",
+    "build_control_room",
     "build_proof",
     "compile_equation",
     "generate_keypair",
