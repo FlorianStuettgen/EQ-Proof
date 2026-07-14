@@ -1,4 +1,8 @@
 - [Home](Home)
+- [Project Controls Workbench](Project-Controls-Workbench)
+- [Semantic model](https://github.com/FlorianStuettgen/EQ-Proof/blob/main/docs/SEMANTIC_MODEL.md)
+- [Product architecture](https://github.com/FlorianStuettgen/EQ-Proof/blob/main/docs/PRODUCT_ARCHITECTURE.md)
+- [Demo playbook](https://github.com/FlorianStuettgen/EQ-Proof/blob/main/docs/DEMO_PLAYBOOK.md)
 - [Quickstart](Quickstart)
 - [Core concepts](Concepts)
 - [Specification language](Specification-Language)
