@@ -1,9 +1,9 @@
 {
   "attestation": {
     "mode": "Ed25519",
-    "payload_sha256": "e44627303962a0f7ad8402a0e225b2afa92d64ca1b9cb8ad920edc5d5191a021",
+    "payload_sha256": "801c9be1e755060adb39eee7f877f18fb16231a1c85beaabf5ce0cd6245167c8",
     "public_key_base64": "R1XeX/j66GjniFEO3QifAVCrfRerUf81Qr2/Wddlk9c=",
-    "signature_base64": "ypLoI8ZbOPs2E8u/sOAm/kGibcSDwMAXOQU9pjcGNjmSB6DJh+nm8VEF4AhDcOxWYSo7asBVYI3ygHMdUL7RAw==",
+    "signature_base64": "OOb+sIHUuIWYrI9GXqwNVFwPg5GXsm1CdEeO9eBkMYPYuBH7WaHcUcf+EcO/hi6B+bPDwFZ9bXt9iQVXVUodDw==",
     "signer_fingerprint_sha256": "aab09c9a9e2586699021cba3d7e7d1e6300267e90c922b07fdd9eb3081199148",
     "trust_note": "Verification proves possession of this key. Identity requires an independently trusted fingerprint."
   },
@@ -146,7 +146,7 @@
     "max_iterations": 20000,
     "name": "EQ-Proof",
     "tolerance": 1e-10,
-    "version": "1.1.0"
+    "version": "1.3.0"
   },
   "proof_schema": "eq-proof/proof@1",
   "result": {
