@@ -2,10 +2,19 @@
 
 function buildEquationCandidate() {
   const expression = $('#customExpression').value.trim();
-  const fields = $('#customFields').value.split(',').map((item) => item.trim()).filter(Boolean);
-  if (!expression.match(/(==|<=|>=|<|>)/) || !fields.length) {
+  const rawFields = $('#customFields').value.split(',').map((item) => item.trim()).filter(Boolean);
+  const comparisons = expression.match(/==|<=|>=|<|>/g) || [];
+  if (comparisons.length !== 1 || !rawFields.length) {
     throw new Error('Add exactly one comparison and at least one required field.');
   }
+  if (expression.length > 512 || /[\r\n;]/.test(expression)) {
+    throw new Error('Keep the equation on one line, under 512 characters, without statement separators.');
+  }
+  const invalidField = rawFields.find((field) => !/^[A-Za-z_][A-Za-z0-9_]*$/.test(field));
+  if (invalidField) {
+    throw new Error(`Required field “${invalidField}” is not a valid identifier.`);
+  }
+  const fields = [...new Set(rawFields)];
   const title = $('#customTitle').value.trim() || 'Custom control';
   const base = title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'equation';
   const existing = new Set(state.customEquations.map((item) => item.id));
@@ -38,7 +47,7 @@ async function addCustomEquation() {
     state.customEquations.push(candidate);
     $('#editorStatus').textContent = state.apiAvailable
       ? `${candidate.title} validated by the local engine and added to the next analysis.`
-      : `${candidate.title} added locally. Download the pack or validate it in the local app.`;
+      : `${candidate.title} passed browser structural checks and was added to the draft pack. Run the local app for authoritative engine validation.`;
     renderCustomEquations();
   } catch (error) {
     $('#editorStatus').textContent = error.message;
@@ -80,6 +89,7 @@ async function compileClose(event) {
   $('#compileButton').disabled = true;
   $('#compileButton').textContent = 'Compiling evidence…';
   $('#apiStatus').textContent = 'Hashing sources, executing equations, and reconstructing declared states…';
+  $('#gateCard').setAttribute('aria-busy', 'true');
   try {
     const payload = await fetchJson('./api/analyze', { method: 'POST', body: form });
     state.data = payload;
@@ -92,6 +102,7 @@ async function compileClose(event) {
   } finally {
     $('#compileButton').disabled = false;
     $('#compileButton').textContent = 'Compile close';
+    $('#gateCard').setAttribute('aria-busy', 'false');
   }
 }
 
@@ -99,14 +110,19 @@ function downloadBlob(content, type, filename) {
   const blob = new Blob([content], { type });
   const link = document.createElement('a');
   const url = URL.createObjectURL(blob);
-  link.href = url; link.download = filename; link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 0);
+  link.href = url;
+  link.download = filename;
+  link.hidden = true;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 function exportExceptions() {
   const headers = ['severity', 'record_type', 'record_id', 'equation_id', 'title', 'residual', 'residual_state', 'impact_metric', 'remediation'];
   const rows = [headers.join(','), ...(state.data.exceptions || []).map((item) => headers.map((key) => csvCell(item[key])).join(','))];
-  downloadBlob(`${rows.join('\n')}\n`, 'text/csv', 'eq-proof-exceptions.csv');
+  downloadBlob(`\ufeff${rows.join('\n')}\n`, 'text/csv;charset=utf-8', 'eq-proof-exceptions.csv');
 }
 
 function exportEquationPack() {
@@ -119,13 +135,23 @@ function exportEquationPack() {
 }
 
 function activateTab(name) {
-  $$('.tab').forEach((button) => button.classList.toggle('active', button.dataset.tab === name));
-  $$('.tab-panel').forEach((panel) => panel.classList.toggle('active', panel.id === `panel-${name}`));
+  $$('.tab').forEach((button) => {
+    const active = button.dataset.tab === name;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', String(active));
+    button.tabIndex = active ? 0 : -1;
+  });
+  $$('.tab-panel').forEach((panel) => {
+    const active = panel.id === `panel-${name}`;
+    panel.classList.toggle('active', active);
+    panel.hidden = !active;
+  });
   if (name === 'graph') renderGraph();
 }
 
 function openUpload() {
-  $('#uploadDialog').showModal();
+  const dialog = $('#uploadDialog');
+  if (!dialog.open) dialog.showModal();
   setRuntimeMode();
 }
 
@@ -138,12 +164,14 @@ function updateExceptionFilters() {
 
 async function init() {
   await Promise.all([detectApi(), loadDemo()]);
+  $('#gateCard').setAttribute('aria-busy', 'false');
   $('#runDemoButton').addEventListener('click', () => $('#workspace').scrollIntoView({ behavior: 'smooth' }));
   ['#uploadButton', '#heroUploadButton'].forEach((selector) => $(selector).addEventListener('click', openUpload));
   $('#catalogueButton').addEventListener('click', () => { activateTab('equations'); $('#workspace').scrollIntoView({ behavior: 'smooth' }); });
   $$('.tab').forEach((button) => button.addEventListener('click', () => activateTab(button.dataset.tab)));
   $$('.info-button').forEach((button) => button.addEventListener('click', () => inspectMetric(button.dataset.inspect)));
   $('#inspectorClose').addEventListener('click', closeInspector);
+  $('#dialogClose').addEventListener('click', () => $('#uploadDialog').close('cancel'));
   $('#addEquationButton').addEventListener('click', addCustomEquation);
   $('#downloadEquationPack').addEventListener('click', exportEquationPack);
   $('#analysisForm').addEventListener('submit', compileClose);
@@ -155,7 +183,11 @@ async function init() {
 init().then(() => {
   const showcase = document.createElement('script');
   showcase.src = './showcase.js';
+  showcase.onerror = () => {
+    $('#gateHeadline').textContent = 'The core analysis loaded, but the guided showcase failed to initialize.';
+  };
   document.head.append(showcase);
 }).catch((error) => {
+  $('#gateCard').setAttribute('aria-busy', 'false');
   $('#gateHeadline').textContent = `Unable to load the control room: ${error.message}`;
 });
