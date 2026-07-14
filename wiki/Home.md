@@ -4,20 +4,20 @@ EQ-Proof is a local-first project-controls Control Room backed by an independent
 
 ## Start with the operational product
 
-- [Project Controls Workbench](Project-Controls-Workbench.md) — P6 XER, generic cost exports, tested equations, user rules and close-gate outputs
-- [Semantic Model](../docs/SEMANTIC_MODEL.md) — authoritative financial states, gate meanings, assurance boundary and impact routing
-- [Product Architecture](../docs/PRODUCT_ARCHITECTURE.md) — runtime modes, data flow, security and reproducibility
-- [Demo Playbook](../docs/DEMO_PLAYBOOK.md) — five-minute manager and engineering-panel walkthrough
-- [Quickstart](Quickstart.md) — install, validate, repair and verify
+- [Project Controls Workbench](Project-Controls-Workbench) — P6 XER, generic cost exports, tested equations, user rules and close-gate outputs
+- [Semantic Model](https://github.com/FlorianStuettgen/EQ-Proof/blob/main/docs/SEMANTIC_MODEL.md) — authoritative financial states, gate meanings, assurance boundary and impact routing
+- [Product Architecture](https://github.com/FlorianStuettgen/EQ-Proof/blob/main/docs/PRODUCT_ARCHITECTURE.md) — runtime modes, data flow, security and reproducibility
+- [Demo Playbook](https://github.com/FlorianStuettgen/EQ-Proof/blob/main/docs/DEMO_PLAYBOOK.md) — five-minute manager and engineering-panel walkthrough
+- [Quickstart](Quickstart) — install, validate, repair and verify
 
 ## Core engine
 
-- [Core concepts](Concepts.md) — feasible sets, fixed values and minimal change
-- [Specification language](Specification-Language.md) — JSON fields and equation grammar
-- [Proof and verification](Proof-and-Verification.md) — integrity, signatures and semantic replay
-- [Architecture](Architecture.md) — modules, data flow and invariants
-- [Security model](Security-Model.md) — threats, controls and trust boundary
-- [Development](Development.md) — tests, evidence, benchmarks and release workflow
+- [Core concepts](Concepts) — feasible sets, fixed values and minimal change
+- [Specification language](Specification-Language) — JSON fields and equation grammar
+- [Proof and verification](Proof-and-Verification) — integrity, signatures and semantic replay
+- [Architecture](Architecture) — modules, data flow and invariants
+- [Security model](Security-Model) — threats, controls and trust boundary
+- [Development](Development) — tests, evidence, benchmarks and release workflow
 
 ## Mental model
 
