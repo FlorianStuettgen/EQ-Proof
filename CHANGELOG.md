@@ -2,6 +2,40 @@
 
 All notable changes are documented here. The project follows semantic versioning for the Python package; proof and specification contracts are versioned independently inside artifacts.
 
+## 1.3.0 — 2026-07-14
+
+### Added
+
+- Local-first **EQ-Proof Control Room** web application.
+- Executive close gate with reported, defensible, and risk-adjusted portfolio states.
+- Account-level surprise decomposition and interactive evidence graph.
+- Ranked exception command centre with CSV export.
+- Browser equation catalogue and project-specific equation editor.
+- FastAPI upload boundary for P6 XER, cost CSV, and equation-pack files.
+- Static synthetic demo suitable for GitHub Pages.
+- Product architecture and five-minute panel/manager demo playbook.
+
+### Changed
+
+- `eq-controls serve` now launches the real-file browser application on loopback.
+- The repository's primary product positioning is project-controls close assurance.
+- Public evidence now reconstructs a deterministic $76M hidden-exposure scenario.
+- Package version, proof engine version, signed evidence, and documentation advance to 1.3.0.
+
+### Security
+
+- Real-file mode uses request-scoped temporary directories, a 50 MiB per-file limit, path-basename normalization, restrictive browser headers, no telemetry, and no external frontend dependencies.
+
+## 1.2.0 — 2026-07-13
+
+### Added
+
+- Native Primavera P6 XER `TASK` ingestion.
+- Cost/control-account CSV alias mapping.
+- Tested project-controls equation catalogue spanning cost, EVM, change, risk, and schedule assurance.
+- User-supplied equation packs and `eq-controls` CLI.
+- Hyperscale close fixture, exception CSV, and close-gate exit codes.
+
 ## 1.1.0 — 2026-07-13
 
 ### Added
