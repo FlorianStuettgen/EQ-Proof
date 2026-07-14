@@ -152,6 +152,10 @@ async function init() {
   $('#downloadExceptions').addEventListener('click', exportExceptions);
 }
 
-init().catch((error) => {
+init().then(() => {
+  const showcase = document.createElement('script');
+  showcase.src = './showcase.js';
+  document.head.append(showcase);
+}).catch((error) => {
   $('#gateHeadline').textContent = `Unable to load the control room: ${error.message}`;
 });
