@@ -193,3 +193,12 @@ function renderExceptions() {
   });
   $('#exceptionRows').replaceChildren(...rows);
 }
+
+const interactionModule = document.createElement('script');
+interactionModule.src = './app-2.js';
+interactionModule.onload = () => {
+  const workflowModule = document.createElement('script');
+  workflowModule.src = './app-3.js';
+  document.head.append(workflowModule);
+};
+document.head.append(interactionModule);
