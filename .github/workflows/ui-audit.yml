@@ -1,0 +1,58 @@
+name: ui-audit
+
+on:
+  pull_request:
+    paths:
+      - "src/eq_proof/web/**"
+      - "tests/ui/**"
+      - "package.json"
+      - "playwright.config.js"
+      - ".github/workflows/ui-audit.yml"
+  push:
+    branches: [main]
+    paths:
+      - "src/eq_proof/web/**"
+      - "tests/ui/**"
+      - "package.json"
+      - "playwright.config.js"
+      - ".github/workflows/ui-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser-audit:
+    name: Functional UI, responsive, and accessibility audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package.json
+
+      - name: Install audit dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser audit
+        run: npm run test:ui
+
+      - name: Upload audit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eq-proof-ui-audit
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore
+          retention-days: 14
