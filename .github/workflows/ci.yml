@@ -49,10 +49,30 @@ jobs:
       - name: Install
         run: python -m pip install --upgrade pip && python -m pip install -e '.[dev]'
       - name: Regenerate authoritative evidence
+        id: regenerate
+        continue-on-error: true
         run: |
           python scripts/regenerate_evidence.py
           python scripts/regenerate_control_room_demo.py
           git diff --exit-code
+      - name: Capture deterministic evidence drift
+        if: steps.regenerate.outcome == 'failure'
+        run: git diff --binary > evidence-drift.patch
+      - name: Upload deterministic evidence drift
+        if: steps.regenerate.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: deterministic-evidence-drift
+          path: |
+            evidence-drift.patch
+            evidence/portfolio-allocation.proof.json
+            evidence/portfolio-allocation.report.md
+            src/eq_proof/web/demo-data.json
+          if-no-files-found: error
+          retention-days: 7
+      - name: Enforce deterministic evidence
+        if: steps.regenerate.outcome == 'failure'
+        run: exit 1
       - name: Exercise signed proof workflow
         run: |
           mkdir -p /tmp/eq-proof
