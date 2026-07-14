@@ -2,8 +2,16 @@
 
 from .api import prove_document, repair_document, verify_document
 from .compiler import compile_equation
-from .control_room import build_control_room
-from .controls import Analysis, ControlsError, Equation, Finding, analyze, parse_xer
+from .control_room import CONTROL_ROOM_SCHEMA, build_control_room
+from .controls import (
+    Analysis,
+    ControlsError,
+    Equation,
+    Finding,
+    analyze,
+    parse_equations,
+    parse_xer,
+)
 from .domain import (
     ConstraintCheck,
     LinearConstraint,
@@ -17,10 +25,11 @@ from .proof import build_proof, generate_keypair, render_markdown, verify_proof
 from .solver import repair
 from .specification import load_specification, parse_specification
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 
 __all__ = [
     "Analysis",
+    "CONTROL_ROOM_SCHEMA",
     "ConstraintCheck",
     "ControlsError",
     "EQProofError",
@@ -40,6 +49,7 @@ __all__ = [
     "compile_equation",
     "generate_keypair",
     "load_specification",
+    "parse_equations",
     "parse_specification",
     "parse_xer",
     "prove_document",
