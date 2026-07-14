@@ -18,7 +18,7 @@ from .specification import parse_specification
 
 PROOF_SCHEMA = "eq-proof/proof@1"
 ENGINE_NAME = "EQ-Proof"
-ENGINE_VERSION = "1.1.0"
+ENGINE_VERSION = "1.3.0"
 ALGORITHM_ID = "dykstra-l2-v1"
 
 
