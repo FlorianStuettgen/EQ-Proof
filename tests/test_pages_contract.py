@@ -30,6 +30,9 @@ def test_pages_workflow_uses_the_official_static_deployment_shape():
         "actions/upload-pages-artifact@v3",
         "actions/deploy-pages@v5",
         "url: ${{ steps.deployment.outputs.page_url }}",
+        "statuses: write",
+        "Publish deployment status",
+        "github-pages/live",
         "Take the 90-second tour",
         "demo-data.json",
     }
@@ -39,6 +42,7 @@ def test_pages_workflow_uses_the_official_static_deployment_shape():
     assert "pull_request:" not in workflow
     assert workflow.count("environment:") == 1
     assert workflow.count("actions/deploy-pages@v5") == 1
+    assert "if: always()" in workflow
     assert "cancel-in-progress: false" in workflow
 
 

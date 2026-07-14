@@ -15,6 +15,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  statuses: write
 
 concurrency:
   group: pages
@@ -106,3 +107,48 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+      - name: Publish deployment status
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEPLOY_OUTCOME: ${{ steps.deployment.outcome }}
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import urllib.request
+
+          outcome = os.environ.get("DEPLOY_OUTCOME", "")
+          page_url = os.environ.get("PAGE_URL", "")
+          state = "success" if outcome == "success" else "failure"
+          description = (
+              "Control Room deployed to GitHub Pages"
+              if state == "success"
+              else "GitHub Pages deployment failed"
+          )
+          payload = {
+              "state": state,
+              "context": "github-pages/live",
+              "description": description,
+          }
+          if page_url:
+              payload["target_url"] = page_url
+
+          request = urllib.request.Request(
+              "https://api.github.com/repos/"
+              f"{os.environ['GITHUB_REPOSITORY']}/statuses/{os.environ['GITHUB_SHA']}",
+              data=json.dumps(payload).encode("utf-8"),
+              method="POST",
+              headers={
+                  "Accept": "application/vnd.github+json",
+                  "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
+                  "Content-Type": "application/json",
+                  "User-Agent": "eq-proof-pages",
+                  "X-GitHub-Api-Version": "2022-11-28",
+              },
+          )
+          with urllib.request.urlopen(request, timeout=30) as response:
+              assert response.status == 201
+          PY
