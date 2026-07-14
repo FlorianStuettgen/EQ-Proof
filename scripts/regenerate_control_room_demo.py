@@ -11,6 +11,16 @@ from eq_proof.controls import CATALOGUE, analyze, load_csv, load_equations, pars
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = ROOT / "examples" / "hyperscale_close"
 OUTPUT = ROOT / "src" / "eq_proof" / "web" / "demo-data.json"
+CATALOGUE_FIELDS = (
+    "id",
+    "title",
+    "domain",
+    "expression",
+    "severity",
+    "record_type",
+    "applicability_field",
+    "applicability_values",
+)
 
 
 def main() -> int:
@@ -57,11 +67,14 @@ def main() -> int:
             "close_ready",
             "gate_status",
             "summary",
-            "equations",
         )
     }
     payload["catalogue"] = [
-        equation.__dict__ for equation in CATALOGUE
+        {
+            key: equation.__dict__[key]
+            for key in CATALOGUE_FIELDS
+        }
+        for equation in CATALOGUE
     ]
     payload["demo"] = {
         "name": "Hyperscale data-centre monthly close",
