@@ -11,43 +11,74 @@ try:
     from fastapi import FastAPI, HTTPException, Request
     from fastapi.responses import JSONResponse
     from fastapi.staticfiles import StaticFiles
+    from starlette.middleware.trustedhost import TrustedHostMiddleware
 except ImportError:  # pragma: no cover - optional web extra
     FastAPI = None  # type: ignore[assignment]
     HTTPException = RuntimeError  # type: ignore[assignment]
     Request = Any  # type: ignore[assignment]
     JSONResponse = None  # type: ignore[assignment]
     StaticFiles = None  # type: ignore[assignment]
+    TrustedHostMiddleware = None  # type: ignore[assignment]
 
 from .control_room import build_control_room
-from .controls import CATALOGUE, ControlsError, analyze, load_csv, load_equations, parse_xer
+from .controls import (
+    CATALOGUE,
+    ControlsError,
+    analyze,
+    load_csv,
+    load_equations,
+    parse_equations,
+    parse_xer,
+)
 
 MAX_UPLOAD_BYTES = 50 * 1024 * 1024
+MAX_TOTAL_UPLOAD_BYTES = 200 * 1024 * 1024
+MAX_UPLOAD_FILES = 20
+MAX_INLINE_EQUATION_BYTES = 256 * 1024
 WEB_ROOT = Path(__file__).with_name("web")
 
 
-async def _save_upload(upload: Any, directory: Path, fallback_name: str) -> Path:
-    name = Path(upload.filename or fallback_name).name
-    target = directory / name
+async def _save_upload(
+    upload: Any,
+    directory: Path,
+    slot: str,
+    remaining_bytes: int,
+) -> tuple[Path, int]:
+    original_name = Path(upload.filename or "upload").name
+    target = directory / f"{slot}-{original_name}"
     total = 0
     with target.open("wb") as handle:
         while chunk := await upload.read(1024 * 1024):
             total += len(chunk)
             if total > MAX_UPLOAD_BYTES:
-                raise ControlsError(f"{name} exceeds the 50 MiB upload limit")
+                raise ControlsError(
+                    f"{original_name} exceeds the 50 MiB per-file limit"
+                )
+            if total > remaining_bytes:
+                raise ControlsError("Uploads exceed the 200 MiB request limit")
             handle.write(chunk)
-    return target
+    return target, total
 
 
 def create_app() -> Any:
-    if FastAPI is None or JSONResponse is None or StaticFiles is None:
+    if (
+        FastAPI is None
+        or JSONResponse is None
+        or StaticFiles is None
+        or TrustedHostMiddleware is None
+    ):
         raise RuntimeError(
             "Web dependencies are not installed. Run: python -m pip install 'eq-proof[web]'"
         )
     app = FastAPI(
         title="EQ-Proof Control Room",
-        version="1.3.0",
+        version="1.4.0",
         docs_url=None,
         redoc_url=None,
+    )
+    app.add_middleware(
+        TrustedHostMiddleware,
+        allowed_hosts=["127.0.0.1", "localhost", "[::1]", "testserver"],
     )
 
     @app.middleware("http")
@@ -60,6 +91,8 @@ def create_app() -> Any:
         )
         response.headers["Referrer-Policy"] = "no-referrer"
         response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
         response.headers["Cache-Control"] = "no-store"
         return response
 
@@ -71,60 +104,182 @@ def create_app() -> Any:
     async def catalogue() -> list[dict[str, Any]]:
         return [equation.__dict__ for equation in CATALOGUE]
 
+    @app.post("/api/equations/validate")
+    async def validate_equations(request: Request) -> Any:
+        try:
+            raw = await request.body()
+            if len(raw) > MAX_INLINE_EQUATION_BYTES:
+                raise ControlsError(
+                    "Equation request exceeds the 256 KiB limit"
+                )
+            document = json.loads(raw or b"[]")
+            if isinstance(document, dict):
+                document = [document]
+            equations = parse_equations(document)
+            return JSONResponse(
+                [equation.__dict__ for equation in equations]
+            )
+        except (
+            ControlsError,
+            json.JSONDecodeError,
+            KeyError,
+            TypeError,
+            ValueError,
+        ) as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
     @app.get("/api/demo")
     async def demo() -> Any:
         path = WEB_ROOT / "demo-data.json"
         if not path.exists():
-            raise HTTPException(status_code=503, detail="Demo data has not been generated")
-        return JSONResponse(json.loads(path.read_text(encoding="utf-8")))
+            raise HTTPException(
+                status_code=503,
+                detail="Demo data has not been generated",
+            )
+        return JSONResponse(
+            json.loads(path.read_text(encoding="utf-8"))
+        )
 
     @app.post("/api/analyze")
     async def analyze_uploads(request: Request) -> Any:
         try:
             form = await request.form()
-            p6_xer = form.getlist("p6_xer")
-            cost_csv = form.getlist("cost_csv")
-            equation_pack = form.getlist("equation_pack")
-            custom_equations = str(form.get("custom_equations", "[]"))
-            catalogue_ids = str(form.get("catalogue_ids", ""))
-            with tempfile.TemporaryDirectory(prefix="eq-proof-") as temporary:
+            p6_xer = [
+                item
+                for item in form.getlist("p6_xer")
+                if hasattr(item, "read")
+            ]
+            cost_csv = [
+                item
+                for item in form.getlist("cost_csv")
+                if hasattr(item, "read")
+            ]
+            equation_pack = [
+                item
+                for item in form.getlist("equation_pack")
+                if hasattr(item, "read")
+            ]
+            uploads = [*p6_xer, *cost_csv, *equation_pack]
+            if len(uploads) > MAX_UPLOAD_FILES:
+                raise ControlsError(
+                    f"A request may contain at most {MAX_UPLOAD_FILES} files"
+                )
+            custom_equations = str(
+                form.get("custom_equations", "[]")
+            )
+            if (
+                len(custom_equations.encode("utf-8"))
+                > MAX_INLINE_EQUATION_BYTES
+            ):
+                raise ControlsError(
+                    "Inline equations exceed the 256 KiB limit"
+                )
+            catalogue_value = form.get("catalogue_ids")
+            currency = str(form.get("currency", "USD")).upper()
+            if len(currency) != 3 or not currency.isalpha():
+                raise ControlsError(
+                    "currency must be a three-letter code"
+                )
+
+            with tempfile.TemporaryDirectory(
+                prefix="eq-proof-"
+            ) as temporary:
                 directory = Path(temporary)
                 records: list[dict[str, Any]] = []
                 sources: list[str] = []
+                consumed = 0
                 for index, upload in enumerate(p6_xer):
-                    if not hasattr(upload, "read"):
-                        continue
-                    path = await _save_upload(upload, directory, f"schedule-{index}.xer")
+                    path, size = await _save_upload(
+                        upload,
+                        directory,
+                        f"p6-{index}",
+                        MAX_TOTAL_UPLOAD_BYTES - consumed,
+                    )
+                    consumed += size
                     records.extend(parse_xer(path))
-                    sources.append(upload.filename or path.name)
+                    sources.append(
+                        Path(upload.filename or path.name).name
+                    )
                 for index, upload in enumerate(cost_csv):
-                    if not hasattr(upload, "read"):
-                        continue
-                    path = await _save_upload(upload, directory, f"cost-{index}.csv")
+                    path, size = await _save_upload(
+                        upload,
+                        directory,
+                        f"cost-{index}",
+                        MAX_TOTAL_UPLOAD_BYTES - consumed,
+                    )
+                    consumed += size
                     records.extend(load_csv(path))
-                    sources.append(upload.filename or path.name)
+                    sources.append(
+                        Path(upload.filename or path.name).name
+                    )
                 if not records:
-                    raise ControlsError("Upload at least one P6 XER or cost CSV file")
+                    raise ControlsError(
+                        "Upload at least one P6 XER or cost CSV file"
+                    )
 
-                enabled = {value for value in catalogue_ids.split(",") if value}
-                equations = [item for item in CATALOGUE if not enabled or item.id in enabled]
+                if catalogue_value is None:
+                    equations = list(CATALOGUE)
+                else:
+                    requested = {
+                        value
+                        for value in str(catalogue_value).split(",")
+                        if value
+                    }
+                    known = {item.id for item in CATALOGUE}
+                    unknown = requested - known
+                    if unknown:
+                        raise ControlsError(
+                            "Unknown catalogue equations: "
+                            + ", ".join(sorted(unknown))
+                        )
+                    equations = [
+                        item for item in CATALOGUE if item.id in requested
+                    ]
+
                 for index, upload in enumerate(equation_pack):
-                    if not hasattr(upload, "read"):
-                        continue
-                    path = await _save_upload(upload, directory, f"equations-{index}.json")
+                    path, size = await _save_upload(
+                        upload,
+                        directory,
+                        f"equations-{index}",
+                        MAX_TOTAL_UPLOAD_BYTES - consumed,
+                    )
+                    consumed += size
                     equations.extend(load_equations(path))
-                    sources.append(upload.filename or path.name)
+                    sources.append(
+                        Path(upload.filename or path.name).name
+                    )
                 custom_document = json.loads(custom_equations)
                 if custom_document:
-                    path = directory / "inline-equations.json"
-                    path.write_text(json.dumps(custom_document), encoding="utf-8")
-                    equations.extend(load_equations(path))
+                    equations.extend(
+                        parse_equations(custom_document)
+                    )
                     sources.append("inline-equations")
 
-                result = analyze(records, equations=equations, sources=sources)
-                return JSONResponse(build_control_room(records, result))
-        except (ControlsError, OSError, json.JSONDecodeError, KeyError, TypeError, ValueError) as exc:
+                result = analyze(
+                    records,
+                    equations=equations,
+                    sources=sources,
+                )
+                return JSONResponse(
+                    build_control_room(
+                        records,
+                        result,
+                        currency=currency,
+                    )
+                )
+        except (
+            ControlsError,
+            OSError,
+            json.JSONDecodeError,
+            KeyError,
+            TypeError,
+            ValueError,
+        ) as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    app.mount("/", StaticFiles(directory=WEB_ROOT, html=True), name="web")
+    app.mount(
+        "/",
+        StaticFiles(directory=WEB_ROOT, html=True),
+        name="web",
+    )
     return app

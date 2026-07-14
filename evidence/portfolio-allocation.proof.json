@@ -1,9 +1,9 @@
 {
   "attestation": {
     "mode": "Ed25519",
-    "payload_sha256": "801c9be1e755060adb39eee7f877f18fb16231a1c85beaabf5ce0cd6245167c8",
+    "payload_sha256": "b4dfe14aed13fddd4f5ef295d8b1f4593b4cb02249359a5ac4f5f945df5f8aa4",
     "public_key_base64": "R1XeX/j66GjniFEO3QifAVCrfRerUf81Qr2/Wddlk9c=",
-    "signature_base64": "OOb+sIHUuIWYrI9GXqwNVFwPg5GXsm1CdEeO9eBkMYPYuBH7WaHcUcf+EcO/hi6B+bPDwFZ9bXt9iQVXVUodDw==",
+    "signature_base64": "hSi/Plnu3XGBi3Pq006fih7VSWkQPh9/gBifWJq3AuJr2Z+i71eTzTzAqq2PDEXoqtCpldd7+KSAkmC1UzbBAA==",
     "signer_fingerprint_sha256": "aab09c9a9e2586699021cba3d7e7d1e6300267e90c922b07fdd9eb3081199148",
     "trust_note": "Verification proves possession of this key. Identity requires an independently trusted fingerprint."
   },
@@ -136,7 +136,7 @@
         "rhs": 1.0,
         "satisfied": false,
         "source": "forecast_a + forecast_b + forecast_c == 1",
-        "violation": 0.10000000000000009
+        "violation": 0.1
       }
     ]
   },
@@ -146,14 +146,14 @@
     "max_iterations": 20000,
     "name": "EQ-Proof",
     "tolerance": 1e-10,
-    "version": "1.3.0"
+    "version": "1.4.0"
   },
   "proof_schema": "eq-proof/proof@1",
   "result": {
     "max_violation_after": 0.0,
-    "max_violation_before": 0.10000000000000009,
-    "movement_l2": 0.07071067811865478,
-    "objective_value": 0.002500000000000002,
+    "max_violation_before": 0.1,
+    "movement_l2": 0.0707106781186548,
+    "objective_value": 0.0025,
     "status": "repaired",
     "values": {
       "forecast_a": 0.5,

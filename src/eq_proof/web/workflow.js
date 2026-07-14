@@ -1,31 +1,59 @@
-function addCustomEquation() {
+'use strict';
+
+function buildEquationCandidate() {
   const expression = $('#customExpression').value.trim();
   const fields = $('#customFields').value.split(',').map((item) => item.trim()).filter(Boolean);
   if (!expression.match(/(==|<=|>=|<|>)/) || !fields.length) {
-    $('#editorStatus').textContent = 'Add one comparison and at least one required field.';
-    return;
+    throw new Error('Add exactly one comparison and at least one required field.');
   }
   const title = $('#customTitle').value.trim() || 'Custom control';
-  const id = `custom.${title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'equation'}_${state.customEquations.length + 1}`;
-  state.customEquations.push({
-    id, title, domain: 'custom', expression,
+  const base = title.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') || 'equation';
+  const existing = new Set(state.customEquations.map((item) => item.id));
+  let suffix = 1;
+  let id = `custom.${base}_${suffix}`;
+  while (existing.has(id)) { suffix += 1; id = `custom.${base}_${suffix}`; }
+  return {
+    id,
+    title,
+    domain: 'custom',
+    expression,
     severity: $('#customSeverity').value,
     description: 'User-authored project control.',
     remediation: $('#customRemediation').value.trim() || 'Review the source data and equation.',
     required_fields: fields,
     record_type: $('#customRecordType').value,
-  });
-  $('#editorStatus').textContent = `${title} added to the next analysis.`;
-  renderCustomEquations();
+  };
+}
+
+async function addCustomEquation() {
+  try {
+    const candidate = buildEquationCandidate();
+    if (state.apiAvailable) {
+      await fetchJson('./api/equations/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(candidate),
+      });
+    }
+    state.customEquations.push(candidate);
+    $('#editorStatus').textContent = state.apiAvailable
+      ? `${candidate.title} validated by the local engine and added to the next analysis.`
+      : `${candidate.title} added locally. Download the pack or validate it in the local app.`;
+    renderCustomEquations();
+  } catch (error) {
+    $('#editorStatus').textContent = error.message;
+  }
 }
 
 function selectedCatalogueIds() {
-  return $$('#catalogueGrid input[type="checkbox"]:checked').map((item) => item.dataset.equationId);
+  return [...(state.selectedCatalogueIds || new Set())];
 }
 
 function updateSelectedFiles() {
   const files = [...$('#p6Input').files, ...$('#costInput').files, ...$('#equationInput').files];
-  $('#selectedFiles').textContent = files.length ? files.map((file) => `${file.name} · ${(file.size / 1024).toFixed(1)} KiB`).join('  |  ') : 'No files selected.';
+  $('#selectedFiles').textContent = files.length
+    ? files.map((file) => `${file.name} · ${(file.size / 1024).toFixed(1)} KiB`).join('  |  ')
+    : 'No files selected.';
 }
 
 async function compileClose(event) {
@@ -46,13 +74,14 @@ async function compileClose(event) {
   [...$('#equationInput').files].forEach((file) => form.append('equation_pack', file));
   form.append('custom_equations', JSON.stringify(state.customEquations));
   form.append('catalogue_ids', selectedCatalogueIds().join(','));
+  const currency = $('#currencyInput').value.trim().toUpperCase();
+  if (!/^[A-Z]{3}$/.test(currency)) { $('#apiStatus').textContent = 'Enter a three-letter currency code such as USD or CAD.'; return; }
+  form.append('currency', currency);
   $('#compileButton').disabled = true;
   $('#compileButton').textContent = 'Compiling evidence…';
-  $('#apiStatus').textContent = 'Parsing sources, executing equations, reconstructing portfolio…';
+  $('#apiStatus').textContent = 'Hashing sources, executing equations, and reconstructing declared states…';
   try {
-    const response = await fetch('./api/analyze', { method: 'POST', body: form });
-    const payload = await response.json();
-    if (!response.ok) throw new Error(payload.detail || 'Analysis failed');
+    const payload = await fetchJson('./api/analyze', { method: 'POST', body: form });
     state.data = payload;
     $('#workspaceTitle').textContent = 'Uploaded monthly close';
     renderAll();
@@ -66,13 +95,27 @@ async function compileClose(event) {
   }
 }
 
-function exportExceptions() {
-  const headers = ['severity', 'record_type', 'record_id', 'equation_id', 'title', 'residual', 'impact_metric', 'remediation'];
-  const rows = [headers.join(','), ...(state.data.exceptions || []).map((item) => headers.map((key) => escapeCsv(item[key])).join(','))];
-  const blob = new Blob([`${rows.join('\n')}\n`], { type: 'text/csv' });
+function downloadBlob(content, type, filename) {
+  const blob = new Blob([content], { type });
   const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob); link.download = 'eq-proof-exceptions.csv'; link.click();
-  URL.revokeObjectURL(link.href);
+  const url = URL.createObjectURL(blob);
+  link.href = url; link.download = filename; link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+function exportExceptions() {
+  const headers = ['severity', 'record_type', 'record_id', 'equation_id', 'title', 'residual', 'residual_state', 'impact_metric', 'remediation'];
+  const rows = [headers.join(','), ...(state.data.exceptions || []).map((item) => headers.map((key) => csvCell(item[key])).join(','))];
+  downloadBlob(`${rows.join('\n')}\n`, 'text/csv', 'eq-proof-exceptions.csv');
+}
+
+function exportEquationPack() {
+  if (!state.customEquations.length) {
+    $('#editorStatus').textContent = 'Add at least one custom equation before downloading a pack.';
+    return;
+  }
+  downloadBlob(`${JSON.stringify(state.customEquations, null, 2)}\n`, 'application/json', 'eq-proof-equations.json');
+  $('#editorStatus').textContent = `Downloaded ${state.customEquations.length} equation${state.customEquations.length === 1 ? '' : 's'}.`;
 }
 
 function activateTab(name) {
@@ -83,6 +126,14 @@ function activateTab(name) {
 
 function openUpload() {
   $('#uploadDialog').showModal();
+  setRuntimeMode();
+}
+
+function updateExceptionFilters() {
+  state.exceptionFilters.search = $('#exceptionSearch').value.trim();
+  state.exceptionFilters.severity = $('#exceptionSeverity').value;
+  state.exceptionFilters.domain = $('#exceptionDomain').value;
+  renderExceptions();
 }
 
 async function init() {
@@ -94,8 +145,10 @@ async function init() {
   $$('.info-button').forEach((button) => button.addEventListener('click', () => inspectMetric(button.dataset.inspect)));
   $('#inspectorClose').addEventListener('click', closeInspector);
   $('#addEquationButton').addEventListener('click', addCustomEquation);
+  $('#downloadEquationPack').addEventListener('click', exportEquationPack);
   $('#analysisForm').addEventListener('submit', compileClose);
   ['#p6Input', '#costInput', '#equationInput'].forEach((selector) => $(selector).addEventListener('change', updateSelectedFiles));
+  ['#exceptionSearch', '#exceptionSeverity', '#exceptionDomain'].forEach((selector) => $(selector).addEventListener('input', updateExceptionFilters));
   $('#downloadExceptions').addEventListener('click', exportExceptions);
 }
 

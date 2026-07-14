@@ -7,6 +7,7 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'; form-action 'self'">
   <title>EQ-Proof Control Room</title>
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./refinements.css">
 </head>
 <body>
   <div class="ambient ambient-one"></div>
@@ -28,7 +29,7 @@
       <div class="hero-copy">
         <p class="eyebrow">Project-controls assurance, compiled</p>
         <h1>Find the surprise <span>before the executive meeting.</span></h1>
-        <p class="hero-text">Drop in the files behind the monthly close. EQ-Proof reconstructs the reported position, exposes unsupported forecast and baseline movement, and traces every material exception to its source equation.</p>
+        <p class="hero-text">Drop in the files behind the monthly close. EQ-Proof separates deterministic forecast contradictions from declared change and risk exposure, then traces every material exception to its source equation.</p>
         <div class="hero-actions">
           <button class="button button-primary button-large" id="runDemoButton" type="button">Open hyperscale demo</button>
           <button class="button button-secondary button-large" id="heroUploadButton" type="button">Use P6 + cost exports</button>
@@ -43,8 +44,8 @@
           <div class="preview-grid">
             <div class="preview-gate"><small>EXECUTIVE GATE</small><strong>CLOSE BLOCKED</strong><span>3 governance blockers</span></div>
             <div class="preview-metric"><small>REPORTED EAC</small><strong>$407M</strong></div>
-            <div class="preview-metric hot"><small>DEFENSIBLE P80</small><strong>$483M</strong></div>
-            <div class="preview-exposure"><small>HIDDEN EXPOSURE</small><strong>$76M</strong><div class="mini-route"><b></b><b></b><b></b><b></b></div></div>
+            <div class="preview-metric hot"><small>DETERMINISTIC GAP</small><strong>$11M</strong></div>
+            <div class="preview-exposure"><small>EXPOSURE ABOVE REPORTED</small><strong>$76M</strong><div class="mini-route"><b></b><b></b><b></b><b></b></div></div>
           </div>
         </div>
       </div>
@@ -52,21 +53,14 @@
 
     <section class="workspace-shell" id="workspace">
       <div class="workspace-heading">
-        <div>
-          <p class="eyebrow">Decision cockpit</p>
-          <h2 id="workspaceTitle">Hyperscale monthly close</h2>
-        </div>
+        <div><p class="eyebrow">Decision cockpit</p><h2 id="workspaceTitle">Hyperscale monthly close</h2></div>
         <div class="source-strip" id="sourceStrip"></div>
       </div>
 
       <section class="gate-card blocked" id="gateCard">
-        <div class="gate-copy">
-          <p>EXECUTIVE CLOSE GATE</p>
-          <h3 id="gateLabel">CLOSE BLOCKED</h3>
-          <span id="gateHeadline">Compiling evidence…</span>
-        </div>
-        <div class="confidence-ring" id="confidenceRing" aria-label="Forecast confidence score">
-          <span id="confidenceValue">—</span><small>confidence</small>
+        <div class="gate-copy"><p>EXECUTIVE CLOSE GATE</p><h3 id="gateLabel">CLOSE BLOCKED</h3><span id="gateHeadline">Compiling evidence…</span></div>
+        <div class="confidence-ring" id="assuranceRing" aria-label="Control assurance score">
+          <span id="assuranceValue">—</span><small>assurance</small>
         </div>
         <div class="gate-counts">
           <div><strong id="blockerCount">—</strong><span>blockers</span></div>
@@ -74,27 +68,24 @@
           <div><strong id="recordCount">—</strong><span>records</span></div>
         </div>
       </section>
+      <p class="assurance-note" id="assuranceNote">The assurance score is a transparent severity heuristic, not a probability.</p>
 
       <section class="metric-grid" aria-label="Portfolio reconstruction">
         <article class="metric-card">
           <div class="metric-label">Reported EAC <button class="info-button" data-inspect="reported_eac" aria-label="Explain reported EAC">?</button></div>
-          <strong id="reportedEac">—</strong>
-          <span>What the submitted close claims</span>
+          <strong id="reportedEac">—</strong><span>What the submitted close claims</span>
         </article>
         <article class="metric-card">
           <div class="metric-label">Defensible EAC <button class="info-button" data-inspect="defensible_eac" aria-label="Explain defensible EAC">?</button></div>
-          <strong id="defensibleEac">—</strong>
-          <span>Actual cost + remaining forecast</span>
-        </article>
-        <article class="metric-card">
-          <div class="metric-label">Defensible P80 <button class="info-button" data-inspect="defensible_p80" aria-label="Explain defensible P80">?</button></div>
-          <strong id="defensibleP80">—</strong>
-          <span>Governed forecast + change + risk</span>
+          <strong id="defensibleEac">—</strong><span>Actual cost + remaining forecast</span>
         </article>
         <article class="metric-card exposure-card">
-          <div class="metric-label">Hidden exposure <button class="info-button" data-inspect="hidden_exposure" aria-label="Explain hidden exposure">?</button></div>
-          <strong id="hiddenExposure">—</strong>
-          <span>Risk-adjusted position above reported EAC</span>
+          <div class="metric-label">Deterministic gap <button class="info-button" data-inspect="deterministic_forecast_gap" aria-label="Explain deterministic forecast gap">?</button></div>
+          <strong id="deterministicGap">—</strong><span>Governed AC + ETC minus reported EAC</span>
+        </article>
+        <article class="metric-card">
+          <div class="metric-label">Risk-adjusted position <button class="info-button" data-inspect="risk_adjusted_position" aria-label="Explain risk-adjusted position">?</button></div>
+          <strong id="riskAdjustedPosition">—</strong><span>Declared change + configured risk uplift; not a simulation</span>
         </article>
       </section>
 
@@ -108,16 +99,11 @@
       <section class="tab-panel active" id="panel-overview" role="tabpanel">
         <div class="two-column">
           <article class="panel">
-            <div class="panel-heading">
-              <div><p class="eyebrow">Variance intelligence</p><h3>Where the exposure comes from</h3></div>
-              <span class="panel-badge" id="contributionCount">0 accounts</span>
-            </div>
+            <div class="panel-heading"><div><p class="eyebrow">Variance intelligence</p><h3>Where the exposure comes from</h3></div><span class="panel-badge" id="contributionCount">0 accounts</span></div>
             <div class="contribution-list" id="contributionList"></div>
           </article>
           <article class="panel">
-            <div class="panel-heading">
-              <div><p class="eyebrow">Cross-domain health</p><h3>Control failures by system</h3></div>
-            </div>
+            <div class="panel-heading"><div><p class="eyebrow">Cross-domain health</p><h3>Control failures by system</h3></div></div>
             <div class="domain-grid" id="domainGrid"></div>
             <div class="reconstruction-bridge" id="reconstructionBridge"></div>
           </article>
@@ -126,23 +112,23 @@
 
       <section class="tab-panel" id="panel-graph" role="tabpanel">
         <article class="panel graph-panel">
-          <div class="panel-heading">
-            <div><p class="eyebrow">Executable lineage</p><h3>Source → equation → executive impact</h3></div>
-            <span class="panel-badge">Click any node</span>
-          </div>
+          <div class="panel-heading"><div><p class="eyebrow">Executable lineage</p><h3>Source → equation → declared impact</h3></div><span class="panel-badge" id="graphLimitBadge">Click any node</span></div>
           <div class="graph-stage" id="graphStage"><svg id="evidenceGraph" role="img" aria-label="Evidence lineage graph"></svg></div>
         </article>
       </section>
 
       <section class="tab-panel" id="panel-exceptions" role="tabpanel">
         <article class="panel">
-          <div class="panel-heading">
-            <div><p class="eyebrow">Action register</p><h3>Ranked by severity and materiality</h3></div>
-            <button class="button button-quiet" id="downloadExceptions" type="button">Export CSV</button>
+          <div class="panel-heading"><div><p class="eyebrow">Action register</p><h3>Ranked by severity and materiality</h3></div><button class="button button-quiet" id="downloadExceptions" type="button">Export CSV</button></div>
+          <div class="exception-filters" aria-label="Exception filters">
+            <label>Search<input id="exceptionSearch" type="search" placeholder="record, equation, action…"></label>
+            <label>Severity<select id="exceptionSeverity"><option value="all">All</option><option>blocker</option><option>major</option><option>minor</option><option>info</option></select></label>
+            <label>Domain<select id="exceptionDomain"><option value="all">All</option></select></label>
+            <span id="exceptionFilterCount"></span>
           </div>
           <div class="exception-table-wrap">
             <table class="exception-table">
-              <thead><tr><th>Severity</th><th>Source record</th><th>Control</th><th>Residual</th><th>Executive impact</th><th>Required action</th></tr></thead>
+              <thead><tr><th>Severity</th><th>Source record</th><th>Control</th><th>Residual</th><th>Declared impact</th><th>Required action</th></tr></thead>
               <tbody id="exceptionRows"></tbody>
             </table>
           </div>
@@ -152,16 +138,11 @@
       <section class="tab-panel" id="panel-equations" role="tabpanel">
         <div class="two-column equation-layout">
           <article class="panel">
-            <div class="panel-heading">
-              <div><p class="eyebrow">Tested controls</p><h3>Equation catalogue</h3></div>
-              <span class="panel-badge" id="equationCount">Loading…</span>
-            </div>
+            <div class="panel-heading"><div><p class="eyebrow">Tested controls</p><h3>Equation catalogue</h3></div><span class="panel-badge" id="equationCount">Loading…</span></div>
             <div class="catalogue-grid" id="catalogueGrid"></div>
           </article>
           <article class="panel equation-editor">
-            <div class="panel-heading">
-              <div><p class="eyebrow">Project-specific governance</p><h3>Write your own equation</h3></div>
-            </div>
+            <div class="panel-heading"><div><p class="eyebrow">Project-specific governance</p><h3>Write your own equation</h3></div></div>
             <label>Control name<input id="customTitle" value="EAC remains inside delegated authorization"></label>
             <label>Equation<input id="customExpression" class="code-input" value="EAC &lt;= delegated_authorization" spellcheck="false"></label>
             <div class="field-row">
@@ -170,8 +151,11 @@
             </div>
             <label>Required fields<input id="customFields" class="code-input" value="EAC, delegated_authorization" spellcheck="false"></label>
             <label>Required action<textarea id="customRemediation">Supply approved authority or escalate the forecast before close.</textarea></label>
-            <button class="button button-primary" id="addEquationButton" type="button">Add to next analysis</button>
-            <div class="editor-status" id="editorStatus">Safe expression mode: arithmetic, comparisons, and allow-listed functions only.</div>
+            <div class="equation-actions">
+              <button class="button button-primary" id="addEquationButton" type="button">Validate and add</button>
+              <button class="button button-quiet" id="downloadEquationPack" type="button">Download equation pack</button>
+            </div>
+            <div class="editor-status" id="editorStatus">Safe expression mode: arithmetic, one comparison, declared fields, and allow-listed functions.</div>
             <div class="custom-list" id="customEquationList"></div>
           </article>
         </div>
@@ -181,34 +165,24 @@
 
   <aside class="inspector" id="inspector" aria-hidden="true">
     <button class="inspector-close" id="inspectorClose" type="button" aria-label="Close inspector">×</button>
-    <p class="eyebrow" id="inspectorEyebrow">Evidence</p>
-    <h3 id="inspectorTitle">Select a metric or graph node</h3>
-    <div id="inspectorBody"></div>
+    <p class="eyebrow" id="inspectorEyebrow">Evidence</p><h3 id="inspectorTitle">Select a metric or graph node</h3><div id="inspectorBody"></div>
   </aside>
 
   <dialog class="upload-dialog" id="uploadDialog">
     <form method="dialog" class="dialog-shell" id="analysisForm">
-      <div class="dialog-heading">
-        <div><p class="eyebrow">Local analysis</p><h2>Compile your monthly close</h2><span>Files stay on the local server running EQ-Proof.</span></div>
-        <button class="dialog-close" value="cancel" aria-label="Close">×</button>
-      </div>
+      <div class="dialog-heading"><div><p class="eyebrow">Local analysis</p><h2>Compile your monthly close</h2><span>Files stay inside the loopback-only EQ-Proof process.</span></div><button class="dialog-close" value="cancel" aria-label="Close">×</button></div>
       <div class="drop-grid">
         <label class="drop-card"><strong>Primavera P6</strong><span>One or more .xer schedule exports</span><input id="p6Input" type="file" accept=".xer" multiple></label>
-        <label class="drop-card"><strong>Cost controls</strong><span>CSV export from EcoSys, SAP, Oracle, Cobra, Excel…</span><input id="costInput" type="file" accept=".csv" multiple></label>
+        <label class="drop-card"><strong>Cost controls</strong><span>Generic CSV with mapped controls fields</span><input id="costInput" type="file" accept=".csv" multiple></label>
         <label class="drop-card"><strong>Equation pack</strong><span>Optional project or client JSON controls</span><input id="equationInput" type="file" accept=".json" multiple></label>
       </div>
       <div class="selected-files" id="selectedFiles">No files selected.</div>
-      <div class="dialog-footer">
-        <span id="apiStatus">Checking local analysis service…</span>
-        <button class="button button-primary button-large" id="compileButton" type="submit" value="default">Compile close</button>
-      </div>
+      <label class="currency-field">Currency code<input id="currencyInput" value="USD" maxlength="3" pattern="[A-Za-z]{3}" aria-label="Three-letter currency code"></label>
+      <div class="dialog-footer"><span id="apiStatus">Checking local analysis service…</span><button class="button button-primary button-large" id="compileButton" type="submit" value="default">Compile close</button></div>
     </form>
   </dialog>
 
-  <footer>
-    <strong>EQ-Proof Control Room</strong>
-    <span>Project-controls equations · P6 ingestion · deterministic evidence · no telemetry</span>
-  </footer>
+  <footer><strong>EQ-Proof Control Room</strong><span>Project-controls equations · P6 ingestion · deterministic evidence · no telemetry</span></footer>
   <script src="./app.js" defer></script>
 </body>
 </html>

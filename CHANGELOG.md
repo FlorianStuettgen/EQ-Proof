@@ -1,6 +1,36 @@
 # Changelog
 
-All notable changes are documented here. The project follows semantic versioning for the Python package; proof and specification contracts are versioned independently inside artifacts.
+All notable changes are documented here. The Python package follows semantic versioning; proof, specification and Control Room payload contracts are versioned independently when their semantics change.
+
+## 1.4.0 — 2026-07-14
+
+### Changed
+
+- Replaced the ambiguous `$76M hidden exposure` claim with separate deterministic, declared-exposure and risk-adjusted reconciliation states.
+- Renamed `Defensible P80` to `Reconstructed risk-adjusted position`; deterministic addition is no longer presented as a probabilistic percentile calculation.
+- Introduced `eq-proof/control-room@2` and an authoritative semantic model.
+- Added distinct `blocked`, `review`, and `ready` gate states plus configurable CLI failure thresholds.
+- Routed schedule findings to schedule assurance rather than inventing dollar impacts.
+- Made incomplete submitted risk-adjusted coverage explicit instead of summing misleading partial totals.
+- Replaced legacy browser modules with purpose-named renderer and workflow modules.
+- Normalized computed proof outputs to 15 significant digits before attestation, eliminating one-ULP evidence drift across supported numerical environments while preserving submitted and specification values exactly.
+- Advanced the lower proof engine implementation version to `1.4.0` without changing `proof@1` or `dykstra-l2-v1`; existing artifacts remain verifiable.
+
+### Added
+
+- Source SHA-256 manifest and complete equation manifest in analysis outputs.
+- `control-room.json` CLI output, explicit currency labels, equation validation endpoint and downloadable equation packs.
+- Optional equation applicability predicates.
+- Exception filters, graph truncation reporting and static-versus-local UX boundaries.
+- Tests for malformed equations, resource limits, incomplete summaries, non-finite arithmetic, trusted hosts, CSV formula injection, semantic routing and one-ULP proof stability.
+- CI failure artifacts containing exact deterministic-evidence drift for reproducibility debugging.
+
+### Security
+
+- Loopback-only host choices and trusted-host enforcement.
+- 200 MiB aggregate request and 20-file limits in addition to the 50 MiB per-file limit.
+- Equation-count, expression-size, AST-node and adapter-row limits.
+- JSON-safe non-finite findings and spreadsheet-formula neutralization in CSV exports.
 
 ## 1.3.0 — 2026-07-14
 
@@ -17,10 +47,9 @@ All notable changes are documented here. The project follows semantic versioning
 
 ### Changed
 
-- `eq-controls serve` now launches the real-file browser application on loopback.
+- `eq-controls serve` launches the real-file browser application on loopback.
 - The repository's primary product positioning is project-controls close assurance.
-- Public evidence now reconstructs a deterministic $76M hidden-exposure scenario.
-- Package version, proof engine version, signed evidence, and documentation advance to 1.3.0.
+- Package version and documentation advanced to 1.3.0; the numerical proof artifact remained independently versioned where its contract did not change.
 
 ### Security
 
@@ -50,7 +79,7 @@ All notable changes are documented here. The project follows semantic versioning
 
 ### Changed
 
-- Proofs now record objective value, maximum iteration budget, and stable algorithm identifier.
+- Proofs record objective value, maximum iteration budget, and stable algorithm identifier.
 - Verification distinguishes integrity, authenticity, and semantic correctness.
 - Unknown configuration fields and Python-keyword variable names are rejected.
 - Syntax complexity limits support legitimate higher-dimensional linear models while retaining abuse controls.
