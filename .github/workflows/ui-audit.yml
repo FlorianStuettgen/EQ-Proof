@@ -7,6 +7,7 @@ on:
       - "tests/ui/**"
       - "tests/browser-engine.test.js"
       - "package.json"
+      - "package-lock.json"
       - "playwright.config.js"
       - ".github/workflows/ui-audit.yml"
   push:
@@ -16,6 +17,7 @@ on:
       - "tests/ui/**"
       - "tests/browser-engine.test.js"
       - "package.json"
+      - "package-lock.json"
       - "playwright.config.js"
       - ".github/workflows/ui-audit.yml"
   workflow_dispatch:
@@ -65,6 +67,7 @@ jobs:
             playwright-report
             test-results
             build/diagnostics/npm-audit.json
+            package-lock.json
           if-no-files-found: ignore
           retention-days: 14
 
