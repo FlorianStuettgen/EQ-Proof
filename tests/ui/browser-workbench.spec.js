@@ -6,10 +6,6 @@ async function loadWorkbench(page) {
   await expect(page.locator('#gateCard')).toHaveAttribute('aria-busy', 'false');
 }
 
-test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.removeItem('eq-proof/browser-workspace@1'));
-});
-
 test('hosted dialog accepts files and states the local-only boundary', async ({ page }) => {
   await loadWorkbench(page);
   await expect(page.locator('#uploadButton')).toHaveText('Analyze files');
