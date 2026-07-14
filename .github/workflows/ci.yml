@@ -35,6 +35,7 @@ jobs:
           node --check src/eq_proof/web/renderers.js
           node --check src/eq_proof/web/workflow.js
           node --check src/eq_proof/web/showcase.js
+          node --check src/eq_proof/web/audit.js
       - name: Build wheel
         run: python -m pip wheel . --no-deps -w dist
 
