@@ -45,6 +45,7 @@ function renderCustomEquations() {
     const remove = document.createElement('button');
     remove.type = 'button';
     remove.textContent = 'remove';
+    remove.setAttribute('aria-label', `Remove ${item.title}`);
     remove.addEventListener('click', () => {
       state.customEquations.splice(index, 1);
       renderCustomEquations();
@@ -211,6 +212,10 @@ function renderGraph() {
     group.setAttribute('transform', `translate(${pos.x} ${pos.y})`);
     group.setAttribute('tabindex', '0');
     group.setAttribute('role', 'button');
+    group.setAttribute(
+      'aria-label',
+      `Inspect ${node.kind} node ${node.label}${node.equation_id ? `, ${node.equation_id}` : ''}`,
+    );
     const rect = document.createElementNS(ns, 'rect');
     rect.setAttribute('width', pos.width);
     rect.setAttribute('height', pos.height);
@@ -231,7 +236,10 @@ function renderGraph() {
     const inspect = () => inspectGraphNode(node);
     group.addEventListener('click', inspect);
     group.addEventListener('keydown', (event) => {
-      if (event.key === 'Enter' || event.key === ' ') inspect();
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        inspect();
+      }
     });
     svg.append(group);
   }
