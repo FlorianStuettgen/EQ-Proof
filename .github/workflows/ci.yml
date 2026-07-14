@@ -30,7 +30,10 @@ jobs:
       - name: Compile all modules
         run: python -m compileall -q src
       - name: Validate browser JavaScript
-        run: node --check src/eq_proof/web/app.js && node --check src/eq_proof/web/app-2.js && node --check src/eq_proof/web/app-3.js
+        run: |
+          node --check src/eq_proof/web/app.js
+          node --check src/eq_proof/web/renderers.js
+          node --check src/eq_proof/web/workflow.js
       - name: Build wheel
         run: python -m pip wheel . --no-deps -w dist
 
@@ -67,21 +70,36 @@ jobs:
           eq-controls analyze \
             --p6-xer examples/hyperscale_close/schedule.xer \
             --cost-csv examples/hyperscale_close/cost.csv \
-            --output /tmp/hyperscale-close
+            --equations examples/hyperscale_close/custom_equations.json \
+            --output /tmp/hyperscale-close \
+            --currency USD
           status=$?
           set -e
           test "$status" -eq 3
           test -s /tmp/hyperscale-close/analysis.json
           test -s /tmp/hyperscale-close/exceptions.csv
+          test -s /tmp/hyperscale-close/control-room.json
           grep -q 'cost.eac_identity' /tmp/hyperscale-close/exceptions.csv
           grep -q 'schedule.progress_duration' /tmp/hyperscale-close/exceptions.csv
+          grep -q 'schedule.extreme_negative_float' /tmp/hyperscale-close/exceptions.csv
       - name: Verify public Control Room evidence
         run: |
           python - <<'PY'
           import json
           from pathlib import Path
+
           payload = json.loads(Path('src/eq_proof/web/demo-data.json').read_text())
-          assert payload['portfolio']['hidden_exposure'] == 76_000_000
+          assert payload['schema_version'] == 'eq-proof/control-room@2'
+          assert payload['units']['currency'] == 'USD'
+          assert payload['portfolio']['reported_eac'] == 407_000_000
+          assert payload['portfolio']['defensible_eac'] == 418_000_000
+          assert payload['portfolio']['deterministic_forecast_gap'] == 11_000_000
+          assert payload['portfolio']['configured_change_and_risk'] == 65_000_000
+          assert payload['portfolio']['reconstructed_risk_adjusted_eac'] == 483_000_000
+          assert payload['portfolio']['risk_adjusted_reconciliation_gap'] == 11_000_000
+          assert payload['portfolio']['exposure_above_reported_eac'] == 76_000_000
+          assert payload['assurance']['calibrated_probability'] is False
           assert payload['gate']['status'] == 'blocked'
+          assert payload['graph']['limits']['truncated'] is False
           assert len(payload['graph']['nodes']) >= 10
           PY
