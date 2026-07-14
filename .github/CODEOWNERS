@@ -1,0 +1,13 @@
+# Default ownership
+* @FlorianStuettgen
+
+# Product surface and deployment
+/src/eq_proof/web/ @FlorianStuettgen
+/.github/workflows/ @FlorianStuettgen
+
+# Semantic and evidence contracts
+/src/eq_proof/control_room.py @FlorianStuettgen
+/src/eq_proof/proof.py @FlorianStuettgen
+/docs/SEMANTIC_MODEL.md @FlorianStuettgen
+/docs/PRODUCT_ARCHITECTURE.md @FlorianStuettgen
+/evidence/ @FlorianStuettgen
