@@ -2,8 +2,9 @@
   "name": "eq-proof-ui-audit",
   "private": true,
   "version": "1.0.0",
-  "description": "Browser-level functional, accessibility, and responsive audit for the EQ-Proof Control Room.",
+  "description": "Browser-level functional, accessibility and responsive assurance for the EQ-Proof Control Room.",
   "scripts": {
+    "test:browser-engine": "node --test tests/browser-engine.test.js",
     "test:ui": "playwright test"
   },
   "devDependencies": {

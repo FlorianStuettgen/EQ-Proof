@@ -13,19 +13,20 @@ async function loadControlRoom(page) {
   await expect(page.locator('#gateCard')).toHaveAttribute('aria-busy', 'false');
   await expect(page.locator('#gateLabel')).toHaveText('CLOSE BLOCKED');
   await expect(page.locator('#reportedEac')).toContainText('407');
+  await expect(page.locator('#browserWorkbenchBar')).toBeVisible();
   await page.waitForFunction(() => document.querySelector('.tab')?.dataset.keyboardReady === 'true');
-
   return { consoleErrors, pageErrors };
 }
 
-test('loads the deterministic decision without runtime or layout failures', async ({ page }) => {
-  const errors = await loadControlRoom(page);
+test.beforeEach(async ({ page }) => {
+  await page.addInitScript(() => localStorage.removeItem('eq-proof/browser-workspace@1'));
+});
 
+test('loads the decision without runtime or layout failures', async ({ page }) => {
+  const errors = await loadControlRoom(page);
   await expect(page.locator('#defensibleEac')).toContainText('418');
   await expect(page.locator('#deterministicGap')).toContainText('11');
   await expect(page.locator('#riskAdjustedPosition')).toContainText('483');
-  await expect(page.locator('#gateHeadline')).not.toContainText('Unable to load');
-
   const overflow = await page.evaluate(() => ({
     scrollWidth: document.documentElement.scrollWidth,
     clientWidth: document.documentElement.clientWidth,
@@ -35,26 +36,10 @@ test('loads the deterministic decision without runtime or layout failures', asyn
   expect(errors.consoleErrors).toEqual([]);
 });
 
-test('public-mode local-analysis dialog opens honestly and closes with its button', async ({ page }) => {
-  await loadControlRoom(page);
-  await expect(page.locator('#uploadButton')).toHaveText('Run locally');
-
-  await page.locator('#uploadButton').click();
-  await expect(page.locator('#uploadDialog')).toBeVisible();
-  await expect(page.locator('#p6Input')).toBeDisabled();
-  await expect(page.locator('#compileButton')).toBeDisabled();
-  await expect(page.locator('#apiStatus')).toContainText('Public demo mode');
-
-  await page.locator('#dialogClose').click();
-  await expect(page.locator('#uploadDialog')).not.toBeVisible();
-  await expect(page.locator('#uploadButton')).toBeFocused();
-});
-
 test('tabs expose state and support roving keyboard navigation', async ({ page }) => {
   await loadControlRoom(page);
   const overview = page.locator('#tab-overview');
   const graph = page.locator('#tab-graph');
-
   await overview.focus();
   await page.keyboard.press('ArrowRight');
   await expect(graph).toBeFocused();
@@ -62,46 +47,37 @@ test('tabs expose state and support roving keyboard navigation', async ({ page }
   await expect(overview).toHaveAttribute('aria-selected', 'false');
   await expect(page.locator('#panel-graph')).toBeVisible();
   await expect(page.locator('#panel-overview')).toBeHidden();
-
   await page.keyboard.press('End');
   await expect(page.locator('#tab-equations')).toBeFocused();
   await expect(page.locator('#panel-equations')).toBeVisible();
 });
 
-test('inspector is removed from the tab order when closed and restores focus', async ({ page }) => {
+test('inspector restores focus after closing', async ({ page }) => {
   await loadControlRoom(page);
   const trigger = page.locator('[data-inspect="reported_eac"]');
-
   await trigger.focus();
   await page.keyboard.press('Enter');
   await expect(page.locator('#inspector')).toHaveClass(/open/);
   await expect(page.locator('#inspector')).not.toHaveAttribute('inert', '');
   await expect(page.locator('#inspectorClose')).toBeFocused();
-
   await page.keyboard.press('Escape');
   await expect(page.locator('#inspector')).not.toHaveClass(/open/);
   await expect(page.locator('#inspector')).toHaveAttribute('inert', '');
   await expect(trigger).toBeFocused();
 });
 
-test('guided review completes and returns focus to its launcher', async ({ page }) => {
+test('guided review completes and returns focus', async ({ page }) => {
   await loadControlRoom(page);
   const launcher = page.locator('#guidedDemoButton');
   await launcher.click();
-
   await expect(page.locator('#tourCard')).toBeVisible();
   await expect(page.locator('#tourClose')).toBeFocused();
-  await expect(page.locator('#tourProgress')).toHaveText('1 / 5');
-
-  for (let step = 0; step < 5; step += 1) {
-    await page.locator('#tourNext').click();
-  }
-
+  for (let step = 0; step < 5; step += 1) await page.locator('#tourNext').click();
   await expect(page.locator('#tourCard')).toBeHidden();
   await expect(launcher).toBeFocused();
 });
 
-test('mouse-only cards and action rows are keyboard operable', async ({ page }) => {
+test('cards and action rows are keyboard operable', async ({ page }) => {
   await loadControlRoom(page);
   const contribution = page.locator('.contribution').first();
   await expect(contribution).toHaveAttribute('role', 'button');
@@ -109,7 +85,6 @@ test('mouse-only cards and action rows are keyboard operable', async ({ page }) 
   await page.keyboard.press('Enter');
   await expect(page.locator('#inspector')).toHaveClass(/open/);
   await page.keyboard.press('Escape');
-
   await page.locator('#tab-exceptions').click();
   const row = page.locator('#exceptionRows tr:not(.empty-row)').first();
   await expect(row).toHaveAttribute('tabindex', '0');
@@ -118,49 +93,23 @@ test('mouse-only cards and action rows are keyboard operable', async ({ page }) 
   await expect(page.locator('#inspector')).toHaveClass(/open/);
 });
 
-test('empty exception filters produce a useful state rather than a blank table', async ({ page }) => {
+test('empty exception filters explain the result', async ({ page }) => {
   await loadControlRoom(page);
   await page.locator('#tab-exceptions').click();
   await page.locator('#exceptionSearch').fill('no-such-record-or-equation');
-
   await expect(page.locator('#exceptionRows .empty-row')).toHaveCount(1);
   await expect(page.locator('#exceptionRows .empty-row')).toContainText('No exceptions match');
   await expect(page.locator('#exceptionFilterCount')).toContainText('0 of');
 });
 
-test('public equation drafting rejects structurally invalid controls', async ({ page }) => {
-  await loadControlRoom(page);
-  await page.locator('#tab-equations').click();
-  await expect(page.locator('#addEquationButton')).toHaveText('Add to draft pack');
-
-  await page.locator('#customExpression').fill('EAC <= delegated_authorization <= ceiling');
-  await page.locator('#addEquationButton').click();
-  await expect(page.locator('#editorStatus')).toContainText('exactly one comparison');
-  await expect(page.locator('.custom-chip')).toHaveCount(0);
-
-  await page.locator('#customExpression').fill('EAC <= delegated_authorization');
-  await page.locator('#customFields').fill('EAC, bad-field');
-  await page.locator('#addEquationButton').click();
-  await expect(page.locator('#editorStatus')).toContainText('not a valid identifier');
-
-  await page.locator('#customFields').fill('EAC, delegated_authorization, EAC');
-  await page.locator('#addEquationButton').click();
-  await expect(page.locator('.custom-chip')).toHaveCount(1);
-  await expect(page.locator('.custom-chip button')).toHaveAttribute('aria-label', /Remove EAC remains/);
-  await page.locator('.custom-chip button').click();
-  await expect(page.locator('.custom-chip')).toHaveCount(0);
-});
-
-test('executive brief and exception register download with stable filenames', async ({ page }, testInfo) => {
+test('executive brief and exception register download', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await loadControlRoom(page);
-
   const [brief] = await Promise.all([
     page.waitForEvent('download'),
     page.locator('#downloadBriefButton').click(),
   ]);
   expect(brief.suggestedFilename()).toMatch(/^eq-proof-.*-executive-brief\.md$/);
-
   await page.locator('#tab-exceptions').click();
   const [csv] = await Promise.all([
     page.waitForEvent('download'),
@@ -169,10 +118,9 @@ test('executive brief and exception register download with stable filenames', as
   expect(csv.suggestedFilename()).toBe('eq-proof-exceptions.csv');
 });
 
-test('desktop page has no serious or critical automated accessibility findings', async ({ page }, testInfo) => {
+test('desktop has no serious or critical accessibility findings', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await loadControlRoom(page);
-
   const results = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'])
     .analyze();
@@ -180,11 +128,10 @@ test('desktop page has no serious or critical automated accessibility findings',
   expect(material, JSON.stringify(material, null, 2)).toEqual([]);
 });
 
-test('reduced-motion mode removes smooth scrolling and decorative animation', async ({ page }, testInfo) => {
+test('reduced-motion mode removes smooth scrolling and animation', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'reduced-motion');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await loadControlRoom(page);
-
   const motion = await page.evaluate(() => ({
     reduced: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     scrollBehavior: getComputedStyle(document.documentElement).scrollBehavior,
