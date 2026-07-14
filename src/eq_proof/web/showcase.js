@@ -7,6 +7,21 @@ function moneyFromPortfolio(name, fallback = null) {
   return formatMoney(portfolioValue(name, fallback));
 }
 
+function syncShowcaseSummary() {
+  if (!state.data) return;
+  const values = {
+    showcaseReported: moneyFromPortfolio('reported_eac'),
+    showcaseDefensible: moneyFromPortfolio('defensible_eac'),
+    showcaseGap: moneyFromPortfolio('deterministic_forecast_gap', 'deterministic_gap'),
+    showcaseRiskAdjusted: moneyFromPortfolio('reconstructed_risk_adjusted_eac', 'defensible_p80'),
+    showcaseExposure: moneyFromPortfolio('exposure_above_reported_eac', 'hidden_exposure'),
+  };
+  Object.entries(values).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  });
+}
+
 function highestExposureAccount() {
   return [...(state.data?.surprise?.contributions || [])].sort(
     (left, right) => Math.abs(
@@ -80,7 +95,7 @@ function clearTourFocus() {
 }
 
 function showTourStep(index) {
-  if (!state.data) return;
+  if (!state.data || typeof activateTab !== 'function') return;
   tourIndex = Math.max(0, Math.min(index, tourSteps.length - 1));
   const step = tourSteps[tourIndex];
   if (step.tab) activateTab(step.tab);
@@ -100,7 +115,7 @@ function showTourStep(index) {
 }
 
 function startTour() {
-  if (!state.data) return;
+  if (!state.data || typeof activateTab !== 'function') return;
   tourOpen = true;
   $('#tourCard').hidden = false;
   showTourStep(0);
@@ -110,7 +125,7 @@ function closeTour() {
   tourOpen = false;
   $('#tourCard').hidden = true;
   clearTourFocus();
-  closeInspector();
+  if (typeof closeInspector === 'function') closeInspector();
 }
 
 function nextTourStep() {
@@ -147,7 +162,7 @@ function buildExecutiveBrief() {
 }
 
 function exportExecutiveBrief() {
-  if (!state.data) return;
+  if (!state.data || typeof downloadBlob !== 'function') return;
   const name = state.data.demo?.name || 'monthly-close';
   const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'monthly-close';
   downloadBlob(buildExecutiveBrief(), 'text/markdown', `eq-proof-${slug}-executive-brief.md`);
@@ -166,6 +181,15 @@ function initShowcase() {
     if (event.key === 'ArrowRight' && tourOpen) nextTourStep();
     if (event.key === 'ArrowLeft' && tourOpen) previousTourStep();
   });
+  const metricGrid = document.querySelector('.metric-grid');
+  if (metricGrid) {
+    new MutationObserver(syncShowcaseSummary).observe(metricGrid, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+  }
+  syncShowcaseSummary();
 }
 
 initShowcase();
