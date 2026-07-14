@@ -45,6 +45,7 @@ jobs:
               "styles.css",
               "refinements.css",
               "audit.css",
+              "static-bootstrap.js",
               "app.js",
               "renderers.js",
               "workflow.js",
@@ -60,6 +61,8 @@ jobs:
           assert "EQ-Proof Control Room" in html
           assert "Skip to the Control Room" in html
           assert 'id="dialogClose" type="button"' in html
+          assert 'src="./static-bootstrap.js"' in html
+          assert "frame-ancestors" not in html
           assert not re.search(r'(?:src|href)="/(?!/)', html), (
               "Root-relative assets break when Pages serves the project under /EQ-Proof/."
           )
@@ -91,6 +94,7 @@ jobs:
           done
           grep -Fq "Take the 90-second tour" /tmp/eq-proof-index.html
           grep -Fq "Skip to the Control Room" /tmp/eq-proof-index.html
+          curl --fail --silent http://127.0.0.1:4173/static-bootstrap.js >/dev/null
           curl --fail --silent http://127.0.0.1:4173/showcase.js >/dev/null
           curl --fail --silent http://127.0.0.1:4173/audit.js >/dev/null
           curl --fail --silent http://127.0.0.1:4173/audit.css >/dev/null
