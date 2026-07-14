@@ -62,7 +62,7 @@ The source detail independently reconstructs to:
 AC + ETC = $418M
 ```
 
-The resulting `$11M` difference is a direct internal contradiction. It does not depend on a risk opinion or predictive model.
+The resulting `$11M` difference is a direct deterministic contradiction. It does not depend on a risk opinion or predictive model.
 
 ### 3. Identify the material control account
 
@@ -157,9 +157,8 @@ A source field named `P80_EAC` is accepted as a compatibility alias for a submit
 
 ## Engineering proof
 
-The repository proof currently enforces:
+The repository proof enforces the full automated suite across:
 
-- **124 automated tests**;
 - Python **3.10, 3.11, 3.12 and 3.13**;
 - branch-aware coverage above a **92% gate**;
 - deterministic regeneration of Control Room and signed-proof evidence;
@@ -170,6 +169,8 @@ The repository proof currently enforces:
 - P6 XER and CSV adapter tests;
 - spreadsheet-formula neutralization; and
 - an operational P6 + cost + user-equation close scenario.
+
+The exact test count is retained in the validated pull-request record rather than hard-coded into the public product, so future coverage additions cannot make the showcase stale.
 
 The public demo contains no analytics, external scripts, model calls or upload endpoint. Real files are processed only by the loopback local application.
 
