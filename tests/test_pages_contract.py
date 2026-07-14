@@ -35,6 +35,7 @@ def test_pages_workflow_uses_the_official_static_deployment_shape():
         "github-pages/live",
         "Take the 90-second tour",
         "Skip to the Control Room",
+        "static-bootstrap.js",
         "audit.js",
         "audit.css",
         "demo-data.json",
@@ -56,6 +57,7 @@ def test_pages_bundle_is_self_contained_and_project_path_safe():
         "styles.css",
         "refinements.css",
         "audit.css",
+        "static-bootstrap.js",
         "app.js",
         "renderers.js",
         "workflow.js",
@@ -71,6 +73,8 @@ def test_pages_bundle_is_self_contained_and_project_path_safe():
     assert not re.search(r'(?:src|href)="/(?!/)', html)
 
     assert "Skip to the Control Room" in html
+    assert 'src="./static-bootstrap.js"' in html
+    assert "frame-ancestors" not in html
     assert 'id="dialogClose" type="button"' in html
     assert 'id="inspector" role="dialog"' in html
     assert 'id="evidenceGraph" role="group"' in html
