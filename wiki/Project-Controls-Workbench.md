@@ -38,7 +38,7 @@ reconstructed risk-adjusted EAC = defensible EAC + pending change + configured r
 risk-adjusted reconciliation    = reconstructed risk-adjusted EAC - submitted risk-adjusted EAC
 ```
 
-The bridge is not a statistical P80 calculation. See [Semantic Model](../docs/SEMANTIC_MODEL.md).
+The bridge is not a statistical P80 calculation. See the [Semantic Model](https://github.com/FlorianStuettgen/EQ-Proof/blob/main/docs/SEMANTIC_MODEL.md).
 
 ## Equation catalogue
 
