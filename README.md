@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="docs/assets/control-room.svg" alt="EQ-Proof Control Room showing a blocked hyperscale monthly close, an eleven-million-dollar deterministic forecast gap, and a seventy-six-million-dollar risk-adjusted position above reported EAC" width="100%" />
+  <img src="docs/assets/control-room.svg" alt="EQ-Proof Control Room showing a blocked hyperscale monthly close, an eleven-million-dollar deterministic forecast contradiction, and a seventy-six-million-dollar risk-adjusted position above reported EAC" width="100%" />
 </p>
 
 <p align="center">
-  <a href="https://florianstuettgen.github.io/EQ-Proof/"><strong>Open the synthetic Control Room demo</strong></a>
+  <a href="https://florianstuettgen.github.io/EQ-Proof/"><strong>Take the guided Control Room tour</strong></a>
   ·
-  <a href="docs/DEMO_PLAYBOOK.md">Five-minute walkthrough</a>
+  <a href="docs/SHOWCASE.md">Portfolio case study</a>
   ·
   <a href="docs/SEMANTIC_MODEL.md">Semantic model</a>
   ·
@@ -23,54 +23,103 @@
 
 # EQ-Proof Control Room
 
-**Drop in the files behind the monthly close. EQ-Proof reconstructs the deterministic forecast, reconciles the submitted risk-adjusted summary, and traces every material exception to its source equation.**
+**A local-first project-controls assurance system that compiles Primavera P6, cost, change, risk and user-written equations into a traceable monthly-close gate.**
 
-Project controls are usually reviewed in fragments: schedule quality in P6, cost and earned value in spreadsheets or enterprise exports, change in a register, risk in another workbook, and the executive position in a deck. Each value can look plausible while the combined close is internally impossible.
+Project controls are usually reviewed in fragments: schedule quality in P6, cost and earned value in spreadsheets or enterprise exports, change in a register, risk in another workbook, and the executive forecast in a deck.
 
-EQ-Proof turns the declared relationships among those files into executable controls.
+Every number can look plausible while the combined close is internally impossible.
 
-## What you know in 20 seconds
+EQ-Proof reconstructs the declared position, executes the acceptance logic, identifies the records that fail, and preserves the evidence behind the decision.
 
-The checked-in synthetic hyperscale close produces four deliberately separate conclusions:
+## See the product in 90 seconds
 
-| State | Value | What it means |
+Open the [hosted synthetic showcase](https://florianstuettgen.github.io/EQ-Proof/) and choose **Take the 90-second tour**.
+
+The tour walks through one complete decision:
+
+1. **Gate:** why the close is blocked;
+2. **Contradiction:** why reported EAC is `$11M` below governed `AC + ETC`;
+3. **Material account:** which control account creates the largest movement;
+4. **Lineage:** how the source record reaches the executive decision; and
+5. **Action:** what must be corrected before close acceptance.
+
+The browser can then export a Markdown executive brief containing the decision, reconstructed states, ranked actions and source hashes.
+
+## The synthetic result
+
+The checked-in hyperscale scenario produces deliberately separate conclusions:
+
+| State | Value | Meaning |
 | --- | ---: | --- |
 | Reported EAC | **$407M** | submitted deterministic forecast |
-| Defensible EAC | **$418M** | governed `AC + ETC` reconstruction |
-| Deterministic forecast gap | **$11M** | internal contradiction between EAC and its detail |
-| Reconstructed risk-adjusted position | **$483M** | defensible EAC plus declared pending change and configured risk uplift |
-| Submitted risk-adjusted summary | **$472M** | risk-adjusted total supplied by the close |
-| Risk-adjusted reconciliation gap | **$11M** | submitted summary below the declared bridge |
-| Exposure above reported EAC | **$76M** | reconstructed risk-adjusted position above deterministic reported EAC |
+| Defensible EAC | **$418M** | independently reconstructed `AC + ETC` |
+| Deterministic forecast gap | **$11M** | submitted EAC contradicts its governed detail |
+| Declared change and configured risk | **$65M** | pending change plus supplied risk uplift |
+| Reconstructed risk-adjusted position | **$483M** | declared bridge built from defensible EAC |
+| Submitted risk-adjusted summary | **$472M** | summary supplied by the close |
+| Risk-adjusted reconciliation gap | **$11M** | submitted summary is below the declared bridge |
+| Position above reported EAC | **$76M** | deterministic contradiction plus declared exposure |
 
-The `$76M` is not one homogeneous error. It consists of:
+The `$76M` is not treated as one homogeneous error.
 
-- `$11M` of deterministic forecast contradiction; and
+It consists of:
+
+- `$11M` of direct deterministic forecast contradiction; and
 - `$65M` of declared pending-change and configured-risk exposure.
 
-EQ-Proof keeps those components separate. It does not call all `$76M` hidden, and it does not claim that adding deterministic exposure calculates a statistical P80.
+EQ-Proof does not call all `$76M` hidden, and it does not claim that deterministic addition calculates a statistical P80.
 
-The close is blocked by three blocker-level control failures, including EAC summaries that disagree with `AC + ETC` and current-budget movement without an approved bridge.
+## Why this is more than a dashboard
 
-This is executable evidence, not a hand-authored dashboard. `scripts/regenerate_control_room_demo.py` rebuilds the browser payload from the checked-in P6 XER, cost CSV, user equation pack, catalogue and production analysis code.
+### It evaluates the close
 
-## Product modes
+The gate is derived from selected and applicable equations. It is not manually assigned.
 
-### Public synthetic demo
+| Gate | Meaning |
+| --- | --- |
+| `CLOSE BLOCKED` | at least one blocker control failed |
+| `REVIEW REQUIRED` | no blocker failed, but a lower-severity control failed |
+| `CLOSE READY` | no selected, applicable control failed |
 
-The [hosted Control Room](https://florianstuettgen.github.io/EQ-Proof/) provides:
+`CLOSE READY` means internally consistent under the executed controls. It is not contractual certification.
 
-- executive close gate;
-- deterministic and risk-adjusted reconciliation;
-- account-by-account exposure decomposition;
-- navigable source → equation → declared-impact lineage;
-- filtered exception command centre;
-- tested equation catalogue;
-- browser equation-pack authoring.
+### It preserves the route to the answer
 
-The hosted static application cannot accept private files.
+The evidence graph follows declared lineage:
 
-### Local real-file application
+```text
+source record
+    → failed equation
+        → affected metric or assurance domain
+            → executive close gate
+```
+
+A schedule-quality finding affects schedule assurance rather than receiving a fabricated dollar impact. Monetary relationships exist only where the supplied fields and equations support them.
+
+### It produces work, not just insight
+
+The exception command centre retains:
+
+- source record;
+- equation ID and expression;
+- residual;
+- declared impact domain;
+- severity and materiality; and
+- required remediation.
+
+Outputs are suitable for Excel, Power Query, Power BI, Smartsheet, SharePoint, ticket automation and auditable close packages.
+
+## Run it
+
+### Public synthetic showcase
+
+```text
+https://florianstuettgen.github.io/EQ-Proof/
+```
+
+The static site has no private-file upload endpoint.
+
+### Local real-file Control Room
 
 ```bash
 python -m venv .venv
@@ -86,17 +135,42 @@ The local application accepts:
 - one or more Primavera P6 XER exports;
 - one or more generic cost/control-account CSV exports;
 - optional JSON equation packs;
-- equations authored and server-validated in the browser;
+- equations authored and server-validated in the browser; and
 - an explicit three-letter currency label.
 
-Uploads are processed in a request-scoped operating-system temporary directory and are not persisted by EQ-Proof. The application has no telemetry, model call, CDN, external script or database connection.
+Uploads are processed in a request-scoped operating-system temporary directory and are not persisted by EQ-Proof.
+
+### CLI close gate
+
+```bash
+eq-controls analyze \
+  --p6-xer examples/hyperscale_close/schedule.xer \
+  --cost-csv examples/hyperscale_close/cost.csv \
+  --equations examples/hyperscale_close/custom_equations.json \
+  --currency USD \
+  --fail-on blocker \
+  --output outputs/hyperscale-close
+```
+
+Outputs:
+
+- `analysis.json` — source hashes, complete equation manifest and every result;
+- `control-room.json` — schema-versioned reconstruction and bounded evidence graph;
+- `exceptions.csv` — spreadsheet-safe action register; and
+- `report.md` — human-readable close record.
+
+Exit codes:
+
+- `0` — no failures at or above the selected threshold;
+- `2` — input or execution error; and
+- `3` — selected failure threshold reached.
 
 ## Native integration boundary
 
-The current integration boundary is explicit:
+The current demonstrated boundary is explicit:
 
 - **Primavera P6:** native XER parsing of `TASK` records;
-- **cost and controls systems:** deterministic CSV field aliases, suitable for exported tables from analyst workbooks and enterprise tools;
+- **cost and controls systems:** deterministic CSV field aliases suitable for exported tables; and
 - **not yet included:** live EcoSys, SAP, Oracle, Cobra or P6 database connectors.
 
 Recognized aliases include:
@@ -115,11 +189,11 @@ risk_exposure / configured_risk_uplift
 risk_adjusted_EAC / P80_EAC
 ```
 
-`P80_EAC` is accepted as a compatibility alias for a submitted risk-adjusted summary. EQ-Proof validates its declared arithmetic bridge; it does not certify that the source value was produced by a probabilistic P80 methodology.
+`P80_EAC` is accepted as a compatibility alias for a submitted risk-adjusted summary. EQ-Proof validates its declared arithmetic bridge; it does not certify the probability methodology that produced it.
 
 Field mapping is deterministic, inspectable and non-AI.
 
-## Tested equations plus user-written controls
+## Tested catalogue plus user-written controls
 
 The built-in catalogue spans:
 
@@ -137,26 +211,24 @@ The built-in catalogue spans:
 Project- and client-specific controls use the same engine:
 
 ```json
-[
-  {
-    "id": "portfolio.board_authorization",
-    "title": "EAC remains inside delegated authorization",
-    "domain": "governance",
-    "expression": "EAC <= delegated_authorization",
-    "severity": "blocker",
-    "description": "Forecasts beyond delegated authority require escalation.",
-    "remediation": "Supply approved authority or escalate the forecast.",
-    "required_fields": ["EAC", "delegated_authorization"],
-    "record_type": "control_account"
-  }
-]
+{
+  "id": "portfolio.board_authorization",
+  "title": "EAC remains inside delegated authorization",
+  "domain": "governance",
+  "expression": "EAC <= delegated_authorization",
+  "severity": "blocker",
+  "description": "Forecasts beyond delegated authority require escalation.",
+  "remediation": "Supply approved authority or escalate the forecast.",
+  "required_fields": ["EAC", "delegated_authorization"],
+  "record_type": "control_account"
+}
 ```
 
-The evaluator permits finite numeric constants, declared fields, arithmetic, one comparison, and a small function allow-list. It rejects imports, attributes, assignment, executable statements, duplicate IDs, undeclared expression fields, unsupported operators, oversized packs, oversized expressions and oversized syntax trees.
+The evaluator permits finite numeric constants, declared fields, arithmetic, one comparison, and a small function allow-list. It rejects imports, attributes, assignments, executable statements, duplicate IDs, undeclared fields, unsupported operators and oversized inputs.
 
-Optional `applies_when` metadata lets a control declare when it applies without hard-coding domain exceptions in the engine.
+Optional `applies_when` metadata lets an equation declare when it applies without hard-coding project-specific behavior into the engine.
 
-## A precise reconstruction model
+## Precise reconstruction model
 
 ```text
 reported EAC                    = submitted EAC
@@ -165,108 +237,49 @@ deterministic forecast gap      = defensible EAC - reported EAC
 configured change and risk      = pending change + configured risk uplift
 reconstructed risk-adjusted EAC = defensible EAC + configured change and risk
 risk-adjusted reconciliation    = reconstructed risk-adjusted EAC - submitted risk-adjusted EAC
-exposure above reported EAC     = reconstructed risk-adjusted EAC - reported EAC
+position above reported EAC     = reconstructed risk-adjusted EAC - reported EAC
 ```
 
 Reported values are never silently overwritten. Incomplete submitted risk-adjusted coverage remains explicitly incomplete rather than being summed into a misleading partial portfolio total.
 
-See the [Semantic Model](docs/SEMANTIC_MODEL.md) for the authoritative vocabulary and interpretation boundaries.
-
-## Evidence graph without invented causality
-
-The graph connects:
-
-```text
-source record → violated equation → declared metric or assurance domain → close gate
-```
-
-Cost failures can affect deterministic forecast reconstruction. Risk failures affect risk-adjusted reconciliation. Change failures affect baseline governance. Schedule failures affect schedule assurance.
-
-A schedule-quality defect does not receive a dollar impact unless an explicit equation supplies one. The graph is declared controls lineage, not causal discovery.
-
-Large graphs are capped and report when account or finding nodes have been truncated.
-
-## CLI automation
-
-```bash
-eq-controls analyze \
-  --p6-xer examples/hyperscale_close/schedule.xer \
-  --cost-csv examples/hyperscale_close/cost.csv \
-  --equations examples/hyperscale_close/custom_equations.json \
-  --currency USD \
-  --fail-on blocker \
-  --output outputs/hyperscale-close
-```
-
-Outputs:
-
-- `analysis.json` — source hashes, complete equation manifest and every result;
-- `control-room.json` — schema-versioned executive reconstruction and evidence graph;
-- `exceptions.csv` — spreadsheet-safe action register;
-- `report.md` — human-readable close record.
-
-Exit codes:
-
-- `0` — no failures at or above the selected `--fail-on` threshold;
-- `2` — input or execution error;
-- `3` — selected failure threshold reached.
-
-List the catalogue:
-
-```bash
-eq-controls catalogue
-```
-
-## Gate and assurance semantics
-
-| Gate | Meaning |
-| --- | --- |
-| `CLOSE BLOCKED` | at least one blocker failed |
-| `REVIEW REQUIRED` | no blocker failed, but a lower-severity control failed |
-| `CLOSE READY` | no selected, applicable equation failed |
-
-`CLOSE READY` means internally consistent under the executed controls. It is not contractual certification.
-
-The displayed assurance score is a transparent severity-penalty heuristic. It is not a probability, forecast-accuracy estimate or confidence interval.
-
-## Security and resource boundaries
-
-Local mode enforces:
-
-- loopback-only host choices and trusted-host validation;
-- restrictive Content Security Policy and browser hardening headers;
-- no external JavaScript, fonts, analytics, CDN or model call;
-- 50 MiB per-file, 200 MiB per-request and 20-file limits;
-- equation-count, expression-size, AST-node and adapter-row limits;
-- unique temporary filenames and basename normalization;
-- request-scoped temporary directories and no upload persistence;
-- escaped user-authored labels;
-- spreadsheet-formula neutralization in CSV exports;
-- JSON-safe representation of non-finite arithmetic failures.
-
-EQ-Proof does not establish that a source value is contractually true, approve changes, replace P6 scheduling calculations, perform currency conversion, calculate probabilistic risk, or infer missing commercial facts.
+See the [Semantic Model](docs/SEMANTIC_MODEL.md) for the authoritative vocabulary and boundaries.
 
 ## Architecture
 
 ```mermaid
 flowchart LR
-    P6[P6 XER TASK] --> ADAPTERS[Native adapters]
-    COST[Generic cost CSV] --> ADAPTERS
-    USER[User equations] --> SAFE[Safe equation evaluator]
-    CAT[Tested catalogue] --> SAFE
-    ADAPTERS --> MODEL[Canonical controls records]
-    MODEL --> SAFE
-    SAFE --> FINDINGS[Ranked findings]
-    MODEL --> RECON[Declared-state reconstruction]
-    FINDINGS --> GRAPH[Evidence graph]
-    RECON --> GRAPH
-    GRAPH --> GATE[Executive close gate]
-    FINDINGS --> EXPORT[CSV / JSON / report]
+    P6[Primavera P6 XER] --> A[Native adapters]
+    COST[Cost and controls CSV] --> A
+    PACK[Equation packs] --> E[Safe equation evaluator]
+    UI[Browser-authored controls] --> E
+    A --> N[Canonical controls records]
+    N --> E
+    E --> F[Ranked findings]
+    N --> R[Declared-state reconstruction]
+    F --> G[Evidence graph]
+    R --> G
+    G --> D[Executive close gate]
+    F --> O[CSV, JSON, report and executive brief]
 ```
 
 The browser is build-free: semantic HTML, CSS and vanilla JavaScript served by the local Python application or GitHub Pages. The same Python engine powers the CLI and local API; static mode uses a deterministically generated synthetic payload.
 
-See [Product Architecture](docs/PRODUCT_ARCHITECTURE.md), [Semantic Model](docs/SEMANTIC_MODEL.md), and the [Demo Playbook](docs/DEMO_PLAYBOOK.md).
+## Security and resource boundaries
+
+Local mode enforces:
+
+- loopback-only hosts and trusted-host validation;
+- restrictive Content Security Policy and browser hardening headers;
+- no external JavaScript, fonts, analytics, CDN or model call;
+- 50 MiB per-file, 200 MiB per-request and 20-file limits;
+- equation-count, expression-size, AST-node and adapter-row limits;
+- basename normalization and unique temporary filenames;
+- request-scoped temporary directories and no upload persistence;
+- escaped user-authored labels;
+- spreadsheet-formula neutralization in CSV exports; and
+- JSON-safe representation of non-finite arithmetic failures.
+
+EQ-Proof does not establish contractual truth, approve changes, replace P6 calculations, perform currency conversion, calculate probabilistic risk or infer missing commercial facts.
 
 ## Independently versioned lower proof engine
 
@@ -276,26 +289,27 @@ The repository also contains the original numerical proof engine for supported l
 - Dykstra Euclidean projection;
 - fixed-value preservation;
 - canonical JSON and SHA-256;
-- optional Ed25519 attestation;
+- optional Ed25519 attestation; and
 - semantic replay that independently recompiles and recomputes claimed repairs.
 
-That engine remains available through `eq-proof`. Its proof artifact and algorithm versions are independent from the Control Room product version when their contracts do not change.
+That engine remains available through `eq-proof`.
 
 ## Engineering evidence
 
-The repository proof enforces:
+The repository proof currently enforces:
 
-- Python 3.10–3.13 test matrix;
-- branch-aware coverage gate of 92%;
+- **124 automated tests**;
+- Python **3.10–3.13**;
+- branch-aware coverage above a **92% gate**;
 - adversarial and valid user-equation tests;
 - P6 XER and CSV adapter tests;
 - multipart upload and loopback-security tests;
 - non-finite and spreadsheet-export hardening;
-- deterministic demo regeneration;
+- deterministic regeneration of both evidence families;
 - JavaScript syntax validation;
 - wheel construction;
-- signed proof and semantic-replay scenarios;
-- operational P6 + cost close-gate scenario.
+- signed proof and semantic-replay scenarios; and
+- the operational P6 + cost + user-equation close scenario.
 
 Run the same proof locally:
 
@@ -303,32 +317,17 @@ Run the same proof locally:
 python scripts/check_repository.py
 ```
 
-## Repository map
+## Status and roadmap
 
-```text
-src/eq_proof/
-├── controls.py             catalogue, validation, P6/CSV adapters and outputs
-├── control_room.py         semantic reconstruction and bounded evidence graph
-├── webapp.py               loopback FastAPI boundary and security controls
-├── web/                    static/local browser application
-├── proof.py                proof construction and semantic replay
-├── solver.py               supported numerical repair engine
-└── ...
+EQ-Proof is a **Beta portfolio and engineering product**, not a production cost system, scheduling engine, risk simulator, key-management service or contractual certification platform.
 
-examples/hyperscale_close/  executable P6 + cost + equation fixture
-docs/SEMANTIC_MODEL.md      authoritative terms, formulas and boundaries
-docs/DEMO_PLAYBOOK.md       five-minute panel and manager walkthrough
-docs/PRODUCT_ARCHITECTURE.md runtime, data flow, security and product boundary
-tests/                      engine, controls, API, web and adversarial tests
-```
+The highest-value next capabilities are:
 
-## Status
-
-EQ-Proof is a **Beta portfolio and engineering product**, not a production cost system, schedule engine, risk simulator, key-management service or contractual certification platform.
-
-The current demonstrated boundary is P6 `TASK` ingestion, generic tabular cost/control-account ingestion, tested and user-supplied equations, deterministic and risk-adjusted reconciliation, declared evidence lineage, browser review, operational exports, CLI gates and reproducible synthetic evidence.
-
-Next domain expansions are P6 relationships, calendars and constraints; cross-period change reconstruction; WBS/control-account rollups; and dedicated adapter profiles for additional enterprise exports.
+1. cross-period snapshot comparison and restatement detection;
+2. Primavera relationships, calendars, constraints and open-end analysis;
+3. WBS and control-account aggregation scopes;
+4. forecast movement bridges with explicit causal drivers; and
+5. dedicated adapter profiles for additional enterprise exports.
 
 ## License
 
