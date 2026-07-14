@@ -50,8 +50,11 @@ def test_pages_workflow_uses_the_official_static_deployment_shape():
     assert "cancel-in-progress: false" in workflow
 
 
-def test_pages_bundle_is_self_contained_and_project_path_safe():
+def test_pages_bundle_is_a_functional_project_path_safe_browser_application():
     html = (WEB / "index.html").read_text(encoding="utf-8")
+    showcase = (WEB / "showcase.js").read_text(encoding="utf-8")
+    engine = (WEB / "browser-engine.js").read_text(encoding="utf-8")
+    bridge = (WEB / "browser-bridge.js").read_text(encoding="utf-8")
     required = {
         "index.html",
         "styles.css",
@@ -63,9 +66,17 @@ def test_pages_bundle_is_self_contained_and_project_path_safe():
         "workflow.js",
         "showcase.js",
         "audit.js",
+        "browser-engine.js",
+        "browser-bridge.js",
+        "browser-workbench.css",
         "demo-data.json",
     }
     assert required <= {path.name for path in WEB.iterdir() if path.is_file()}
+    assert {
+        "cost.csv",
+        "schedule.xer",
+        "equations.json",
+    } <= {path.name for path in (WEB / "samples").iterdir() if path.is_file()}
 
     local_assets = re.findall(r'(?:src|href)="\./([^"?#]+)', html)
     assert local_assets
@@ -80,6 +91,12 @@ def test_pages_bundle_is_self_contained_and_project_path_safe():
     assert 'id="evidenceGraph" role="group"' in html
     assert 'aria-selected="true"' in html
     assert 'aria-controls="panel-overview"' in html
+    assert "browser-bridge.js" in showcase
+    assert "analyzeForm" in engine
+    assert "sha256File" in engine
+    assert "restoreWorkspace" in engine
+    assert "Export analysis JSON" in engine
+    assert "Browser-compiled monthly close" in bridge
 
     payload = json.loads((WEB / "demo-data.json").read_text(encoding="utf-8"))
     assert payload["schema_version"] == "eq-proof/control-room@2"
@@ -89,23 +106,30 @@ def test_pages_bundle_is_self_contained_and_project_path_safe():
     assert payload["portfolio"]["exposure_above_reported_eac"] == 76_000_000
 
 
-def test_browser_audit_covers_function_accessibility_and_responsive_modes():
+def test_browser_audit_covers_function_accessibility_and_real_workflows():
     workflow = (
         ROOT / ".github" / "workflows" / "ui-audit.yml"
     ).read_text(encoding="utf-8")
     config = (ROOT / "playwright.config.js").read_text(encoding="utf-8")
-    spec = (ROOT / "tests" / "ui" / "control-room.spec.js").read_text(
+    core_spec = (ROOT / "tests" / "ui" / "control-room.spec.js").read_text(
         encoding="utf-8"
     )
+    workbench_spec = (
+        ROOT / "tests" / "ui" / "browser-workbench.spec.js"
+    ).read_text(encoding="utf-8")
 
     assert "playwright install --with-deps chromium" in workflow
+    assert "npm run test:browser-engine" in workflow
     assert "npm run test:ui" in workflow
     assert "Functional UI, responsive, and accessibility audit" in workflow
     assert "desktop" in config
     assert "mobile" in config
     assert "reduced-motion" in config
-    assert "AxeBuilder" in spec
-    assert "dialog opens honestly and closes" in spec
-    assert "tabs expose state" in spec
-    assert "guided review completes" in spec
-    assert "download with stable filenames" in spec
+    assert "AxeBuilder" in core_spec
+    assert "tabs expose state" in core_spec
+    assert "guided review completes" in core_spec
+    assert "accepts files" in workbench_spec
+    assert "compiles a cost file" in workbench_spec
+    assert "creates replayable evidence" in workbench_spec
+    assert "Restored browser workspace" in workbench_spec
+    assert "validated by the browser engine" in workbench_spec
