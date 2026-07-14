@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import math
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -18,8 +19,31 @@ from .specification import parse_specification
 
 PROOF_SCHEMA = "eq-proof/proof@1"
 ENGINE_NAME = "EQ-Proof"
-ENGINE_VERSION = "1.3.0"
+ENGINE_VERSION = "1.4.0"
 ALGORITHM_ID = "dykstra-l2-v1"
+PROOF_SIGNIFICANT_DIGITS = 15
+
+
+def _stable_float(value: float) -> float:
+    """Normalize computed proof numbers across IEEE-754 environments."""
+    number = float(value)
+    if not math.isfinite(number):
+        raise ValueError("Proof values must be finite")
+    if number == 0.0 or abs(number) < sys.float_info.min:
+        return 0.0
+    normalized = float(format(number, f".{PROOF_SIGNIFICANT_DIGITS}g"))
+    return 0.0 if normalized == 0.0 else normalized
+
+
+def _stable_numeric_map(values: dict[str, float]) -> dict[str, float]:
+    return {name: _stable_float(value) for name, value in values.items()}
+
+
+def _stable_check(item: Any) -> dict[str, object]:
+    document = check_to_dict(item)
+    for field in ("lhs", "rhs", "violation"):
+        document[field] = _stable_float(float(document[field]))
+    return document
 
 
 def build_proof(
@@ -55,15 +79,15 @@ def build_proof(
         },
         "result": {
             "status": result.status,
-            "values": result.repaired,
-            "movement_l2": result.movement_l2,
-            "objective_value": result.objective_value,
-            "max_violation_before": result.max_violation_before,
-            "max_violation_after": result.max_violation_after,
+            "values": _stable_numeric_map(result.repaired),
+            "movement_l2": _stable_float(result.movement_l2),
+            "objective_value": _stable_float(result.objective_value),
+            "max_violation_before": _stable_float(result.max_violation_before),
+            "max_violation_after": _stable_float(result.max_violation_after),
         },
         "diagnostics": {
-            "before": [check_to_dict(item) for item in result.checks_before],
-            "after": [check_to_dict(item) for item in result.checks_after],
+            "before": [_stable_check(item) for item in result.checks_before],
+            "after": [_stable_check(item) for item in result.checks_after],
         },
     }
     proof = dict(core)
