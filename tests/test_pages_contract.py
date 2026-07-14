@@ -7,12 +7,14 @@ WEB = ROOT / "src" / "eq_proof" / "web"
 PAGES_URL = "https://florianstuettgen.github.io/EQ-Proof/"
 
 
-def test_readme_exposes_the_canonical_live_application():
+def test_readme_exposes_the_canonical_functional_application():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     assert readme.count(PAGES_URL) >= 2
-    assert "Take the guided Control Room tour" in readme
-    assert "hosted synthetic showcase" in readme
-    assert "Public synthetic showcase" in readme
+    assert "Open the functional browser workbench" in readme
+    assert "functional browser workbench" in readme
+    assert "Files are processed entirely in the browser" in readme
+    assert "never uploaded" in readme
+    assert "export and reopen" in readme
 
 
 def test_pages_workflow_uses_the_official_static_deployment_shape():
