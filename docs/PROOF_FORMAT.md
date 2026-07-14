@@ -26,6 +26,21 @@ The attestation covers every top-level field except `attestation` itself. The re
 
 The SHA-256 of those bytes is stored as `attestation.payload_sha256`.
 
+## Computed-number normalization
+
+Submitted values and the source specification are preserved exactly as parsed because they are source claims.
+
+Computed proof outputs are normalized to **15 significant decimal digits** before hashing and signing:
+
+- repaired values;
+- Euclidean movement and objective;
+- maximum violations;
+- diagnostic left-hand sides, right-hand sides and violations.
+
+IEEE-754 subnormal zero noise is canonicalized to `0.0`. This removes platform-specific one-ULP representation drift while retaining materially more precision than the verifier's declared comparison tolerance.
+
+The numerical algorithm remains `dykstra-l2-v1`; engine version `1.4.0` records the serialization-stability fix. Existing `proof@1` artifacts remain verifiable because semantic replay compares claimed values to independently recomputed values within the declared tolerance.
+
 ## Digest-only mode
 
 Digest-only mode supports mutation detection only when the expected digest is obtained from a trusted channel. Because an attacker can modify a payload and recompute its digest, it provides no origin claim.
