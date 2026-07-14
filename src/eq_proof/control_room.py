@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import math
 from collections import Counter
+from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from .controls import Analysis, Finding, normalize_row
@@ -83,7 +84,7 @@ def _portfolio(records: Sequence[Mapping[str, Any]]) -> tuple[dict[str, Any], li
                 "submitted_p80": submitted_risk_value,
                 "defensible_p80": reconstructed_p80,
                 "hidden_exposure": hidden_exposure,
-                "source": str(row.get("_source", "uploaded data")),
+                "source": Path(str(row.get("_source", "uploaded data"))).name,
             }
         )
         reported_eac += reported_value
