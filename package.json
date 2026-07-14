@@ -1,0 +1,13 @@
+{
+  "name": "eq-proof-ui-audit",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Browser-level functional, accessibility, and responsive audit for the EQ-Proof Control Room.",
+  "scripts": {
+    "test:ui": "playwright test"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
+    "@playwright/test": "1.52.0"
+  }
+}
