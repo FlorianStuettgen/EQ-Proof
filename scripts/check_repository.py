@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import compileall
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -26,6 +27,10 @@ def main() -> int:
     if not compileall.compile_dir(ROOT / "src", quiet=1):
         raise SystemExit("Module compilation failed")
     run(sys.executable, "scripts/regenerate_evidence.py")
+    run(sys.executable, "scripts/regenerate_control_room_demo.py")
+    if shutil.which("node"):
+        for script in ("app.js", "app-2.js", "app-3.js"):
+            run("node", "--check", f"src/eq_proof/web/{script}")
     if (ROOT / ".git").exists():
         run("git", "diff", "--exit-code")
     print("Repository proof passed: tests, coverage, compilation, and deterministic evidence.")
