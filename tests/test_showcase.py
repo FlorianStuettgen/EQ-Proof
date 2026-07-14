@@ -22,7 +22,8 @@ def test_showcase_surface_exposes_guided_decision_workflow():
         assert f'id="{identifier}"' in html
     assert "Take the 90-second tour" in html
     assert "Not another dashboard. A reproducible decision system." in html
-    assert "124" in html
+    assert "full test matrix enforced" in html
+    assert "automated tests" not in html
     assert "no telemetry" in html.lower()
 
 
@@ -51,3 +52,5 @@ def test_readme_and_case_study_present_the_same_showcase():
     assert "$11M" in readme and "$65M" in readme and "$76M" in readme
     assert "The 90-second demonstration" in case_study
     assert "compiler for the acceptance logic" in case_study
+    assert "exact test count" in readme.lower()
+    assert "exact test count" in case_study.lower()

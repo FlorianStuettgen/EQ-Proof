@@ -296,9 +296,8 @@ That engine remains available through `eq-proof`.
 
 ## Engineering evidence
 
-The repository proof currently enforces:
+The repository proof enforces the complete automated suite across:
 
-- **124 automated tests**;
 - Python **3.10–3.13**;
 - branch-aware coverage above a **92% gate**;
 - adversarial and valid user-equation tests;
@@ -310,6 +309,8 @@ The repository proof currently enforces:
 - wheel construction;
 - signed proof and semantic-replay scenarios; and
 - the operational P6 + cost + user-equation close scenario.
+
+The exact test count is retained in the validated pull-request record instead of being hard-coded into the public product, preventing the showcase from becoming stale whenever coverage expands.
 
 Run the same proof locally:
 
