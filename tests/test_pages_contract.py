@@ -15,28 +15,31 @@ def test_readme_exposes_the_canonical_live_application():
     assert "Public synthetic showcase" in readme
 
 
-def test_pages_workflow_validates_deploys_and_probes_the_live_site():
+def test_pages_workflow_uses_the_official_static_deployment_shape():
     workflow = (
         ROOT / ".github" / "workflows" / "pages.yml"
     ).read_text(encoding="utf-8")
     required_fragments = {
-        "pull_request:",
         "workflow_dispatch:",
-        "Validate deployable site",
+        "branches: [main]",
+        "group: pages",
+        "name: Deploy GitHub Pages",
+        "Validate deployable bundle",
         "Smoke-test static bundle",
         "actions/configure-pages@v5",
         "actions/upload-pages-artifact@v3",
         "actions/deploy-pages@v5",
-        "Verify published application",
-        "Probe deployed Control Room",
-        "${{ needs.deploy.outputs.page_url }}",
+        "url: ${{ steps.deployment.outputs.page_url }}",
         "Take the 90-second tour",
         "demo-data.json",
     }
     for fragment in required_fragments:
         assert fragment in workflow
-    assert 'if: github.event_name != \'pull_request\'' in workflow
-    assert 'group: pages-${{ github.ref }}' in workflow
+
+    assert "pull_request:" not in workflow
+    assert workflow.count("environment:") == 1
+    assert workflow.count("actions/deploy-pages@v5") == 1
+    assert "cancel-in-progress: false" in workflow
 
 
 def test_pages_bundle_is_self_contained_and_project_path_safe():
