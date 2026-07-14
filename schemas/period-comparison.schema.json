@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/FlorianStuettgen/EQ-Proof/schemas/period-comparison.schema.json",
+  "title": "EQ-Proof Period Comparison Artifact",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "engine_version",
+    "periods",
+    "comparability",
+    "source_manifests",
+    "equation_manifests",
+    "identity_map",
+    "portfolio_movement",
+    "record_movements",
+    "finding_lifecycle",
+    "governance_changes",
+    "unreconciled_movements",
+    "comparison_gate",
+    "assumptions"
+  ],
+  "properties": {
+    "schema_version": {"const": "eq-proof/period-comparison@1"},
+    "engine_version": {"type": "string", "minLength": 1},
+    "periods": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prior", "current"],
+      "properties": {
+        "prior": {"$ref": "#/$defs/period"},
+        "current": {"$ref": "#/$defs/period"}
+      }
+    },
+    "comparability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "currency", "identity_coverage", "blockers", "review_reasons"],
+      "properties": {
+        "status": {"enum": ["blocked", "review", "ready"]},
+        "currency": {"$ref": "#/$defs/currency"},
+        "identity_coverage": {"type": "number", "minimum": 0, "maximum": 1},
+        "blockers": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "review_reasons": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "source_manifests": {"$ref": "#/$defs/pairedManifest"},
+    "equation_manifests": {"$ref": "#/$defs/pairedManifest"},
+    "identity_map": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/identity"}
+    },
+    "portfolio_movement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "currency",
+        "reported_eac_prior",
+        "reported_eac_current",
+        "reported_eac_delta",
+        "reconciled_movement",
+        "governance_movement",
+        "source_structure_movement",
+        "unreconciled_movement",
+        "not_comparable_movement",
+        "bridge_residual",
+        "defensible_eac_prior",
+        "defensible_eac_current",
+        "forecast_gap_prior",
+        "forecast_gap_current",
+        "risk_adjusted_position_prior",
+        "risk_adjusted_position_current",
+        "gate_prior",
+        "gate_current"
+      ],
+      "properties": {
+        "currency": {"$ref": "#/$defs/currency"},
+        "reported_eac_prior": {"type": "number"},
+        "reported_eac_current": {"type": "number"},
+        "reported_eac_delta": {"type": "number"},
+        "reconciled_movement": {"type": "number"},
+        "governance_movement": {"type": "number"},
+        "source_structure_movement": {"type": "number"},
+        "unreconciled_movement": {"type": "number"},
+        "not_comparable_movement": {"type": "number"},
+        "bridge_residual": {"type": "number"},
+        "defensible_eac_prior": {"type": "number"},
+        "defensible_eac_current": {"type": "number"},
+        "forecast_gap_prior": {"type": "number"},
+        "forecast_gap_current": {"type": "number"},
+        "risk_adjusted_position_prior": {"type": ["number", "null"]},
+        "risk_adjusted_position_current": {"type": ["number", "null"]},
+        "gate_prior": {"enum": ["blocked", "review", "ready"]},
+        "gate_current": {"enum": ["blocked", "review", "ready"]}
+      }
+    },
+    "record_movements": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/recordMovement"}
+    },
+    "finding_lifecycle": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/findingLifecycle"}
+    },
+    "governance_changes": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/governanceChange"}
+    },
+    "unreconciled_movements": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/unreconciledMovement"}
+    },
+    "comparison_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "material_movement_count", "unresolved_count", "bridge_closed", "reasons"],
+      "properties": {
+        "status": {"enum": ["blocked", "review", "ready"]},
+        "material_movement_count": {"type": "integer", "minimum": 0},
+        "unresolved_count": {"type": "integer", "minimum": 0},
+        "bridge_closed": {"type": "boolean"},
+        "reasons": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "currency": {"type": "string", "pattern": "^[A-Z]{3}$"},
+    "nullableIdentifier": {"type": ["string", "null"], "minLength": 1},
+    "period": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["period_id", "reporting_date", "artifact_schema", "artifact_sha256"],
+      "properties": {
+        "period_id": {"type": "string", "minLength": 1},
+        "reporting_date": {"type": "string", "format": "date"},
+        "artifact_schema": {"const": "eq-proof/control-room@2"},
+        "artifact_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "manifestEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "digest_sha256"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "digest_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "pairedManifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["prior", "current"],
+      "properties": {
+        "prior": {"type": "array", "items": {"$ref": "#/$defs/manifestEntry"}},
+        "current": {"type": "array", "items": {"$ref": "#/$defs/manifestEntry"}}
+      }
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_type", "prior_id", "current_id", "match_method", "status", "reason", "user_override"],
+      "properties": {
+        "record_type": {"enum": ["control_account", "activity", "finding"]},
+        "prior_id": {"$ref": "#/$defs/nullableIdentifier"},
+        "current_id": {"$ref": "#/$defs/nullableIdentifier"},
+        "match_method": {"enum": ["explicit_immutable_id", "exact_normalized_id", "user_map", "unmatched"]},
+        "status": {"enum": ["matched", "ambiguous", "unmatched"]},
+        "reason": {"type": ["string", "null"]},
+        "user_override": {"type": "boolean"}
+      }
+    },
+    "recordMovement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["record_type", "record_id", "identity_status", "primary_class", "material", "deltas", "evidence_refs"],
+      "properties": {
+        "record_type": {"enum": ["control_account", "activity"]},
+        "record_id": {"type": "string", "minLength": 1},
+        "identity_status": {"enum": ["matched", "ambiguous", "unmatched"]},
+        "primary_class": {"$ref": "#/$defs/reconciliationClass"},
+        "material": {"type": "boolean"},
+        "deltas": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": {"type": ["number", "null"]}
+        },
+        "evidence_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "findingLifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["equation_id", "record_identity", "prior_finding_id", "current_finding_id", "lifecycle", "residual_delta"],
+      "properties": {
+        "equation_id": {"type": "string", "minLength": 1},
+        "record_identity": {"type": "string", "minLength": 1},
+        "prior_finding_id": {"$ref": "#/$defs/nullableIdentifier"},
+        "current_finding_id": {"$ref": "#/$defs/nullableIdentifier"},
+        "lifecycle": {"enum": ["new", "persistent", "worsened", "improved", "resolved", "reclassified_by_governance_change", "not_comparable"]},
+        "residual_delta": {"type": ["number", "null"]}
+      }
+    },
+    "governanceChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "change_type", "description", "evidence_refs"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "change_type": {"enum": ["equation", "applicability", "baseline", "authority", "risk_configuration", "other"]},
+        "description": {"type": "string", "minLength": 1},
+        "evidence_refs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "unreconciledMovement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "record_ref", "amount", "currency", "reason", "blocker"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "record_ref": {"type": "string", "minLength": 1},
+        "amount": {"type": ["number", "null"]},
+        "currency": {"oneOf": [{"$ref": "#/$defs/currency"}, {"type": "null"}]},
+        "reason": {"type": "string", "minLength": 1},
+        "blocker": {"type": "boolean"}
+      }
+    },
+    "reconciliationClass": {
+      "enum": ["directly_reconciled", "governance_change", "source_structure_change", "unreconciled_restatement", "not_comparable"]
+    }
+  }
+}
