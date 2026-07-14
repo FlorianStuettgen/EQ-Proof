@@ -15,8 +15,10 @@
   <title>EQ-Proof Control Room</title>
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./refinements.css">
+  <link rel="stylesheet" href="./audit.css">
 </head>
 <body>
+  <a class="skip-link" href="#top">Skip to the Control Room</a>
   <div class="ambient ambient-one"></div>
   <div class="ambient ambient-two"></div>
   <header class="topbar">
@@ -32,7 +34,7 @@
     </nav>
   </header>
 
-  <main id="top">
+  <main id="top" tabindex="-1">
     <section class="hero">
       <div class="hero-copy">
         <p class="eyebrow">Project-controls assurance, compiled</p>
@@ -108,7 +110,7 @@
         </div>
       </div>
 
-      <section class="gate-card blocked" id="gateCard" data-tour-target="gate">
+      <section class="gate-card blocked" id="gateCard" data-tour-target="gate" aria-live="polite" aria-busy="true">
         <div class="gate-copy"><p>EXECUTIVE CLOSE GATE</p><h3 id="gateLabel">CLOSE BLOCKED</h3><span id="gateHeadline">Compiling evidence…</span></div>
         <div class="confidence-ring" id="assuranceRing" aria-label="Control assurance score">
           <span id="assuranceValue">—</span><small>assurance</small>
@@ -141,13 +143,13 @@
       </section>
 
       <div class="tabs" role="tablist" aria-label="Control Room views">
-        <button class="tab active" data-tab="overview" role="tab">Explain the surprise</button>
-        <button class="tab" data-tab="graph" role="tab">Evidence graph</button>
-        <button class="tab" data-tab="exceptions" role="tab">Exception command centre</button>
-        <button class="tab" data-tab="equations" role="tab">Equation workbench</button>
+        <button class="tab active" id="tab-overview" data-tab="overview" role="tab" aria-controls="panel-overview" aria-selected="true" tabindex="0">Explain the surprise</button>
+        <button class="tab" id="tab-graph" data-tab="graph" role="tab" aria-controls="panel-graph" aria-selected="false" tabindex="-1">Evidence graph</button>
+        <button class="tab" id="tab-exceptions" data-tab="exceptions" role="tab" aria-controls="panel-exceptions" aria-selected="false" tabindex="-1">Exception command centre</button>
+        <button class="tab" id="tab-equations" data-tab="equations" role="tab" aria-controls="panel-equations" aria-selected="false" tabindex="-1">Equation workbench</button>
       </div>
 
-      <section class="tab-panel active" id="panel-overview" role="tabpanel">
+      <section class="tab-panel active" id="panel-overview" role="tabpanel" aria-labelledby="tab-overview">
         <div class="two-column">
           <article class="panel" data-tour-target="account">
             <div class="panel-heading"><div><p class="eyebrow">Variance intelligence</p><h3>Where the exposure comes from</h3></div><span class="panel-badge" id="contributionCount">0 accounts</span></div>
@@ -161,24 +163,25 @@
         </div>
       </section>
 
-      <section class="tab-panel" id="panel-graph" role="tabpanel" data-tour-target="graph">
+      <section class="tab-panel" id="panel-graph" role="tabpanel" aria-labelledby="tab-graph" data-tour-target="graph" hidden>
         <article class="panel graph-panel">
           <div class="panel-heading"><div><p class="eyebrow">Executable lineage</p><h3>Source → equation → declared impact</h3></div><span class="panel-badge" id="graphLimitBadge">Click any node</span></div>
-          <div class="graph-stage" id="graphStage"><svg id="evidenceGraph" role="img" aria-label="Evidence lineage graph"></svg></div>
+          <div class="graph-stage" id="graphStage"><svg id="evidenceGraph" role="group" aria-label="Interactive evidence lineage graph"></svg></div>
         </article>
       </section>
 
-      <section class="tab-panel" id="panel-exceptions" role="tabpanel" data-tour-target="exceptions">
+      <section class="tab-panel" id="panel-exceptions" role="tabpanel" aria-labelledby="tab-exceptions" data-tour-target="exceptions" hidden>
         <article class="panel">
           <div class="panel-heading"><div><p class="eyebrow">Action register</p><h3>Ranked by severity and materiality</h3></div><button class="button button-quiet" id="downloadExceptions" type="button">Export CSV</button></div>
           <div class="exception-filters" aria-label="Exception filters">
             <label>Search<input id="exceptionSearch" type="search" placeholder="record, equation, action…"></label>
             <label>Severity<select id="exceptionSeverity"><option value="all">All</option><option>blocker</option><option>major</option><option>minor</option><option>info</option></select></label>
             <label>Domain<select id="exceptionDomain"><option value="all">All</option></select></label>
-            <span id="exceptionFilterCount"></span>
+            <span id="exceptionFilterCount" role="status" aria-live="polite"></span>
           </div>
           <div class="exception-table-wrap">
             <table class="exception-table">
+              <caption class="sr-only">Ranked project-controls exceptions. Select a row to inspect its equation and required action.</caption>
               <thead><tr><th>Severity</th><th>Source record</th><th>Control</th><th>Residual</th><th>Declared impact</th><th>Required action</th></tr></thead>
               <tbody id="exceptionRows"></tbody>
             </table>
@@ -186,7 +189,7 @@
         </article>
       </section>
 
-      <section class="tab-panel" id="panel-equations" role="tabpanel">
+      <section class="tab-panel" id="panel-equations" role="tabpanel" aria-labelledby="tab-equations" hidden>
         <div class="two-column equation-layout">
           <article class="panel">
             <div class="panel-heading"><div><p class="eyebrow">Tested controls</p><h3>Equation catalogue</h3></div><span class="panel-badge" id="equationCount">Loading…</span></div>
@@ -206,7 +209,7 @@
               <button class="button button-primary" id="addEquationButton" type="button">Validate and add</button>
               <button class="button button-quiet" id="downloadEquationPack" type="button">Download equation pack</button>
             </div>
-            <div class="editor-status" id="editorStatus">Safe expression mode: arithmetic, one comparison, declared fields, and allow-listed functions.</div>
+            <div class="editor-status" id="editorStatus" role="status" aria-live="polite">Safe expression mode: arithmetic, one comparison, declared fields, and allow-listed functions.</div>
             <div class="custom-list" id="customEquationList"></div>
           </article>
         </div>
@@ -231,12 +234,12 @@
     </section>
   </main>
 
-  <aside class="inspector" id="inspector" aria-hidden="true">
+  <aside class="inspector" id="inspector" role="dialog" aria-modal="false" aria-hidden="true" aria-labelledby="inspectorTitle" tabindex="-1" inert>
     <button class="inspector-close" id="inspectorClose" type="button" aria-label="Close inspector">×</button>
     <p class="eyebrow" id="inspectorEyebrow">Evidence</p><h3 id="inspectorTitle">Select a metric or graph node</h3><div id="inspectorBody"></div>
   </aside>
 
-  <aside class="tour-card" id="tourCard" hidden aria-live="polite" aria-labelledby="tourTitle">
+  <aside class="tour-card" id="tourCard" role="dialog" aria-modal="false" aria-live="polite" aria-labelledby="tourTitle" aria-hidden="true" tabindex="-1" hidden>
     <div class="tour-progress"><span id="tourProgress">1 / 5</span><button id="tourClose" type="button" aria-label="Close guided tour">×</button></div>
     <p class="eyebrow" id="tourEyebrow">Guided decision review</p>
     <h3 id="tourTitle">Start at the gate</h3>
@@ -244,17 +247,17 @@
     <div class="tour-actions"><button class="button button-quiet" id="tourBack" type="button">Back</button><button class="button button-primary" id="tourNext" type="button">Next</button></div>
   </aside>
 
-  <dialog class="upload-dialog" id="uploadDialog">
+  <dialog class="upload-dialog" id="uploadDialog" aria-labelledby="uploadTitle" aria-describedby="uploadDescription">
     <form method="dialog" class="dialog-shell" id="analysisForm">
-      <div class="dialog-heading"><div><p class="eyebrow">Local analysis</p><h2>Compile your monthly close</h2><span>Files stay inside the loopback-only EQ-Proof process.</span></div><button class="dialog-close" value="cancel" aria-label="Close">×</button></div>
+      <div class="dialog-heading"><div><p class="eyebrow">Local analysis</p><h2 id="uploadTitle">Compile your monthly close</h2><span id="uploadDescription">Files stay inside the loopback-only EQ-Proof process.</span></div><button class="dialog-close" id="dialogClose" type="button" aria-label="Close local analysis dialog">×</button></div>
       <div class="drop-grid">
         <label class="drop-card"><strong>Primavera P6</strong><span>One or more .xer schedule exports</span><input id="p6Input" type="file" accept=".xer" multiple></label>
         <label class="drop-card"><strong>Cost controls</strong><span>Generic CSV with mapped controls fields</span><input id="costInput" type="file" accept=".csv" multiple></label>
         <label class="drop-card"><strong>Equation pack</strong><span>Optional project or client JSON controls</span><input id="equationInput" type="file" accept=".json" multiple></label>
       </div>
-      <div class="selected-files" id="selectedFiles">No files selected.</div>
+      <div class="selected-files" id="selectedFiles" role="status" aria-live="polite">No files selected.</div>
       <label class="currency-field">Currency code<input id="currencyInput" value="USD" maxlength="3" pattern="[A-Za-z]{3}" aria-label="Three-letter currency code"></label>
-      <div class="dialog-footer"><span id="apiStatus">Checking local analysis service…</span><button class="button button-primary button-large" id="compileButton" type="submit" value="default">Compile close</button></div>
+      <div class="dialog-footer"><span id="apiStatus" role="status" aria-live="polite">Checking local analysis service…</span><button class="button button-primary button-large" id="compileButton" type="submit" value="default">Compile close</button></div>
     </form>
   </dialog>
 
