@@ -41,14 +41,14 @@ jobs:
           cache: npm
 
       - name: Install locked audit dependencies
-        run: npm ci --no-audit --no-fund
+        run: |
+          mkdir -p build/diagnostics
+          npm ci --no-audit --no-fund 2>&1 | tee build/diagnostics/npm-ci.txt
 
       - name: Capture dependency audit
         id: dependency-audit
         continue-on-error: true
-        run: |
-          mkdir -p build/diagnostics
-          npm audit --json > build/diagnostics/npm-audit.json
+        run: npm audit --json > build/diagnostics/npm-audit.json
 
       - name: Test browser analysis engine
         run: npm run test:browser-engine
@@ -67,6 +67,7 @@ jobs:
           path: |
             playwright-report
             test-results
+            build/diagnostics/npm-ci.txt
             build/diagnostics/npm-audit.json
           if-no-files-found: ignore
           retention-days: 14
