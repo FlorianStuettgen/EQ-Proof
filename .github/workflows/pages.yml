@@ -8,6 +8,15 @@ on:
       - "examples/hyperscale_close/**"
       - "scripts/regenerate_control_room_demo.py"
       - ".github/workflows/pages.yml"
+      - "README.md"
+  pull_request:
+    paths:
+      - "src/eq_proof/web/**"
+      - "examples/hyperscale_close/**"
+      - "scripts/regenerate_control_room_demo.py"
+      - ".github/workflows/pages.yml"
+      - "README.md"
+      - "tests/test_pages_contract.py"
   workflow_dispatch:
 
 permissions:
@@ -16,15 +25,85 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: pages-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
+  validate:
+    name: Validate deployable site
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Validate bundle contract
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          root = Path("src/eq_proof/web")
+          required = {
+              "index.html",
+              "styles.css",
+              "refinements.css",
+              "app.js",
+              "renderers.js",
+              "workflow.js",
+              "showcase.js",
+              "demo-data.json",
+          }
+          missing = sorted(name for name in required if not (root / name).is_file())
+          assert not missing, f"Missing Pages assets: {missing}"
+
+          html = (root / "index.html").read_text(encoding="utf-8")
+          assert "Take the 90-second tour" in html
+          assert "EQ-Proof Control Room" in html
+          local_assets = re.findall(r'(?:src|href)="\./([^"?#]+)', html)
+          missing_links = sorted(
+              asset for asset in local_assets if not (root / asset).is_file()
+          )
+          assert not missing_links, f"Broken local asset references: {missing_links}"
+
+          payload = json.loads((root / "demo-data.json").read_text(encoding="utf-8"))
+          assert payload["schema_version"] == "eq-proof/control-room@2"
+          assert payload["gate"]["status"] == "blocked"
+          assert payload["portfolio"]["reported_eac"] == 407_000_000
+          assert payload["portfolio"]["defensible_eac"] == 418_000_000
+          assert payload["portfolio"]["exposure_above_reported_eac"] == 76_000_000
+          PY
+      - name: Smoke-test static bundle
+        run: |
+          python -m http.server 4173 --directory src/eq_proof/web >/tmp/eq-proof-pages.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:4173/ >/tmp/eq-proof-index.html; then
+              break
+            fi
+            sleep 1
+          done
+          grep -Fq "Take the 90-second tour" /tmp/eq-proof-index.html
+          curl --fail --silent http://127.0.0.1:4173/showcase.js >/dev/null
+          curl --fail --silent http://127.0.0.1:4173/demo-data.json >/tmp/eq-proof-demo.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(Path("/tmp/eq-proof-demo.json").read_text())
+          assert payload["schema_version"] == "eq-proof/control-room@2"
+          PY
+
   deploy:
+    name: Deploy GitHub Pages
+    if: github.event_name != 'pull_request'
+    needs: validate
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,3 +116,43 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+  verify:
+    name: Verify published application
+    if: github.event_name != 'pull_request'
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe deployed Control Room
+        env:
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+        run: |
+          test -n "$PAGE_URL"
+          curl \
+            --fail \
+            --location \
+            --retry 12 \
+            --retry-all-errors \
+            --retry-delay 5 \
+            --silent \
+            --show-error \
+            "$PAGE_URL" > /tmp/published-index.html
+          grep -Fq "Take the 90-second tour" /tmp/published-index.html
+          curl \
+            --fail \
+            --location \
+            --retry 12 \
+            --retry-all-errors \
+            --retry-delay 5 \
+            --silent \
+            --show-error \
+            "${PAGE_URL%/}/demo-data.json" > /tmp/published-demo.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          payload = json.loads(Path("/tmp/published-demo.json").read_text())
+          assert payload["schema_version"] == "eq-proof/control-room@2"
+          assert payload["gate"]["status"] == "blocked"
+          assert payload["portfolio"]["exposure_above_reported_eac"] == 76_000_000
+          PY
