@@ -44,10 +44,13 @@ jobs:
               "index.html",
               "styles.css",
               "refinements.css",
+              "audit.css",
+              "static-bootstrap.js",
               "app.js",
               "renderers.js",
               "workflow.js",
               "showcase.js",
+              "audit.js",
               "demo-data.json",
           }
           missing = sorted(name for name in required if not (root / name).is_file())
@@ -56,6 +59,10 @@ jobs:
           html = (root / "index.html").read_text(encoding="utf-8")
           assert "Take the 90-second tour" in html
           assert "EQ-Proof Control Room" in html
+          assert "Skip to the Control Room" in html
+          assert 'id="dialogClose" type="button"' in html
+          assert 'src="./static-bootstrap.js"' in html
+          assert "frame-ancestors" not in html
           assert not re.search(r'(?:src|href)="/(?!/)', html), (
               "Root-relative assets break when Pages serves the project under /EQ-Proof/."
           )
@@ -86,7 +93,11 @@ jobs:
             sleep 1
           done
           grep -Fq "Take the 90-second tour" /tmp/eq-proof-index.html
+          grep -Fq "Skip to the Control Room" /tmp/eq-proof-index.html
+          curl --fail --silent http://127.0.0.1:4173/static-bootstrap.js >/dev/null
           curl --fail --silent http://127.0.0.1:4173/showcase.js >/dev/null
+          curl --fail --silent http://127.0.0.1:4173/audit.js >/dev/null
+          curl --fail --silent http://127.0.0.1:4173/audit.css >/dev/null
           curl --fail --silent http://127.0.0.1:4173/demo-data.json >/tmp/eq-proof-demo.json
           python - <<'PY'
           import json

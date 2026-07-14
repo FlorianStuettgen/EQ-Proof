@@ -34,6 +34,10 @@ def test_pages_workflow_uses_the_official_static_deployment_shape():
         "Publish deployment status",
         "github-pages/live",
         "Take the 90-second tour",
+        "Skip to the Control Room",
+        "static-bootstrap.js",
+        "audit.js",
+        "audit.css",
         "demo-data.json",
     }
     for fragment in required_fragments:
@@ -52,10 +56,13 @@ def test_pages_bundle_is_self_contained_and_project_path_safe():
         "index.html",
         "styles.css",
         "refinements.css",
+        "audit.css",
+        "static-bootstrap.js",
         "app.js",
         "renderers.js",
         "workflow.js",
         "showcase.js",
+        "audit.js",
         "demo-data.json",
     }
     assert required <= {path.name for path in WEB.iterdir() if path.is_file()}
@@ -65,9 +72,40 @@ def test_pages_bundle_is_self_contained_and_project_path_safe():
     assert all((WEB / asset).is_file() for asset in local_assets)
     assert not re.search(r'(?:src|href)="/(?!/)', html)
 
+    assert "Skip to the Control Room" in html
+    assert 'src="./static-bootstrap.js"' in html
+    assert "frame-ancestors" not in html
+    assert 'id="dialogClose" type="button"' in html
+    assert 'id="inspector" role="dialog"' in html
+    assert 'id="evidenceGraph" role="group"' in html
+    assert 'aria-selected="true"' in html
+    assert 'aria-controls="panel-overview"' in html
+
     payload = json.loads((WEB / "demo-data.json").read_text(encoding="utf-8"))
     assert payload["schema_version"] == "eq-proof/control-room@2"
     assert payload["gate"]["status"] == "blocked"
     assert payload["portfolio"]["reported_eac"] == 407_000_000
     assert payload["portfolio"]["defensible_eac"] == 418_000_000
     assert payload["portfolio"]["exposure_above_reported_eac"] == 76_000_000
+
+
+def test_browser_audit_covers_function_accessibility_and_responsive_modes():
+    workflow = (
+        ROOT / ".github" / "workflows" / "ui-audit.yml"
+    ).read_text(encoding="utf-8")
+    config = (ROOT / "playwright.config.js").read_text(encoding="utf-8")
+    spec = (ROOT / "tests" / "ui" / "control-room.spec.js").read_text(
+        encoding="utf-8"
+    )
+
+    assert "playwright install --with-deps chromium" in workflow
+    assert "npm run test:ui" in workflow
+    assert "Functional UI, responsive, and accessibility audit" in workflow
+    assert "desktop" in config
+    assert "mobile" in config
+    assert "reduced-motion" in config
+    assert "AxeBuilder" in spec
+    assert "dialog opens honestly and closes" in spec
+    assert "tabs expose state" in spec
+    assert "guided review completes" in spec
+    assert "download with stable filenames" in spec

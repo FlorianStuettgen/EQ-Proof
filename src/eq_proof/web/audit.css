@@ -1,0 +1,157 @@
+html {
+  scroll-behavior: auto !important;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 200;
+  top: 10px;
+  left: 10px;
+  padding: 10px 14px;
+  border: 2px solid var(--mint);
+  border-radius: 10px;
+  color: #06231a;
+  background: var(--mint);
+  font-weight: 800;
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform .15s ease;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+:where(a, button, input, select, textarea, [role="button"], [role="tab"]):focus-visible {
+  outline: 3px solid var(--mint);
+  outline-offset: 3px;
+}
+
+.tab[aria-selected="true"] {
+  color: var(--text);
+  background: rgba(101, 245, 198, .11);
+  box-shadow: 0 0 0 1px rgba(101, 245, 198, .16) inset;
+}
+
+.tab-panel[hidden] {
+  display: none !important;
+}
+
+.contribution[role="button"]:focus-visible,
+.graph-node[role="button"]:focus-visible rect {
+  outline: none;
+  stroke: var(--mint);
+  stroke-width: 3;
+}
+
+.contribution[role="button"]:focus-visible {
+  border-color: var(--mint);
+  box-shadow: 0 0 0 3px rgba(101, 245, 198, .14);
+}
+
+.exception-table tr[role="button"]:focus-visible td {
+  background: rgba(101, 245, 198, .08);
+  box-shadow: inset 0 2px 0 var(--mint), inset 0 -2px 0 var(--mint);
+}
+
+.empty-state {
+  margin: 0;
+  padding: 18px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, .018);
+  text-align: center;
+}
+
+.exception-table .empty-row td {
+  padding: 24px;
+  color: var(--muted);
+  text-align: center;
+  cursor: default;
+}
+
+.inspector[inert] {
+  visibility: hidden;
+}
+
+.inspector.open {
+  visibility: visible;
+}
+
+.selected-files,
+.editor-status,
+#apiStatus {
+  overflow-wrap: anywhere;
+}
+
+.dialog-close,
+.inspector-close,
+.tour-progress button,
+.info-button {
+  min-width: 32px;
+  min-height: 32px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-duration: .01ms !important;
+    transition-delay: 0ms !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar {
+    gap: 8px;
+  }
+
+  .top-actions {
+    gap: 6px;
+  }
+
+  .top-actions .button-primary {
+    padding-inline: 11px;
+    white-space: nowrap;
+  }
+
+  .hero h1 {
+    font-size: clamp(40px, 13vw, 48px);
+  }
+
+  .credibility-strip {
+    grid-template-columns: 1fr;
+  }
+
+  .credibility-strip div,
+  .credibility-strip div:nth-child(n) {
+    border-right: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .credibility-strip div:first-child {
+    border-top: 0;
+  }
+
+  .tour-card {
+    right: 10px;
+    bottom: max(10px, env(safe-area-inset-bottom));
+    width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+    overflow-y: auto;
+  }
+}
