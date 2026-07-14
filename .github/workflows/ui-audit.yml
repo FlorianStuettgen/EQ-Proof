@@ -38,9 +38,10 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "20"
+          cache: npm
 
-      - name: Install audit dependencies
-        run: npm install --no-audit --no-fund
+      - name: Install locked audit dependencies
+        run: npm ci --no-audit --no-fund
 
       - name: Capture dependency audit
         id: dependency-audit
@@ -67,7 +68,6 @@ jobs:
             playwright-report
             test-results
             build/diagnostics/npm-audit.json
-            package-lock.json
           if-no-files-found: ignore
           retention-days: 14
 
