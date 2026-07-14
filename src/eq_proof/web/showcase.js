@@ -46,7 +46,7 @@ const tourSteps = [
     title: 'Separate the arithmetic error',
     target: '[data-tour-target="gap"]',
     tab: 'overview',
-    body: () => `Reported EAC is ${moneyFromPortfolio('reported_eac')}, while governed AC + ETC reconstructs to ${moneyFromPortfolio('defensible_eac')}. The ${moneyFromPortfolio('deterministic_forecast_gap', 'deterministic_gap')} difference is a direct internal contradiction—not a risk opinion.`,
+    body: () => `Reported EAC is ${moneyFromPortfolio('reported_eac')}, while governed AC + ETC reconstructs to ${moneyFromPortfolio('defensible_eac')}. The ${moneyFromPortfolio('deterministic_forecast_gap', 'deterministic_gap')} difference is a direct deterministic contradiction—not a risk opinion.`,
     action: () => inspectMetric('deterministic_forecast_gap'),
   },
   {
