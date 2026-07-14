@@ -182,12 +182,15 @@ test('desktop page has no serious or critical automated accessibility findings',
 
 test('reduced-motion mode removes smooth scrolling and decorative animation', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'reduced-motion');
+  await page.emulateMedia({ reducedMotion: 'reduce' });
   await loadControlRoom(page);
 
   const motion = await page.evaluate(() => ({
+    reduced: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
     scrollBehavior: getComputedStyle(document.documentElement).scrollBehavior,
     animationName: getComputedStyle(document.querySelector('.preview-window')).animationName,
   }));
+  expect(motion.reduced).toBe(true);
   expect(motion.scrollBehavior).toBe('auto');
   expect(motion.animationName).toBe('none');
 });
