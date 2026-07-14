@@ -1,0 +1,13 @@
+[
+  {
+    "id": "portfolio.etc_non_negative",
+    "title": "Estimate to complete remains non-negative",
+    "domain": "forecast",
+    "expression": "ETC >= 0",
+    "severity": "blocker",
+    "description": "Remaining forecast should not be negative without an explicit governed treatment.",
+    "remediation": "Correct the ETC or document the approved accounting treatment before close.",
+    "required_fields": ["ETC"],
+    "record_type": "control_account"
+  }
+]
