@@ -13,6 +13,8 @@ All notable changes are documented here. The Python package follows semantic ver
 - Routed schedule findings to schedule assurance rather than inventing dollar impacts.
 - Made incomplete submitted risk-adjusted coverage explicit instead of summing misleading partial totals.
 - Replaced legacy browser modules with purpose-named renderer and workflow modules.
+- Normalized computed proof outputs to 15 significant digits before attestation, eliminating one-ULP evidence drift across supported numerical environments while preserving submitted and specification values exactly.
+- Advanced the lower proof engine implementation version to `1.4.0` without changing `proof@1` or `dykstra-l2-v1`; existing artifacts remain verifiable.
 
 ### Added
 
@@ -20,7 +22,8 @@ All notable changes are documented here. The Python package follows semantic ver
 - `control-room.json` CLI output, explicit currency labels, equation validation endpoint and downloadable equation packs.
 - Optional equation applicability predicates.
 - Exception filters, graph truncation reporting and static-versus-local UX boundaries.
-- Tests for malformed equations, resource limits, incomplete summaries, non-finite arithmetic, trusted hosts, CSV formula injection and semantic routing.
+- Tests for malformed equations, resource limits, incomplete summaries, non-finite arithmetic, trusted hosts, CSV formula injection, semantic routing and one-ULP proof stability.
+- CI failure artifacts containing exact deterministic-evidence drift for reproducibility debugging.
 
 ### Security
 
