@@ -31,11 +31,16 @@ jobs:
         run: python -m compileall -q src
       - name: Validate browser JavaScript
         run: |
+          node --check src/eq_proof/web/static-bootstrap.js
           node --check src/eq_proof/web/app.js
           node --check src/eq_proof/web/renderers.js
           node --check src/eq_proof/web/workflow.js
           node --check src/eq_proof/web/showcase.js
           node --check src/eq_proof/web/audit.js
+          node --check src/eq_proof/web/browser-engine.js
+          node --check src/eq_proof/web/browser-bridge.js
+      - name: Test browser analysis engine
+        run: npm run test:browser-engine
       - name: Build wheel
         run: python -m pip wheel . --no-deps -w dist
 
