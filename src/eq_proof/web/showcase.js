@@ -59,7 +59,7 @@ const tourSteps = [
       if (!account) return 'Account-level reconstruction is unavailable for this data set.';
       const exposure = account.exposure_above_reported_eac ?? account.hidden_exposure ?? 0;
       const deterministic = account.deterministic_forecast_gap ?? account.deterministic_gap ?? 0;
-      return `${account.record_id} contributes ${formatMoney(exposure)} above reported EAC, including ${formatMoney(deterministic)} of deterministic forecast contradiction. Click the account after the tour to inspect every component.`;
+      return `${account.record_id} contributes ${formatMoney(exposure)} above reported EAC, including ${formatMoney(deterministic)} of deterministic forecast contradiction. Select the account after the tour to inspect every component.`;
     },
     action: () => {
       closeInspector();
@@ -141,7 +141,10 @@ function previousTourStep() {
 }
 
 function markdownCell(value) {
-  return String(value ?? '').replaceAll('|', '\\|').replaceAll('\n', ' ');
+  return String(value ?? '')
+    .replaceAll('|', '\\|')
+    .replaceAll('`', '\\`')
+    .replaceAll('\n', ' ');
 }
 
 function buildExecutiveBrief() {
@@ -177,6 +180,8 @@ function initShowcase() {
   $('#tourBack')?.addEventListener('click', previousTourStep);
   $('#downloadBriefButton')?.addEventListener('click', exportExecutiveBrief);
   document.addEventListener('keydown', (event) => {
+    const formControl = event.target?.matches?.('input, textarea, select, [contenteditable="true"]');
+    if (formControl && ['ArrowRight', 'ArrowLeft'].includes(event.key)) return;
     if (event.key === 'Escape' && tourOpen) closeTour();
     if (event.key === 'ArrowRight' && tourOpen) nextTourStep();
     if (event.key === 'ArrowLeft' && tourOpen) previousTourStep();
@@ -193,3 +198,10 @@ function initShowcase() {
 }
 
 initShowcase();
+
+const audit = document.createElement('script');
+audit.src = './audit.js';
+audit.onerror = () => {
+  console.error('EQ-Proof interaction hardening failed to load.');
+};
+document.head.append(audit);
