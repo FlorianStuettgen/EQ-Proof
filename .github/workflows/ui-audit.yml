@@ -40,8 +40,12 @@ jobs:
       - name: Install audit dependencies
         run: npm install --no-audit --no-fund
 
-      - name: Audit dependencies
-        run: npm audit --audit-level=high
+      - name: Capture dependency audit
+        id: dependency-audit
+        continue-on-error: true
+        run: |
+          mkdir -p build/diagnostics
+          npm audit --json > build/diagnostics/npm-audit.json
 
       - name: Test browser analysis engine
         run: npm run test:browser-engine
@@ -60,5 +64,10 @@ jobs:
           path: |
             playwright-report
             test-results
+            build/diagnostics/npm-audit.json
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Enforce high-severity dependency audit
+        if: steps.dependency-audit.outcome == 'failure'
+        run: npm audit --audit-level=high
