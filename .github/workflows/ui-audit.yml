@@ -7,6 +7,7 @@ on:
       - "tests/ui/**"
       - "tests/browser-engine.test.js"
       - "package.json"
+      - "package-lock.json"
       - "playwright.config.js"
       - ".github/workflows/ui-audit.yml"
   push:
@@ -16,6 +17,7 @@ on:
       - "tests/ui/**"
       - "tests/browser-engine.test.js"
       - "package.json"
+      - "package-lock.json"
       - "playwright.config.js"
       - ".github/workflows/ui-audit.yml"
   workflow_dispatch:
@@ -30,15 +32,23 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Set up Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: "20"
+          cache: npm
 
-      - name: Install audit dependencies
-        run: npm install --no-audit --no-fund
+      - name: Install locked audit dependencies
+        run: |
+          mkdir -p build/diagnostics
+          npm ci --no-audit --no-fund 2>&1 | tee build/diagnostics/npm-ci.txt
+
+      - name: Capture dependency audit
+        id: dependency-audit
+        continue-on-error: true
+        run: npm audit --json > build/diagnostics/npm-audit.json
 
       - name: Test browser analysis engine
         run: npm run test:browser-engine
@@ -51,11 +61,17 @@ jobs:
 
       - name: Upload audit report
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: eq-proof-ui-audit
           path: |
             playwright-report
             test-results
+            build/diagnostics/npm-ci.txt
+            build/diagnostics/npm-audit.json
           if-no-files-found: ignore
           retention-days: 14
+
+      - name: Enforce high-severity dependency audit
+        if: steps.dependency-audit.outcome == 'failure'
+        run: npm audit --audit-level=high

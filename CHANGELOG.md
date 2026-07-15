@@ -4,6 +4,8 @@ All notable changes are documented here. The Python package follows semantic ver
 
 ## Unreleased
 
+## 1.5.0 — 2026-07-15
+
 ### Added
 
 - Guided five-step, 90-second Control Room tour covering the gate, deterministic contradiction, material account, evidence lineage and action register.
