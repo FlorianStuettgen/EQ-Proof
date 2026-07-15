@@ -28,9 +28,9 @@ def test_pages_workflow_uses_the_official_static_deployment_shape():
         "name: Deploy GitHub Pages",
         "Validate deployable bundle",
         "Smoke-test static bundle",
-        "actions/configure-pages@v5",
-        "actions/upload-pages-artifact@v5",
-        "actions/deploy-pages@v5",
+        "actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0",
+        "actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0",
+        "actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128 # v5.0.0",
         "url: ${{ steps.deployment.outputs.page_url }}",
         "statuses: write",
         "Publish deployment status",
@@ -47,9 +47,36 @@ def test_pages_workflow_uses_the_official_static_deployment_shape():
 
     assert "pull_request:" not in workflow
     assert workflow.count("environment:") == 1
-    assert workflow.count("actions/deploy-pages@v5") == 1
+    assert workflow.count(
+        "actions/deploy-pages@cd2ce8fcbc39b97be8ca5fce6e763baed58fa128"
+    ) == 1
     assert "if: always()" in workflow
     assert "cancel-in-progress: false" in workflow
+
+
+def test_external_workflow_actions_are_pinned_to_full_commit_shas():
+    action_reference = re.compile(
+        r"^\s*(?:-\s*)?uses:\s*([^@\s]+)@([^\s#]+)", re.MULTILINE
+    )
+    workflows = ROOT / ".github" / "workflows"
+    mutable_references = []
+    reference_count = 0
+
+    for workflow_path in sorted(workflows.glob("*.y*ml")):
+        workflow = workflow_path.read_text(encoding="utf-8")
+        for action, reference in action_reference.findall(workflow):
+            if action.startswith("./"):
+                continue
+            reference_count += 1
+            if re.fullmatch(r"[0-9a-f]{40}", reference) is None:
+                mutable_references.append(
+                    f"{workflow_path.name}: {action}@{reference}"
+                )
+
+    assert reference_count > 0
+    assert not mutable_references, (
+        "Mutable external action references:\n" + "\n".join(mutable_references)
+    )
 
 
 def test_pages_bundle_is_a_functional_project_path_safe_browser_application():
