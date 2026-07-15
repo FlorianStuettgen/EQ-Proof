@@ -25,7 +25,7 @@ from .proof import build_proof, generate_keypair, render_markdown, verify_proof
 from .solver import repair
 from .specification import load_specification, parse_specification
 
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 
 __all__ = [
     "Analysis",
