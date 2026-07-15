@@ -1,6 +1,10 @@
-<p align="center">
-  <img src="docs/assets/control-room.svg" alt="EQ-Proof Control Room showing a blocked monthly close, an eleven-million-dollar deterministic forecast contradiction, and a seventy-six-million-dollar risk-adjusted position above reported EAC" width="100%" />
-</p>
+# EQ-Proof Control Room
+
+**A local-first project-controls assurance system that compiles Primavera P6, cost, change, risk and user-written equations into a traceable monthly-close gate.**
+
+Project controls are usually reviewed in fragments: schedule quality in P6, cost and earned value in spreadsheets or enterprise exports, change in a register, risk in another workbook, and the executive forecast in a deck.
+
+Every number can look plausible while the combined close is internally impossible. EQ-Proof reconstructs the declared position, executes the acceptance logic, identifies the records that fail, and preserves the route from source record to close decision.
 
 <p align="center">
   <a href="https://florianstuettgen.github.io/EQ-Proof/"><strong>Open the functional browser workbench</strong></a>
@@ -16,21 +20,12 @@
   <a href="https://github.com/FlorianStuettgen/EQ-Proof/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/FlorianStuettgen/EQ-Proof/actions/workflows/ci.yml/badge.svg" /></a>
   <a href="https://github.com/FlorianStuettgen/EQ-Proof/actions/workflows/ui-audit.yml"><img alt="UI audit" src="https://github.com/FlorianStuettgen/EQ-Proof/actions/workflows/ui-audit.yml/badge.svg" /></a>
   <a href="https://github.com/FlorianStuettgen/EQ-Proof/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/FlorianStuettgen/EQ-Proof/actions/workflows/codeql.yml/badge.svg" /></a>
-  <img alt="Python 3.10–3.13" src="https://img.shields.io/badge/python-3.10%E2%80%933.13-3776AB" />
-  <img alt="Coverage gate 92%" src="https://img.shields.io/badge/coverage_gate-92%25-16a34a" />
-  <img alt="License Apache 2.0" src="https://img.shields.io/badge/license-Apache--2.0-7c3aed" />
   <img alt="Local first" src="https://img.shields.io/badge/files-never_uploaded-0f766e" />
 </p>
 
-# EQ-Proof Control Room
-
-**A local-first project-controls assurance system that compiles Primavera P6, cost, change, risk and user-written equations into a traceable monthly-close gate.**
-
-Project controls are usually reviewed in fragments: schedule quality in P6, cost and earned value in spreadsheets or enterprise exports, change in a register, risk in another workbook, and the executive forecast in a deck.
-
-Every number can look plausible while the combined close is internally impossible.
-
-EQ-Proof reconstructs the declared position, executes the acceptance logic, identifies the records that fail, and preserves the evidence behind the decision.
+<p align="center">
+  <img src="docs/assets/control-room.svg" alt="EQ-Proof Control Room showing a blocked monthly close, an eleven-million-dollar deterministic forecast contradiction, and a seventy-six-million-dollar risk-adjusted position above reported EAC" width="100%" />
+</p>
 
 ## Use the hosted application
 
@@ -281,6 +276,8 @@ Repository proof enforces:
 - signed proof and semantic-replay scenarios.
 
 The exact test count remains in validated pull-request records rather than being hard-coded into the public product, preventing stale engineering claims.
+
+Performance claims are bounded: the [checked-in numerical baseline](benchmarks/README.md) covers representative dense cases up to **250 variables** and records median, minimum, maximum and iteration count. It is a local regression baseline, not a throughput SLA.
 
 Run the repository proof locally:
 
