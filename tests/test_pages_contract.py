@@ -29,7 +29,7 @@ def test_pages_workflow_uses_the_official_static_deployment_shape():
         "Validate deployable bundle",
         "Smoke-test static bundle",
         "actions/configure-pages@v5",
-        "actions/upload-pages-artifact@v3",
+        "actions/upload-pages-artifact@v5",
         "actions/deploy-pages@v5",
         "url: ${{ steps.deployment.outputs.page_url }}",
         "statuses: write",
