@@ -72,7 +72,7 @@ def create_app() -> Any:
         )
     app = FastAPI(
         title="EQ-Proof Control Room",
-        version="1.4.0",
+        version="1.5.0",
         docs_url=None,
         redoc_url=None,
     )
