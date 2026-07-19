@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security vulnerability privately
+    url: https://github.com/FlorianStuettgen/EQ-Proof/security/advisories/new
+    about: Do not disclose exploit details, private project data, credentials, keys, or sensitive proof artifacts in a public issue.
+  - name: Review runtime and data-handling boundaries
+    url: https://github.com/FlorianStuettgen/EQ-Proof/blob/main/docs/RUNTIME_MODES.md
+    about: Confirm hosted-browser, loopback, CLI, storage, and file-movement behavior before reporting a boundary issue.
+  - name: Read the project-controls semantic model
+    url: https://github.com/FlorianStuettgen/EQ-Proof/blob/main/docs/SEMANTIC_MODEL.md
+    about: Check the governed terminology, formulas, gate states, compatibility fields, and explicit non-claims.
