@@ -13,7 +13,7 @@ Every number can look plausible while the combined close is internally impossibl
   ·
   <a href="docs/SEMANTIC_MODEL.md">Semantic model</a>
   ·
-  <a href="docs/PRODUCT_ARCHITECTURE.md">Architecture</a>
+  <a href="docs/RUNTIME_MODES.md">Runtime and privacy</a>
 </p>
 
 <p align="center">
@@ -39,16 +39,21 @@ The hosted application can:
 - validate and execute browser-authored controls;
 - calculate SHA-256 source manifests with Web Crypto;
 - reconstruct the close gate, account contributions, findings and evidence graph;
-- persist the completed workspace in local browser storage;
+- operate session-only by default;
+- optionally remember the complete workspace in browser storage after explicit opt-in;
 - export and reopen the complete `eq-proof/control-room@2` JSON artifact;
 - export the exception register and executive brief; and
-- reset to the deterministic demo at any time.
+- reset to the deterministic demo or clear saved browser data at any time.
 
 Files are processed entirely in the browser. They are never uploaded to EQ-Proof, a third-party API, analytics service or model endpoint.
+
+The complete workspace may include normalized records, source names and hashes, equations, findings and reconstructed values. **Remember workspace on this browser** is therefore disabled by default. Enable it only on an appropriate device and browser profile; otherwise the completed analysis remains available for the current tab and should be exported before the page is closed or reloaded.
 
 Downloadable CSV, XER and equation-pack samples are available directly inside the analysis dialog.
 
 The **Take the guided Control Room tour** action remains available for a structured walkthrough of either the deterministic sample or a close compiled from your own files.
+
+See [Runtime Modes and Data Handling](docs/RUNTIME_MODES.md) for the canonical hosted-browser, loopback and CLI boundaries.
 
 ## What the checked-in scenario proves
 
@@ -57,13 +62,15 @@ The synthetic hyperscale scenario deliberately produces separate conclusions:
 | State | Value | Meaning |
 | --- | ---: | --- |
 | Reported EAC | **$407M** | submitted deterministic forecast |
-| Defensible EAC | **$418M** | independently reconstructed `AC + ETC` |
-| Deterministic forecast gap | **$11M** | submitted EAC contradicts its governed detail |
+| Detail-reconstructed EAC | **$418M** | arithmetic reconstruction from `AC + ETC` |
+| Deterministic forecast gap | **$11M** | submitted EAC contradicts its available detail |
 | Declared change and configured risk | **$65M** | pending change plus supplied risk uplift |
-| Reconstructed risk-adjusted position | **$483M** | declared bridge built from defensible EAC |
+| Reconstructed risk-adjusted position | **$483M** | declared bridge built from detail-reconstructed EAC |
 | Submitted risk-adjusted summary | **$472M** | summary supplied by the close |
 | Risk-adjusted reconciliation gap | **$11M** | submitted summary is below the declared bridge |
 | Position above reported EAC | **$76M** | deterministic contradiction plus declared exposure |
+
+The current schema retains `defensible_eac` as a compatibility field. The visitor-facing label is **detail-reconstructed EAC** because `AC + ETC` proves an arithmetic relationship, not independent commercial defensibility.
 
 The `$76M` is not treated as one homogeneous error. It consists of `$11M` of direct deterministic contradiction and `$65M` of declared pending-change and configured-risk exposure.
 
@@ -109,6 +116,16 @@ The browser workbench and Python engine produce the same decision vocabulary:
 
 Outputs are suitable for Excel, Power Query, Power BI, Smartsheet, SharePoint, ticket automation and auditable close packages.
 
+## Product surfaces
+
+EQ-Proof has a deliberate hierarchy:
+
+1. **Control Room** is the primary monthly-close assurance product.
+2. **`eq-controls`** is the project-controls engine and automation surface behind the browser and CLI workflows.
+3. **`eq-proof`** is the lower numerical repair, attestation and semantic-replay engine. It is independently versioned and optional for ordinary close-gate use.
+
+The lower proof engine strengthens reproducibility for numerical workflows, but it is not the product definition of the Control Room.
+
 ## Browser engine boundary
 
 The hosted workbench uses a purpose-built expression parser. It does not use JavaScript `eval`, `Function`, imported code or remote execution.
@@ -136,7 +153,7 @@ eq-controls serve
 
 Open `http://127.0.0.1:8765` when the browser does not open automatically.
 
-The loopback application processes uploads in a request-scoped operating-system temporary directory and does not persist them.
+The loopback application processes uploads in a request-scoped operating-system temporary directory and does not persist them. Files explicitly downloaded by the user remain wherever the user saves them.
 
 ## Run the CLI close gate
 
@@ -223,18 +240,18 @@ Project-specific controls use the same safe evaluator:
 ## Precise reconstruction model
 
 ```text
-reported EAC                    = submitted EAC
-defensible EAC                  = AC + ETC
-deterministic forecast gap      = defensible EAC - reported EAC
-configured change and risk      = pending change + configured risk uplift
-reconstructed risk-adjusted EAC = defensible EAC + configured change and risk
-risk-adjusted reconciliation    = reconstructed risk-adjusted EAC - submitted risk-adjusted EAC
-position above reported EAC     = reconstructed risk-adjusted EAC - reported EAC
+reported EAC                         = submitted EAC
+detail-reconstructed EAC             = AC + ETC
+deterministic forecast gap           = detail-reconstructed EAC - reported EAC
+configured change and risk           = pending change + configured risk uplift
+reconstructed risk-adjusted EAC      = detail-reconstructed EAC + configured change and risk
+risk-adjusted reconciliation         = reconstructed risk-adjusted EAC - submitted risk-adjusted EAC
+position above reported EAC          = reconstructed risk-adjusted EAC - reported EAC
 ```
 
 Reported values are never silently overwritten. Incomplete submitted risk-adjusted coverage remains explicitly incomplete rather than being summed into a misleading partial total.
 
-See the [Semantic Model](docs/SEMANTIC_MODEL.md) for the authoritative vocabulary and boundaries.
+See the [Semantic Model](docs/SEMANTIC_MODEL.md) for authoritative vocabulary and compatibility boundaries.
 
 ## Architecture
 
@@ -254,7 +271,7 @@ flowchart LR
     F --> O[CSV, JSON, report and executive brief]
 ```
 
-The hosted application uses semantic HTML, CSS and vanilla JavaScript. The Python implementation powers the CLI and local API. Both implementations preserve the same schema and semantic boundaries, while their independent tests guard against drift.
+The hosted application uses semantic HTML, CSS and vanilla JavaScript. The Python implementation powers the CLI and local API. A shared golden-fixture test runs the checked-in P6, cost and equation files through the browser engine and compares the resulting gate, reconstruction, findings, source manifest and graph with the Python-generated public Control Room artifact.
 
 ## Engineering evidence
 
@@ -263,9 +280,10 @@ Repository proof enforces:
 - Python **3.10–3.13**;
 - branch-aware coverage above a **92% gate**;
 - browser-engine unit tests;
+- Python-generated-demo versus browser-engine semantic equivalence;
 - real file-to-decision Playwright workflows;
 - desktop, mobile and reduced-motion coverage;
-- keyboard, focus, download and persistence tests;
+- keyboard, focus, download and explicit-persistence tests;
 - axe accessibility checks;
 - adversarial equation tests;
 - P6 XER and CSV adapter tests;
@@ -277,20 +295,26 @@ Repository proof enforces:
 
 The exact test count remains in validated pull-request records rather than being hard-coded into the public product, preventing stale engineering claims.
 
-Performance claims are bounded: the [checked-in numerical baseline](benchmarks/README.md) covers representative dense cases up to **250 variables** and records median, minimum, maximum and iteration count. It is a local regression baseline, not a throughput SLA.
+Performance claims are bounded: the [checked-in numerical baseline](benchmarks/README.md) is a **proof-engine microbenchmark** for representative dense numerical-repair cases up to 250 variables. It is not a Control Room, P6-ingestion or project-controls throughput result and is not a service-level objective.
 
 Run the repository proof locally:
 
 ```bash
 python scripts/check_repository.py
-npm install
+npm ci
 npm run test:browser-engine
 npm run test:ui
 ```
 
+## Current fit
+
+EQ-Proof is currently a good fit for controlled evaluation, portfolio demonstration, local close reconciliation, governed equation packs and automation over supported P6 `TASK` and CSV exports.
+
+It is not yet a replacement for a production cost system, scheduling engine, risk simulator, enterprise integration platform, key-management service or contractual certification process. Cross-period movement intelligence, deeper P6 network analysis, WBS aggregation and additional enterprise adapter profiles remain roadmap work.
+
 ## Status and roadmap
 
-EQ-Proof is a **Beta portfolio and engineering product**, not a production cost system, scheduling engine, risk simulator, key-management service or contractual certification platform.
+EQ-Proof is a **Beta portfolio and engineering product**.
 
 The next product cycle is cross-period forecast intelligence: comparing prior and current closes, identifying supported movement, lifecycle changes, governance changes and unreconciled restatements.
 
