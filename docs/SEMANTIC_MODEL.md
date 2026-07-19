@@ -1,6 +1,6 @@
-# Control Room Semantic Model
+# Control Room semantic model
 
-This document is the vocabulary contract for EQ-Proof project-controls outputs. Code, UI, examples, reports and documentation should use these terms consistently.
+This document is the vocabulary contract for EQ-Proof project-controls outputs. Code, UI, examples, reports and documentation should use these terms consistently. Machine-field compatibility is distinguished from visitor-facing labels where an existing schema name carries a stronger implication than the calculation supports.
 
 ## Financial states
 
@@ -14,22 +14,24 @@ reported_eac = submitted EAC
 
 EQ-Proof treats this as a source claim. It is never silently replaced.
 
-### Defensible EAC
+### Detail-reconstructed EAC
 
-The deterministic EAC reconstructed from governed detail when actual cost and estimate to complete are both available.
+The deterministic EAC reconstructed from available actual cost and estimate-to-complete detail.
 
 ```text
-defensible_eac = AC + ETC
+detail-reconstructed EAC = AC + ETC
 ```
 
-This is an internal arithmetic reconciliation, not a prediction of the commercially correct outcome.
+The current `eq-proof/control-room@2` schema retains the field name `defensible_eac` for compatibility. User-facing interfaces and new documentation call the same value **detail-reconstructed EAC**.
+
+This value establishes an internal arithmetic reconciliation. It does not independently establish commercial defensibility, forecast quality, management approval, contractual correctness or the most likely final outcome.
 
 ### Deterministic forecast gap
 
 The contradiction between submitted EAC and its governed components.
 
 ```text
-deterministic_forecast_gap = defensible_eac - reported_eac
+deterministic_forecast_gap = detail-reconstructed EAC - reported EAC
 ```
 
 A positive value means the submitted EAC is below `AC + ETC`. This is the strongest dollar-valued inconsistency EQ-Proof can establish from the declared deterministic fields alone.
@@ -42,15 +44,15 @@ The sum of explicitly supplied pending-change exposure and risk uplift.
 configured_change_and_risk = pending_change_exposure + risk_exposure
 ```
 
-`risk_exposure` is treated as a configured source value. EQ-Proof does not infer its probability basis.
+`risk_exposure` is treated as a configured source value. EQ-Proof does not infer or certify its probability basis.
 
 ### Reconstructed risk-adjusted EAC
 
-A declared bridge built from defensible EAC plus supplied change and risk fields.
+A declared bridge built from detail-reconstructed EAC plus supplied change and risk fields.
 
 ```text
 reconstructed_risk_adjusted_eac =
-    defensible_eac
+    detail-reconstructed EAC
     + pending_change_exposure
     + risk_exposure
 ```
@@ -102,9 +104,11 @@ It must not be labelled entirely as hidden, unsupported or erroneous.
 
 CLI automation can choose a stricter threshold with `--fail-on blocker|major|minor|info|never`.
 
-## Assurance score
+## Control severity index
 
-The displayed assurance score is a deterministic severity-penalty heuristic used for triage:
+The current schema retains `assurance.score` and `assurance.label` for compatibility. The interface presents the number as a **control severity index**, not an assurance percentage.
+
+The index is a deterministic finding-weight heuristic used for triage:
 
 ```text
 100
@@ -114,15 +118,24 @@ The displayed assurance score is a deterministic severity-penalty heuristic used
 - 1 per info finding
 ```
 
-It is bounded from 0 to 100. It is not a probability, confidence interval, forecast accuracy estimate or statistically calibrated risk score.
+It is bounded from 0 to 100. The weights are transparent engineering defaults, not empirically calibrated outcome weights. The index is not:
+
+- a probability;
+- a confidence interval;
+- a forecast-accuracy estimate;
+- a statistically calibrated risk score;
+- a contractual assurance opinion; or
+- a substitute for the gate, severity counts, affected domains and material residuals.
+
+Consumers should treat the gate state and individual findings as primary. The combined index is a secondary ordering aid. A future schema revision should rename the machine field if that can be done without ambiguous compatibility behavior.
 
 ## Finding applicability
 
 A finding can be:
 
 - `pass` — the equation executed and held within tolerance;
-- `fail` — the equation executed and did not hold;
-- `not_applicable` — required fields were unavailable, the record type differed, or the optional applicability predicate did not match.
+- `fail` — the equation executed and did not hold; or
+- `not_applicable` — required fields were unavailable, the record type differed or the optional applicability predicate did not match.
 
 `not_applicable` is not a pass.
 
@@ -150,3 +163,9 @@ Every Control Room payload includes a three-letter currency code and duration un
 Native adapters record SHA-256 source digests. Analysis outputs embed the complete executed equation manifest and all findings. This supports deterministic replay of EQ-Proof's declared checks when the same source files, equation manifest and engine version are available.
 
 It does not prove that source records were truthful, authorized or complete before ingestion.
+
+## Runtime and persistence vocabulary
+
+A **hosted browser analysis** executes in the visitor's browser and does not upload project files to EQ-Proof. It is session-only by default. A **remembered browser workspace** is the complete Control Room JSON stored in browser local storage after explicit opt-in. A **local Control Room analysis** executes through the loopback Python application and uses request-scoped temporary files.
+
+The canonical data-handling definitions are in [Runtime Modes and Data Handling](RUNTIME_MODES.md).

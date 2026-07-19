@@ -19,12 +19,18 @@ async function loadControlRoom(page) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => localStorage.removeItem('eq-proof/browser-workspace@1'));
+  await page.addInitScript(() => {
+    localStorage.removeItem('eq-proof/browser-workspace@1');
+    localStorage.removeItem('eq-proof/browser-persistence@1');
+  });
 });
 
 test('loads the decision without runtime or layout failures', async ({ page }) => {
   const errors = await loadControlRoom(page);
   await expect(page.locator('#defensibleEac')).toContainText('418');
+  await expect(page.locator('[data-inspect="defensible_eac"]').locator('..')).toContainText('Detail-reconstructed EAC');
+  await expect(page.locator('#assuranceRing small')).toHaveText('severity index');
+  await expect(page.locator('#assuranceNote')).toContainText('not a probability');
   await expect(page.locator('#deterministicGap')).toContainText('11');
   await expect(page.locator('#riskAdjustedPosition')).toContainText('483');
   const overflow = await page.evaluate(() => ({
