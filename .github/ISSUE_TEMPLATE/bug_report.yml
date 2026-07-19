@@ -1,33 +1,77 @@
 name: Bug report
-description: Report a reproducible defect in validation, repair, proof generation, or verification
-title: "[bug] "
-labels: [bug]
+description: Report a reproducible defect using synthetic or sanitized evidence.
+title: "[Bug]: "
+labels:
+  - bug
 body:
   - type: markdown
     attributes:
-      value: Do not include private keys or sensitive proof data. Report security issues through a private advisory.
+      value: |
+        Thank you for helping improve EQ-Proof. Do not include private project data, credentials, private keys, exploit details, or sensitive proof artifacts. Security vulnerabilities belong in a private security advisory.
+  - type: dropdown
+    id: runtime
+    attributes:
+      label: Runtime mode
+      description: Where did the defect occur?
+      options:
+        - Hosted browser workbench
+        - Local Control Room (loopback application)
+        - Project-controls CLI (eq-controls)
+        - Numerical proof CLI/API (eq-proof)
+        - Documentation or generated evidence
+        - Continuous integration or packaging
+    validations:
+      required: true
   - type: input
     id: version
     attributes:
-      label: EQ-Proof version
-      placeholder: 1.1.0
+      label: Version or commit
+      description: Provide the package version, release tag, or full commit SHA.
+      placeholder: "1.5.0 or 3787d31bf064d03c81da0f1eb1e7b0036112607b"
     validations:
       required: true
   - type: textarea
-    id: reproduction
+    id: problem
     attributes:
-      label: Minimal reproduction
-      description: Include a minimized specification, input, command, and observed output.
+      label: Observed behavior
+      description: Describe what happened and the decision, output, or boundary that was affected.
     validations:
       required: true
   - type: textarea
     id: expected
     attributes:
       label: Expected behavior
+      description: Describe the result or controlled failure you expected.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Use the smallest synthetic or sanitized fixture possible. Include exact commands or browser steps.
+      render: shell
     validations:
       required: true
   - type: textarea
     id: environment
     attributes:
       label: Environment
-      description: Python version, operating system, NumPy version, and installation method.
+      description: Include browser or Python version, operating system, installation method, and relevant package versions.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Diagnostic evidence
+      description: Add non-sensitive logs, validation output, screenshots, schema identifiers, or artifact hashes. Remove local paths and private source names when they are not required.
+  - type: checkboxes
+    id: boundary
+    attributes:
+      label: Boundary confirmation
+      options:
+        - label: I used synthetic or sanitized evidence and removed private project data, credentials, keys, and sensitive infrastructure details.
+          required: true
+        - label: I checked the current Runtime Modes, Security Policy, and open issues before filing.
+          required: true
+        - label: This is not a vulnerability report requiring private disclosure.
+          required: true
