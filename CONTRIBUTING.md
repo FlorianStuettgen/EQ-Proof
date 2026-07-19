@@ -2,6 +2,15 @@
 
 Contributions should preserve the project's central properties: every proof claim must be independently reproducible from the artifact, and every project-controls claim must remain bounded by the declared source fields, equations and runtime mode.
 
+## Opening an issue
+
+Use the structured GitHub issue forms:
+
+- **Bug report** for reproducible defects using the smallest synthetic or sanitized fixture possible.
+- **Feature request** for a bounded capability with an explicit decision, evidence plan, trust boundary and non-claims.
+
+Do not file vulnerabilities, exploit details, private project data, credentials, private keys or sensitive proof artifacts in a public issue. Use GitHub's private security-advisory interface instead. Review `docs/RUNTIME_MODES.md`, `docs/SEMANTIC_MODEL.md`, the current roadmap and open issues before filing.
+
 ## Before opening a change
 
 Install the Python development environment and run the repository proof:
