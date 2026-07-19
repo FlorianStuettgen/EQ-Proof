@@ -4,6 +4,26 @@ All notable changes are documented here. The Python package follows semantic ver
 
 ## Unreleased
 
+### Added
+
+- Canonical runtime and data-handling contract covering hosted-browser, loopback, CLI and numerical-proof modes.
+- Shared golden-fixture test comparing browser-engine gate, reconstruction, findings, source manifest and graph semantics with the Python-generated public Control Room artifact.
+- Browser controls and Playwright coverage for explicit workspace-persistence opt-in, session-only operation and clearing saved data.
+
+### Changed
+
+- Made the hosted workbench session-only by default; complete Control Room JSON is persisted in browser local storage only after explicit opt-in.
+- Reframed the visitor-facing `AC + ETC` state as **detail-reconstructed EAC** while retaining `defensible_eac` as a schema-compatibility field.
+- Reframed the displayed assurance number as a non-calibrated **control severity index** and made gate state and individual findings primary.
+- Aligned the README, portfolio case study, architecture, semantic model, contribution guidance and security policy with current functional browser behavior.
+- Clarified that the checked-in numerical baseline is a proof-engine microbenchmark, not Control Room or P6-ingestion throughput evidence.
+
+### Security
+
+- Updated supported-package policy to include 1.5.x.
+- Documented the sensitivity of remembered browser workspaces and the limits of local processing on shared or compromised devices.
+- Clear legacy browser workspaces when no explicit persistence preference exists.
+
 ## 1.5.0 — 2026-07-15
 
 ### Added
