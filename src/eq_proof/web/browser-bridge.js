@@ -28,6 +28,21 @@
     }
   }
 
+  async function runWithWorkspaceWritePolicy(callback) {
+    if (persistenceEnabled()) return callback();
+    const storagePrototype = Object.getPrototypeOf(window.localStorage);
+    const originalSetItem = storagePrototype.setItem;
+    storagePrototype.setItem = function guardedSetItem(key, value) {
+      if (this === window.localStorage && key === WORKSPACE_KEY) return undefined;
+      return originalSetItem.call(this, key, value);
+    };
+    try {
+      return await callback();
+    } finally {
+      storagePrototype.setItem = originalSetItem;
+    }
+  }
+
   function markPersistence(payload, persisted) {
     if (!payload || typeof payload !== 'object') return payload;
     payload.runtime = {
@@ -242,7 +257,7 @@
       $('#apiStatus').textContent = 'Parsing files, hashing sources, executing equations and reconstructing the close…';
       $('#gateCard').setAttribute('aria-busy', 'true');
       try {
-        const payload = await engine.analyzeForm(payloadForm);
+        const payload = await runWithWorkspaceWritePolicy(() => engine.analyzeForm(payloadForm));
         state.data = persistenceEnabled()
           ? persistWorkspace(engine, payload)
           : retainSessionOnly(engine, payload);
