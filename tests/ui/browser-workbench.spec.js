@@ -47,6 +47,14 @@ test('hosted dialog accepts files and states the local-only boundary', async ({ 
 test('compiles a cost file as session-only evidence by default', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await loadWorkbench(page);
+  await page.evaluate(() => {
+    const original = Storage.prototype.setItem;
+    window.__eqProofWorkspaceWrites = [];
+    Storage.prototype.setItem = function recordedSetItem(key, value) {
+      if (key === 'eq-proof/browser-workspace@1') window.__eqProofWorkspaceWrites.push(key);
+      return original.call(this, key, value);
+    };
+  });
   await compileCostFixture(page);
 
   await expect(page.locator('#reportedEac')).toContainText('12');
@@ -60,12 +68,14 @@ test('compiles a cost file as session-only evidence by default', async ({ page }
     manifest: window.EQProofBrowser.getCurrentPayload().analysis.source_manifest,
     persisted: window.EQProofBrowser.getCurrentPayload().runtime.persisted_locally,
     stored: localStorage.getItem('eq-proof/browser-workspace@1'),
+    workspaceWrites: window.__eqProofWorkspaceWrites,
   }));
   expect(browserState.manifest).toHaveLength(1);
   expect(browserState.manifest[0].sha256).toMatch(/^[a-f0-9]{64}$/);
   expect(browserState.manifest[0].records).toBe(1);
   expect(browserState.persisted).toBe(false);
   expect(browserState.stored).toBeNull();
+  expect(browserState.workspaceWrites).toEqual([]);
 
   const [analysis] = await Promise.all([
     page.waitForEvent('download'),
