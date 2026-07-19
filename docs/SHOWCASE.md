@@ -1,4 +1,4 @@
-# EQ-Proof Control Room — Portfolio Case Study
+# EQ-Proof Control Room — portfolio case study
 
 ## The one-sentence version
 
@@ -10,7 +10,7 @@ A project-controls leader does not need another dashboard showing the numbers al
 
 They need to know:
 
-1. whether the submitted position is internally defensible;
+1. whether the submitted position is internally consistent under the declared controls;
 2. which source record and equation produced each exception;
 3. how much of the executive movement is deterministic contradiction versus declared change or risk;
 4. what must be corrected before the close is accepted; and
@@ -32,15 +32,17 @@ Every individual value is plausible. The combined close is not.
 | State | Result | Interpretation |
 | --- | ---: | --- |
 | Reported EAC | **$407M** | deterministic forecast in the submitted close |
-| Defensible EAC | **$418M** | independently reconstructed `AC + ETC` |
-| Deterministic forecast gap | **$11M** | submitted EAC is below its own governed detail |
+| Detail-reconstructed EAC | **$418M** | arithmetic reconstruction from `AC + ETC` |
+| Deterministic forecast gap | **$11M** | submitted EAC is below its available detail |
 | Declared change and configured risk | **$65M** | pending change plus supplied risk uplift |
-| Reconstructed risk-adjusted position | **$483M** | declared bridge built from defensible EAC |
+| Reconstructed risk-adjusted position | **$483M** | declared bridge built from detail-reconstructed EAC |
 | Submitted risk-adjusted summary | **$472M** | summary supplied by the close |
 | Risk-adjusted reconciliation gap | **$11M** | submitted summary is below the declared bridge |
 | Position above reported EAC | **$76M** | deterministic contradiction plus declared exposure |
 
-The product deliberately refuses to collapse those values into one sensational number.
+The current schema retains `defensible_eac` as a compatibility field. The product label is **detail-reconstructed EAC** because addition alone does not establish commercial defensibility.
+
+The product deliberately refuses to collapse the `$76M` into one sensational number.
 
 The `$11M` deterministic contradiction is mathematically different from the `$65M` of declared change and configured risk. EQ-Proof preserves that distinction in the data model, interface, graph and exported evidence.
 
@@ -56,13 +58,13 @@ This status is not manually assigned. It is derived from the selected and applic
 
 Reported EAC is `$407M`.
 
-The source detail independently reconstructs to:
+The available source detail reconstructs to:
 
 ```text
 AC + ETC = $418M
 ```
 
-The resulting `$11M` difference is a direct deterministic contradiction. It does not depend on a risk opinion or predictive model.
+The resulting `$11M` difference is a direct deterministic contradiction. It does not depend on a risk opinion or predictive model. It also does not prove that `$418M` is the commercially correct final forecast.
 
 ### 3. Identify the material control account
 
@@ -108,7 +110,7 @@ The current demonstrated integration boundary is intentionally practical:
 - native Primavera P6 XER `TASK` parsing;
 - deterministic CSV aliases for cost and control-account exports;
 - JSON equation packs; and
-- browser-authored project controls validated by the same safe evaluator.
+- browser-authored project controls validated by the same restricted expression model.
 
 No P6 database connection, proprietary workbook template or cloud service is required.
 
@@ -142,6 +144,14 @@ Analysis output retains:
 
 The lower numerical proof engine separately supports canonical JSON, Ed25519 attestation and semantic replay.
 
+### Local-first behavior is explicit
+
+The hosted workbench processes selected files in the browser and has no EQ-Proof upload endpoint. It is session-only by default. Browser persistence occurs only after the user enables **Remember workspace on this browser**, and the saved Control Room artifact can be cleared from the workbench.
+
+The local Python application uses a loopback API and request-scoped temporary files. The CLI reads and writes only explicit local paths.
+
+See [Runtime Modes and Data Handling](RUNTIME_MODES.md) for the canonical boundary.
+
 ### The product states its limits
 
 EQ-Proof does not claim to:
@@ -150,29 +160,33 @@ EQ-Proof does not claim to:
 - approve change;
 - replace Primavera P6 schedule calculations;
 - convert currencies;
-- infer missing commercial facts; or
+- infer missing commercial facts;
+- turn `AC + ETC` into an independent forecast opinion; or
 - calculate probabilistic P80 risk.
 
 A source field named `P80_EAC` is accepted as a compatibility alias for a submitted risk-adjusted summary. The product can validate its declared arithmetic bridge; it does not certify the probability methodology behind it.
 
 ## Engineering proof
 
-The repository proof enforces the full automated suite across:
+The repository proof enforces the automated suite across:
 
 - Python **3.10, 3.11, 3.12 and 3.13**;
 - branch-aware coverage above a **92% gate**;
 - deterministic regeneration of Control Room and signed-proof evidence;
+- a browser-engine comparison against the Python-generated public Control Room artifact;
 - JavaScript syntax validation;
 - wheel construction;
 - valid and adversarial equation tests;
 - multipart upload and loopback-host security tests;
 - P6 XER and CSV adapter tests;
 - spreadsheet-formula neutralization; and
-- an operational P6 + cost + user-equation close scenario.
+- operational P6 + cost + user-equation close scenarios.
+
+The browser audit adds desktop, mobile, reduced-motion, keyboard, focus, download, accessibility and explicit workspace-persistence coverage.
 
 The exact test count is retained in the validated pull-request record rather than hard-coded into the public product, so future coverage additions cannot make the showcase stale.
 
-The public demo contains no analytics, external scripts, model calls or upload endpoint. Real files are processed only by the loopback local application.
+The public workbench contains no analytics, external scripts, model calls or upload endpoint. It can analyze user-selected local files in browser memory; that is different from sending them to a server.
 
 ## Architecture at a glance
 
@@ -210,13 +224,13 @@ The result behaves less like a dashboard and more like a compiler for the accept
 
 ## Run it
 
-Public synthetic showcase:
+Public synthetic showcase and local browser workbench:
 
 ```text
 https://florianstuettgen.github.io/EQ-Proof/
 ```
 
-Local real-file application:
+Local loopback application:
 
 ```bash
 python -m venv .venv
