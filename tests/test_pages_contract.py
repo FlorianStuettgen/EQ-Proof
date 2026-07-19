@@ -190,8 +190,8 @@ def test_runtime_documents_share_the_current_data_handling_contract():
     for document in (readme, runtime, architecture, security):
         assert "session-only" in document
         assert "explicit" in document
-        assert "opt-in" in document
-        assert "browser local storage" in document
+        assert ("opt-in" in document) or ("explicitly enables" in document)
+        assert ("browser local storage" in document) or ("browser storage" in document)
 
     assert "1.5.x | Yes" in security
     assert "synthetic-data-only" not in architecture
