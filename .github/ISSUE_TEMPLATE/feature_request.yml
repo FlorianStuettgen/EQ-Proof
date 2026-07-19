@@ -1,0 +1,70 @@
+name: Feature request
+description: Propose a bounded project-controls, proof, integration, or assurance capability.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Strong proposals identify the decision being improved, the evidence available, the trust boundary, and how the behavior can be tested without overstating what EQ-Proof proves.
+  - type: dropdown
+    id: product_surface
+    attributes:
+      label: Product surface
+      options:
+        - Control Room user experience
+        - Project-controls equations or semantic model
+        - Primavera P6 or tabular adapters
+        - Project-controls CLI or loopback API
+        - Numerical proof, signing, or verification
+        - Evidence, reporting, or export integration
+        - Documentation, governance, or contributor experience
+    validations:
+      required: true
+  - type: textarea
+    id: decision
+    attributes:
+      label: Decision or workflow to improve
+      description: Describe the project-controls or verification decision that is currently difficult, slow, ambiguous, or unreproducible.
+    validations:
+      required: true
+  - type: textarea
+    id: current_boundary
+    attributes:
+      label: Current limitation
+      description: Explain the current behavior and why existing equations, adapters, exports, or proof contracts are insufficient.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed capability
+      description: Describe the smallest useful behavior, including inputs, outputs, failure states, and user-visible terminology.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence and validation plan
+      description: Identify synthetic fixtures, cross-engine comparisons, schemas, security tests, benchmarks, or practitioner review needed to support the claim.
+    validations:
+      required: true
+  - type: textarea
+    id: exclusions
+    attributes:
+      label: Explicit non-claims and exclusions
+      description: State what the feature would not prove, replace, calculate, authorize, or integrate.
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Proposal checks
+      options:
+        - label: The request preserves local-first data handling or clearly identifies a proposed boundary change.
+          required: true
+        - label: The request distinguishes deterministic reconciliation from prediction, certification, or probabilistic risk calculation.
+          required: true
+        - label: I checked the roadmap, current integration boundary, and open issues for overlap.
+          required: true
