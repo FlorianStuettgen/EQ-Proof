@@ -23,7 +23,8 @@ async function compileCostFixture(page) {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => {
+  await page.goto('/');
+  await page.evaluate(() => {
     localStorage.removeItem('eq-proof/browser-workspace@1');
     localStorage.removeItem('eq-proof/browser-persistence@1');
   });
