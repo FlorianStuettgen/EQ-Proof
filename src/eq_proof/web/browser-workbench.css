@@ -32,11 +32,41 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
+  align-items: center;
   gap: 8px;
   flex: 0 0 auto;
 }
 
 .browser-workbench-actions .button {
+  white-space: nowrap;
+}
+
+.browser-persistence-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: rgba(7, 16, 15, .38);
+  cursor: pointer;
+}
+
+.browser-persistence-toggle input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--mint);
+}
+
+.browser-persistence-toggle:focus-within {
+  outline: 2px solid var(--mint);
+  outline-offset: 2px;
+}
+
+.browser-persistence-toggle span {
+  color: var(--text);
+  font-size: 12px;
   white-space: nowrap;
 }
 
@@ -71,6 +101,13 @@
 
   .browser-workbench-actions {
     justify-content: flex-start;
+  }
+}
+
+@media (max-width: 620px) {
+  .browser-persistence-toggle {
+    justify-content: center;
+    width: 100%;
   }
 }
 
