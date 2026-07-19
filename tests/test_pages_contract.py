@@ -15,6 +15,9 @@ def test_readme_exposes_the_canonical_functional_application():
     assert "Files are processed entirely in the browser" in readme
     assert "never uploaded" in readme
     assert "export and reopen" in readme
+    assert "session-only by default" in readme
+    assert "explicit opt-in" in readme
+    assert "Runtime Modes and Data Handling" in readme
 
 
 def test_pages_workflow_uses_the_official_static_deployment_shape():
@@ -126,6 +129,10 @@ def test_pages_bundle_is_a_functional_project_path_safe_browser_application():
     assert "restoreWorkspace" in engine
     assert "Export analysis JSON" in engine
     assert "Browser-compiled monthly close" in bridge
+    assert "PERSISTENCE_KEY" in bridge
+    assert "Session-only by default" in bridge
+    assert "rememberWorkspaceInput" in bridge
+    assert "clearLocalWorkspaceButton" in bridge
 
     payload = json.loads((WEB / "demo-data.json").read_text(encoding="utf-8"))
     assert payload["schema_version"] == "eq-proof/control-room@2"
@@ -140,11 +147,15 @@ def test_browser_audit_covers_function_accessibility_and_real_workflows():
         ROOT / ".github" / "workflows" / "ui-audit.yml"
     ).read_text(encoding="utf-8")
     config = (ROOT / "playwright.config.js").read_text(encoding="utf-8")
+    package = (ROOT / "package.json").read_text(encoding="utf-8")
     core_spec = (ROOT / "tests" / "ui" / "control-room.spec.js").read_text(
         encoding="utf-8"
     )
     workbench_spec = (
         ROOT / "tests" / "ui" / "browser-workbench.spec.js"
+    ).read_text(encoding="utf-8")
+    equivalence_spec = (
+        ROOT / "tests" / "cross-engine-equivalence.test.js"
     ).read_text(encoding="utf-8")
 
     assert "playwright install --with-deps chromium" in workflow
@@ -158,7 +169,32 @@ def test_browser_audit_covers_function_accessibility_and_real_workflows():
     assert "tabs expose state" in core_spec
     assert "guided review completes" in core_spec
     assert "accepts files" in workbench_spec
-    assert "compiles a cost file" in workbench_spec
-    assert "creates replayable evidence" in workbench_spec
+    assert "session-only evidence by default" in workbench_spec
+    assert "explicit persistence opt-in" in workbench_spec
     assert "Restored browser workspace" in workbench_spec
     assert "validated by the browser engine" in workbench_spec
+    assert "cross-engine-equivalence.test.js" in package
+    assert "Python-generated Control Room semantics" in equivalence_spec
+    assert "source_manifest" in equivalence_spec
+    assert "graph.edges" in equivalence_spec
+
+
+def test_runtime_documents_share_the_current_data_handling_contract():
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    runtime = (ROOT / "docs" / "RUNTIME_MODES.md").read_text(encoding="utf-8")
+    architecture = (ROOT / "docs" / "PRODUCT_ARCHITECTURE.md").read_text(
+        encoding="utf-8"
+    )
+    security = (ROOT / "SECURITY.md").read_text(encoding="utf-8")
+
+    for document in (readme, runtime, architecture, security):
+        assert "session-only" in document
+        assert "explicit opt-in" in document
+        assert "browser local storage" in document
+
+    assert "1.5.x | Yes" in security
+    assert "synthetic-data-only" not in architecture
+    assert "synthetic-data-only" not in security
+    assert "cannot receive private project data" not in architecture
+    assert "detail-reconstructed EAC" in readme
+    assert "detail-reconstructed EAC" in architecture
