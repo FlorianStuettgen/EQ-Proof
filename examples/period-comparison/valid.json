@@ -1,0 +1,139 @@
+{
+  "schema_version": "eq-proof/period-comparison@1",
+  "engine_version": "1.4.0",
+  "periods": {
+    "prior": {
+      "period_id": "2026-05",
+      "reporting_date": "2026-05-31",
+      "artifact_schema": "eq-proof/control-room@2",
+      "artifact_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+    },
+    "current": {
+      "period_id": "2026-06",
+      "reporting_date": "2026-06-30",
+      "artifact_schema": "eq-proof/control-room@2",
+      "artifact_sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+    }
+  },
+  "comparability": {
+    "status": "blocked",
+    "currency": "CAD",
+    "identity_coverage": 1.0,
+    "blockers": ["A material forecast restatement has no sufficient source-field and equation bridge."],
+    "review_reasons": ["The current period contains an approved baseline governance change."]
+  },
+  "source_manifests": {
+    "prior": [
+      {
+        "id": "cost.csv",
+        "digest_sha256": "2222222222222222222222222222222222222222222222222222222222222222"
+      }
+    ],
+    "current": [
+      {
+        "id": "cost.csv",
+        "digest_sha256": "3333333333333333333333333333333333333333333333333333333333333333"
+      }
+    ]
+  },
+  "equation_manifests": {
+    "prior": [
+      {
+        "id": "defensible-eac",
+        "digest_sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+      }
+    ],
+    "current": [
+      {
+        "id": "defensible-eac",
+        "digest_sha256": "4444444444444444444444444444444444444444444444444444444444444444"
+      }
+    ]
+  },
+  "identity_map": [
+    {
+      "record_type": "control_account",
+      "prior_id": "CA-001",
+      "current_id": "CA-001",
+      "match_method": "explicit_immutable_id",
+      "status": "matched",
+      "reason": null,
+      "user_override": false
+    }
+  ],
+  "portfolio_movement": {
+    "currency": "CAD",
+    "reported_eac_prior": 400000000,
+    "reported_eac_current": 420000000,
+    "reported_eac_delta": 20000000,
+    "reconciled_movement": 10000000,
+    "governance_movement": 5000000,
+    "source_structure_movement": 0,
+    "unreconciled_movement": 5000000,
+    "not_comparable_movement": 0,
+    "bridge_residual": 0,
+    "defensible_eac_prior": 410000000,
+    "defensible_eac_current": 430000000,
+    "forecast_gap_prior": 10000000,
+    "forecast_gap_current": 10000000,
+    "risk_adjusted_position_prior": 425000000,
+    "risk_adjusted_position_current": 445000000,
+    "gate_prior": "review",
+    "gate_current": "blocked"
+  },
+  "record_movements": [
+    {
+      "record_type": "control_account",
+      "record_id": "CA-001",
+      "identity_status": "matched",
+      "primary_class": "unreconciled_restatement",
+      "material": true,
+      "deltas": {
+        "reported_eac": 20000000,
+        "actual_cost": 6000000,
+        "etc": 4000000,
+        "unreconciled": 5000000
+      },
+      "evidence_refs": ["cost.csv", "defensible-eac"]
+    }
+  ],
+  "finding_lifecycle": [
+    {
+      "equation_id": "defensible-eac",
+      "record_identity": "control_account:CA-001",
+      "prior_finding_id": null,
+      "current_finding_id": "finding-001",
+      "lifecycle": "new",
+      "residual_delta": 5000000
+    }
+  ],
+  "governance_changes": [
+    {
+      "id": "governance-001",
+      "change_type": "baseline",
+      "description": "Approved baseline authority increased by CAD 5,000,000.",
+      "evidence_refs": ["baseline-approval-001"]
+    }
+  ],
+  "unreconciled_movements": [
+    {
+      "id": "unreconciled-001",
+      "record_ref": "control_account:CA-001",
+      "amount": 5000000,
+      "currency": "CAD",
+      "reason": "The submitted reported EAC changed without a sufficient governed source-field bridge.",
+      "blocker": true
+    }
+  ],
+  "comparison_gate": {
+    "status": "blocked",
+    "material_movement_count": 1,
+    "unresolved_count": 1,
+    "bridge_closed": true,
+    "reasons": ["One material movement remains unreconciled."]
+  },
+  "assumptions": [
+    "Both periods use CAD without currency conversion.",
+    "Control-account identifier CA-001 is immutable across periods."
+  ]
+}
