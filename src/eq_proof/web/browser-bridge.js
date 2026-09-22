@@ -73,11 +73,113 @@
       const textNode = [...metricLabel.childNodes].find((node) => node.nodeType === Node.TEXT_NODE);
       if (textNode) textNode.textContent = 'Detail-reconstructed EAC ';
     }
+    document.querySelector('[data-inspect="defensible_eac"]')?.setAttribute('aria-label', 'Explain detail-reconstructed EAC');
     const assuranceLabel = document.querySelector('#assuranceRing small');
     if (assuranceLabel) assuranceLabel.textContent = 'severity index';
     const assuranceNote = document.getElementById('assuranceNote');
     if (assuranceNote) {
       assuranceNote.textContent = 'The control severity index is a transparent finding-weight heuristic, not a probability or calibrated assurance measure.';
+      if (state.data?.analysis?.equations_executed === 0) {
+        assuranceNote.textContent = `No controls executed; ${state.data.analysis.summary?.not_applicable ?? 0} checks were not applicable. A ready gate does not establish forecast reconciliation.`;
+      }
+    }
+  }
+
+  async function installShowcaseCases(engine, compile, isCompiling) {
+    const section = document.createElement('section');
+    section.className = 'showcase-cases';
+    section.id = 'showcaseCases';
+    section.setAttribute('aria-labelledby', 'showcaseCasesTitle');
+    section.innerHTML = `
+      <h3 id="showcaseCasesTitle">Try a complete example</h3>
+      <p>Synthetic files, real analysis. Each example uses its included source files and controls, and replaces the active result. Export your current analysis first if you need to keep it.</p>
+      <div class="showcase-case-controls">
+        <label for="showcaseCaseSelect">Example case<select id="showcaseCaseSelect" disabled><option>Loading examples…</option></select></label>
+        <button class="button button-secondary" id="runShowcaseCase" type="button" disabled>Run example</button>
+      </div>
+      <p id="showcaseCaseDescription"></p>
+      <div id="showcaseCaseSources" class="showcase-case-sources" aria-label="Example source files"></div>
+      <p id="showcaseCaseStatus" role="status" aria-live="polite"></p>`;
+    $('#analysisForm .dialog-heading').insertAdjacentElement('afterend', section);
+
+    const launcher = document.createElement('button');
+    launcher.className = 'button button-secondary';
+    launcher.id = 'showcaseCasesButton';
+    launcher.type = 'button';
+    launcher.textContent = 'Showcase examples';
+    launcher.disabled = true;
+    $('#workspaceTourButton').insertAdjacentElement('beforebegin', launcher);
+    let openedFromShowcase = false;
+    launcher.addEventListener('click', () => {
+      openedFromShowcase = true;
+      $('#uploadDialog').showModal();
+      $('#showcaseCaseSelect').focus();
+    });
+    $('#uploadDialog').addEventListener('close', () => {
+      if (openedFromShowcase) queueMicrotask(() => launcher.focus());
+      openedFromShowcase = false;
+    });
+
+    const select = $('#showcaseCaseSelect');
+    const run = $('#runShowcaseCase');
+    const status = $('#showcaseCaseStatus');
+    try {
+      const response = await fetch('./showcase-cases.json', { signal: AbortSignal.timeout(8000) });
+      if (!response.ok) throw new Error('Examples could not be loaded. You can still analyze your own files below.');
+      const bundle = await response.json();
+      if (bundle.schema_version !== 'eq-proof/showcase-cases@1' || !Array.isArray(bundle.cases) || !bundle.cases.length) {
+        throw new Error('The example catalogue is unavailable. You can still analyze your own files below.');
+      }
+      select.replaceChildren();
+      bundle.cases.forEach((example) => {
+        const option = document.createElement('option');
+        option.value = example.id;
+        option.textContent = example.title;
+        select.append(option);
+      });
+      const selected = () => bundle.cases.find((example) => example.id === select.value);
+      const describe = () => {
+        const example = selected();
+        $('#showcaseCaseDescription').textContent = `${example.description} ${example.boundary || ''}`.trim();
+        const sources = $('#showcaseCaseSources');
+        sources.replaceChildren();
+        example.source_files.forEach((source) => {
+          const download = document.createElement('button');
+          download.type = 'button';
+          download.className = 'showcase-source-download';
+          download.textContent = `Download ${source.name}`;
+          download.addEventListener('click', () => downloadBlob(source.content, 'text/plain;charset=utf-8', source.name));
+          sources.append(download);
+        });
+        status.textContent = 'Runs the full built-in catalogue and this example’s equation pack. Draft controls and file selections are not included.';
+      };
+      section.dataset.ready = 'true';
+      select.disabled = isCompiling();
+      run.disabled = isCompiling();
+      describe();
+      select.addEventListener('change', describe);
+      run.addEventListener('click', async () => {
+        const example = selected();
+        const form = new FormData();
+        example.source_files.forEach((source) => form.append(source.kind, new File([source.content], source.name)));
+        form.append('catalogue_ids', engine.catalogue.map((equation) => equation.id).join(','));
+        form.append('custom_equations', '[]');
+        form.append('currency', example.currency || 'USD');
+        status.textContent = 'Parsing example source files and executing controls…';
+        try {
+          await compile(form, example);
+          status.textContent = `${example.title} analyzed from its source files.`;
+        } catch (error) {
+          status.textContent = error.message;
+        }
+      });
+    } catch (error) {
+      select.replaceChildren(new Option('Examples unavailable', ''));
+      status.textContent = ['TimeoutError', 'AbortError'].includes(error.name)
+        ? 'Examples took too long to load. Reload to try again, or analyze your own files below.'
+        : error.message;
+    } finally {
+      launcher.disabled = false;
     }
   }
 
@@ -229,6 +331,56 @@
     installPersistenceControls(engine, legacyWorkspaceCleared);
     updateAssuranceCopy();
 
+    let analysisInProgress = false;
+    async function compileBrowserForm(payloadForm, example = null) {
+      if (analysisInProgress) throw new Error('Wait for the current analysis to finish.');
+      analysisInProgress = true;
+      $('#compileButton').disabled = true;
+      $('#runShowcaseCase').disabled = true;
+      $('#showcaseCaseSelect').disabled = true;
+      $('#compileButton').textContent = 'Compiling evidence…';
+      $('#apiStatus').textContent = 'Parsing files, hashing sources, executing equations and reconstructing the close…';
+      $('#gateCard').setAttribute('aria-busy', 'true');
+      try {
+        const payload = await runWithWorkspaceWritePolicy(() => engine.analyzeForm(payloadForm));
+        if (example) {
+          payload.demo = { name: example.title, description: example.description, synthetic: true, showcase_case: example.id };
+          state.selectedCatalogueIds = new Set(engine.catalogue.map((equation) => equation.id));
+          state.exceptionFilters = { search: '', severity: 'all', domain: 'all' };
+          $('#exceptionSearch').value = '';
+          $('#exceptionSeverity').value = 'all';
+          $('#exceptionDomain').value = 'all';
+          closeTour();
+          activateTab('overview');
+        }
+        state.data = persistenceEnabled()
+          ? persistWorkspace(engine, payload)
+          : retainSessionOnly(engine, payload);
+        state.catalogue = payload.catalogue || engine.catalogue;
+        $('#workspaceTitle').textContent = example ? `${example.title} · synthetic` : 'Browser-compiled monthly close';
+        renderAll();
+        syncShowcaseSummary();
+        updateAssuranceCopy();
+        $('#apiStatus').textContent = persistenceEnabled()
+          ? 'Analysis complete. The result is stored in this browser and available for export.'
+          : 'Analysis complete in session-only mode. Export the result before closing this tab if you need to retain it.';
+        const workspaceStatus = document.getElementById('browserWorkspaceStatus');
+        if (workspaceStatus) workspaceStatus.textContent = $('#apiStatus').textContent;
+        $('#uploadDialog').close();
+        $('#workspace').scrollIntoView({ behavior: 'smooth' });
+      } finally {
+        analysisInProgress = false;
+        $('#compileButton').disabled = false;
+        const casesUnavailable = $('#showcaseCases').dataset.ready !== 'true';
+        $('#runShowcaseCase').disabled = casesUnavailable;
+        $('#showcaseCaseSelect').disabled = casesUnavailable;
+        $('#compileButton').textContent = 'Compile close';
+        $('#gateCard').setAttribute('aria-busy', 'false');
+      }
+    }
+
+    installShowcaseCases(engine, compileBrowserForm, () => analysisInProgress);
+
     const form = $('#analysisForm');
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -252,33 +404,10 @@
       payloadForm.append('catalogue_ids', [...(state.selectedCatalogueIds || new Set())].join(','));
       payloadForm.append('currency', currency);
 
-      $('#compileButton').disabled = true;
-      $('#compileButton').textContent = 'Compiling evidence…';
-      $('#apiStatus').textContent = 'Parsing files, hashing sources, executing equations and reconstructing the close…';
-      $('#gateCard').setAttribute('aria-busy', 'true');
       try {
-        const payload = await runWithWorkspaceWritePolicy(() => engine.analyzeForm(payloadForm));
-        state.data = persistenceEnabled()
-          ? persistWorkspace(engine, payload)
-          : retainSessionOnly(engine, payload);
-        state.catalogue = payload.catalogue || engine.catalogue;
-        $('#workspaceTitle').textContent = 'Browser-compiled monthly close';
-        renderAll();
-        syncShowcaseSummary();
-        updateAssuranceCopy();
-        $('#apiStatus').textContent = persistenceEnabled()
-          ? 'Analysis complete. The result is stored in this browser and available for export.'
-          : 'Analysis complete in session-only mode. Export the result before closing this tab if you need to retain it.';
-        const workspaceStatus = document.getElementById('browserWorkspaceStatus');
-        if (workspaceStatus) workspaceStatus.textContent = $('#apiStatus').textContent;
-        $('#uploadDialog').close();
-        $('#workspace').scrollIntoView({ behavior: 'smooth' });
+        await compileBrowserForm(payloadForm);
       } catch (error) {
         $('#apiStatus').textContent = error.message;
-      } finally {
-        $('#compileButton').disabled = false;
-        $('#compileButton').textContent = 'Compile close';
-        $('#gateCard').setAttribute('aria-busy', 'false');
       }
     }, true);
 

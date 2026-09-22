@@ -25,13 +25,14 @@ Exit codes are operational:
 
 | Code | Meaning |
 | ---: | --- |
-| `0` | no blocker findings; close gate passed |
+| `0` | no findings at or above the configured failure threshold; the gate may still require review |
 | `2` | invalid input, equation pack or execution error |
-| `3` | blocker findings; close gate failed |
+| `3` | findings at or above the configured failure threshold (blocker by default) |
 
 Outputs:
 
 - `analysis.json` — full machine-readable result;
+- `control-room.json` — reopenable executive reconstruction and evidence graph;
 - `exceptions.csv` — ranked action register for Excel, Power BI or workflow ingestion;
 - `report.md` — human-readable close decision record.
 
@@ -46,7 +47,7 @@ The built-in catalogue currently covers:
 - `CPI = EV / AC`;
 - `SPI = EV / PV`;
 - current budget bridge to baseline plus approved change;
-- P80 bridge to deterministic EAC, pending change and quantified risk;
+- declared risk-adjusted bridge to deterministic EAC, pending change and configured risk;
 - P6 in-progress activities with zero remaining duration;
 - extreme negative total float.
 

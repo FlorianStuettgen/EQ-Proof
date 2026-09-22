@@ -67,6 +67,8 @@ def main() -> int:
             "close_ready",
             "gate_status",
             "summary",
+            "findings",
+            "equations",
         )
     }
     payload["catalogue"] = [
@@ -79,6 +81,7 @@ def main() -> int:
     payload["demo"] = {
         "name": "Hyperscale data-centre monthly close",
         "description": "Synthetic schedule, cost, change and risk data designed to expose deterministic and risk-adjusted reconciliation gaps.",
+        "synthetic": True,
     }
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     OUTPUT.write_text(
@@ -90,6 +93,7 @@ def main() -> int:
         )
         + "\n",
         encoding="utf-8",
+        newline="\n",
     )
     print(f"Generated {OUTPUT.relative_to(ROOT)}")
     return 0

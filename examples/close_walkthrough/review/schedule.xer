@@ -1,0 +1,6 @@
+ERMHDR	23.12	2026-07-13
+%T	TASK
+%F	task_id	task_code	task_name	wbs_id	status_code	target_drtn_hr_cnt	remain_drtn_hr_cnt	total_float_hr_cnt	phys_complete_pct
+%R	1	CIV-A100	Foundations Complete	CIV	TK_Active	800	0	-960	85
+%R	2	MEP-A200	Energization	MEP	TK_Active	1200	640	-240	55
+%R	3	COM-A300	IST Complete	COM	TK_NotStart	600	600	80	0

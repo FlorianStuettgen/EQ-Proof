@@ -1,0 +1,13 @@
+# Keep text consistent across platforms; binary assets retain their exact bytes.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+
+# Deterministic source manifests hash these exact bytes on every platform.
+examples/** text=auto eol=lf
+evidence/** text=auto eol=lf
+src/eq_proof/web/samples/** text=auto eol=lf
+src/eq_proof/web/demo-data.json text eol=lf
+src/eq_proof/web/showcase-cases.json text eol=lf

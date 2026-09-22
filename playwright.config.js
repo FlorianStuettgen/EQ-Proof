@@ -5,6 +5,7 @@ module.exports = defineConfig({
   timeout: 30_000,
   expect: { timeout: 8_000 },
   fullyParallel: false,
+  workers: 2,
   retries: process.env.CI ? 1 : 0,
   reporter: [
     ['list'],
@@ -18,9 +19,9 @@ module.exports = defineConfig({
     video: 'retain-on-failure',
   },
   webServer: {
-    command: 'python -m http.server 4173 --directory src/eq_proof/web',
+    command: 'python -m http.server 4173 --bind 127.0.0.1 --directory src/eq_proof/web',
     url: 'http://127.0.0.1:4173',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 30_000,
   },
   projects: [

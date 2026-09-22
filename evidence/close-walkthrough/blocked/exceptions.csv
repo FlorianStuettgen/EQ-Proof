@@ -1,0 +1,6 @@
+severity,record_type,record_id,equation_id,residual,residual_state,remediation
+blocker,control_account,MEP-200,cost.eac_identity,-7000000.0,finite,Reconcile the cost ledger and forecast detail; do not post the close until the identity holds.
+blocker,control_account,MEP-200,change.budget_bridge,5000000.0,finite,Locate unauthorized budget movement or missing approved change records.
+blocker,control_account,CIV-100,cost.eac_identity,-4000000.0,finite,Reconcile the cost ledger and forecast detail; do not post the close until the identity holds.
+major,activity,CIV-A100,schedule.progress_duration,0.0,finite,"Correct activity status, actual finish or remaining duration in P6."
+minor,activity,CIV-A100,schedule.extreme_negative_float,160.0,finite,"Replace the starter threshold with a project-specific equation, then review constraints, calendars and driving relationships."

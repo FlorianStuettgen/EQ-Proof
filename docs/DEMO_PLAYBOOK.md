@@ -1,138 +1,73 @@
-# EQ-Proof Control Room Demo Playbook
+# Five-minute Control Room walkthrough
 
-This is the five-minute walkthrough for a project-controls leader, data-platform reviewer, or engineering panel.
+For project-controls leaders and technical reviewers. Use only the supplied synthetic examples for this walkthrough.
 
-## Demo objective
+[Open the application](https://florianstuettgen.github.io/EQ-Proof/) · [Worked case and evidence](SHOWCASE.md) · [Exact source changes](../examples/close_walkthrough/README.md)
 
-Do not begin with the equation engine. Begin with the decision:
+## 0:00–0:45 — Start with the decision
 
-> Is this monthly close internally consistent, which parts of the position can be defended from governed components, and what requires escalation before reporting?
+Open **Showcase examples** in the workspace, select **1. Submitted close** under **Example case**, and choose **Run example**.
 
-Use the checked-in synthetic hyperscale data-centre close. It is deliberately inconsistent while each individual value remains superficially plausible.
+Explain: the application reads the supplied source files and runs the controls. The gate is computed, not selected by the presenter. Running an example replaces the active analysis with that synthetic case.
 
-## 0:00–0:30 — Establish the operating problem
+The initial result is **CLOSE BLOCKED**, with three blockers and five failures across six source records.
 
-Open the application and state:
+## 0:45–1:45 — Separate contradiction from exposure
 
-> Project teams usually validate P6, cost, change and risk in separate tools. EQ-Proof compiles those exports into one equation-backed evidence model before the close is signed.
+Show the submitted **$407M** EAC and **$418M detail-reconstructed EAC** (`AC + ETC`). The **$11M** difference is an arithmetic forecast contradiction.
 
-Point out that the public demo is synthetic. Real files are processed by the loopback-only local application with no telemetry.
+The **$65M** of declared pending change and configured risk is separate. Adding it to the source detail yields a **$483M** risk-adjusted position, **$76M** above the submitted forecast. The submitted risk-adjusted summary is **$472M**, leaving its own **$11M** reconciliation gap.
 
-## 0:30–1:20 — Show the executive gate
+Open `MEP-200`: its $37M position above reported EAC comprises $7M of forecast discrepancy, $12M of pending change and $18M of configured risk.
 
-Start on **Explain the surprise**.
+Say what the calculation establishes: the supplied fields disagree. It does not establish that the reconstructed number is commercially correct, or calculate a probabilistic P80.
 
-The demo displays:
+## 1:45–2:45 — Inspect a finding
 
-- reported EAC: **$407M**;
-- defensible EAC from `AC + ETC`: **$418M**;
-- deterministic forecast gap: **$11M**;
-- reconstructed risk-adjusted position: **$483M**;
-- submitted risk-adjusted summary: **$472M**;
-- risk-adjusted reconciliation gap: **$11M**;
-- exposure above reported EAC: **$76M**;
-- close decision: **CLOSE BLOCKED**.
-
-Explain the logical separation:
-
-1. the submitted deterministic forecast is $407M;
-2. governed `AC + ETC` reconstructs to $418M, exposing $11M of deterministic contradiction;
-3. declared pending change and configured risk uplift total $65M;
-4. adding that declared exposure to defensible EAC produces a $483M risk-adjusted bridge;
-5. the submitted risk-adjusted summary is $472M, so it is also $11M below the reconstructed bridge;
-6. the full risk-adjusted position is $76M above reported deterministic EAC, but only $11M of that is an arithmetic forecast contradiction.
-
-Do not call the bridge a calculated P80. EQ-Proof validates supplied relationships; it does not run a probabilistic risk simulation.
-
-Click `MEP-200`. Show its $37M position above reported EAC as three separately labelled components: $7M deterministic contradiction, $12M pending change and $18M configured risk uplift.
-
-## 1:20–2:20 — Trace declared evidence
-
-Open **Evidence graph**.
-
-Explain the graph from left to right:
+Open **Evidence graph** and inspect a cost finding. Follow:
 
 ```text
-source record → violated equation → declared metric or assurance domain → close gate
+source record → failed equation → declared metric or assurance domain → close gate
 ```
 
-Click a cost blocker. The inspector shows:
+In **Exception command centre**, inspect the equation, residual and prescribed remediation. Download the CSV if the reviewer wants to work through the findings in a spreadsheet.
 
-- source record;
-- equation ID and expression;
-- residual;
-- deterministic forecast impact;
-- prescribed remediation.
+Contrast a schedule finding: it affects schedule assurance and carries no invented dollar impact. The displayed control severity index is a severity heuristic, not a probability.
 
-Then click a schedule finding. Show that it routes to **schedule assurance**, not a dollar value. This is a deliberate credibility boundary: EQ-Proof does not invent financial causality from negative float or remaining-duration defects.
+## 2:45–3:45 — Show what changes the gate
 
-## 2:20–3:00 — Operate the exception register
+Return to **Showcase examples** and run **2. Forecast reconciled**. Its supplied cost fields now reconcile; the forecast gap is zero. The gate still reads **REVIEW REQUIRED**, with two schedule findings.
 
-Open **Exception command centre**.
+Run **3. Selected controls satisfied**. Its supplied cost and schedule fields satisfy all 32 applicable checks. One activity check remains not applicable because the activity is not started.
 
-Demonstrate:
+These cases are constructed input snapshots. The engine did not correct the records or authorize the changes. This is not a demonstration of cross-period comparison.
 
-- severity, domain and text filters;
-- ranking by severity and materiality;
-- the EAC identity blocker;
-- the unauthorized budget bridge;
-- spreadsheet-safe CSV export.
+## 3:45–4:30 — Demonstrate the configurable control
 
-Explain that the register can move into Excel, Power Query, Power BI, Smartsheet, SharePoint or ticket automation.
-
-## 3:00–4:00 — Demonstrate equation extensibility
-
-Open **Equation workbench**.
-
-Show the tested catalogue across cost, earned value, change, risk and P6 schedule assurance.
-
-Add:
+Inspect the included equation pack or exported analysis:
 
 ```text
 EAC <= delegated_authorization
 ```
 
-with required fields:
+Each case supplies synthetic authorization limits for all three accounts, so the custom rule actually executes and passes. The input values illustrate a declared threshold; they are not evidence of real management approval.
 
-```text
-EAC, delegated_authorization
-```
+The equation workbench also accepts project-specific controls. Catalogue and custom equations use a restricted expression evaluator; imported code, attribute access, assignments and undeclared fields are rejected.
 
-In local mode, **Validate and add** sends the equation to the same server-side parser used during analysis. In public-demo mode, the equation can be assembled and downloaded as a pack, but private-file execution remains disabled.
+## 4:30–5:00 — Leave something inspectable
 
-Emphasize that catalogue and user-authored controls share the same restricted evaluator. Arbitrary Python execution, imports, attributes, assignment, undeclared fields, duplicate IDs and unsupported syntax are rejected.
+Download the **executive brief** and **analysis JSON**. The brief gives the gate and findings; the JSON retains source hashes, per-record findings, equation definitions and applicability results. The analysis can be reopened in the browser. Keep the original source files alongside it; the JSON does not preserve every source field.
 
-## 4:00–4:40 — Show the real-file workflow
+Explain the operating boundary:
 
-Choose **Analyze your close**.
+- The hosted workbench can analyze user-selected CSV, P6 XER and equation files directly in the browser; it does not upload them to a server.
+- It is session-only by default. **Remember workspace on this browser** explicitly opts into browser storage.
+- `eq-controls serve` uses the Python engine on loopback and request-scoped temporary uploads.
+- The CLI writes its four output files to the specified local directory.
+- `CLOSE READY` means no selected, applicable control failed. It is not completeness certification or approval.
 
-The local app accepts:
+## Presenter checks
 
-- one or more Primavera P6 XER exports;
-- one or more generic cost/control-account CSV exports;
-- optional equation-pack JSON files;
-- equations authored in the browser;
-- an explicit three-letter currency label.
+Before a meeting, open each case once and confirm its expected gate. Use the [generated reports](SHOWCASE.md#inspect-the-outputs-without-installing-anything) as an offline fallback. The [fixture guide](../examples/close_walkthrough/README.md) records every input change and the expected CLI exit codes.
 
-Clarify the adapter boundary:
-
-- P6 support is native for XER `TASK` records;
-- cost-system support is deterministic CSV alias mapping, not a live EcoSys, SAP, Oracle or Cobra connector.
-
-The application hashes source files, runs only applicable equations, embeds the equation manifest and returns the same decision cockpit.
-
-## 4:40–5:00 — Close on the technical boundary
-
-State clearly:
-
-- the hosted demo uses synthetic data only;
-- real-file analysis runs through `eq-controls serve` on loopback;
-- uploads live only in a request-scoped operating-system temporary directory;
-- file, request, equation and row limits bound local resource use;
-- there is no telemetry, CDN or external model call;
-- the CLI can emit `analysis.json`, `control-room.json`, `exceptions.csv` and `report.md` for monthly-close automation;
-- the independently versioned lower proof engine can attest and semantically replay supported numerical repairs.
-
-End with:
-
-> EQ-Proof does not replace P6, the cost system, risk modelling or governance. It makes declared relationships executable, traceable and difficult to hand-wave away.
+The built-in **Take the guided Control Room tour** is a shorter walkthrough of whichever result is active. The original hyperscale demo remains available through the reset action.

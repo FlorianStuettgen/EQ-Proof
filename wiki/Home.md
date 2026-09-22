@@ -30,7 +30,7 @@ P6 XER TASK + generic cost CSV + catalogue + user equations
                               ↓
        source hashes + ranked findings + equation manifest
                               ↓
- reported EAC / defensible EAC / risk-adjusted reconciliation
+ reported EAC / detail-reconstructed EAC / risk-adjusted reconciliation
                               ↓
       declared evidence graph + close gate + action exports
 ```

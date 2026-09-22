@@ -47,7 +47,7 @@ package-dir = {"" = "src"}
 where = ["src"]
 
 [tool.setuptools.package-data]
-eq_proof = ["web/*"]
+eq_proof = ["web/*", "web/samples/*"]
 
 [tool.pytest.ini_options]
 addopts = "-q --strict-markers --disable-warnings"
