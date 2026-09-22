@@ -113,8 +113,8 @@
 
       <section class="gate-card blocked" id="gateCard" data-tour-target="gate" aria-live="polite" aria-busy="true">
         <div class="gate-copy"><p>EXECUTIVE CLOSE GATE</p><h3 id="gateLabel">CLOSE BLOCKED</h3><span id="gateHeadline">Compiling evidence…</span></div>
-        <div class="confidence-ring" id="assuranceRing" aria-label="Control assurance score">
-          <span id="assuranceValue">—</span><small>assurance</small>
+        <div class="confidence-ring" id="assuranceRing" aria-label="Control severity index">
+          <span id="assuranceValue">—</span><small>control index</small>
         </div>
         <div class="gate-counts">
           <div><strong id="blockerCount">—</strong><span>blockers</span></div>
@@ -122,7 +122,7 @@
           <div><strong id="recordCount">—</strong><span>records</span></div>
         </div>
       </section>
-      <p class="assurance-note" id="assuranceNote">The assurance score is a transparent severity heuristic, not a probability.</p>
+      <p class="assurance-note" id="assuranceNote">The control severity index is a transparent severity heuristic, not a probability.</p>
 
       <section class="metric-grid" aria-label="Portfolio reconstruction">
         <article class="metric-card">
@@ -130,7 +130,7 @@
           <strong id="reportedEac">—</strong><span>What the submitted close claims</span>
         </article>
         <article class="metric-card">
-          <div class="metric-label">Defensible EAC <button class="info-button" data-inspect="defensible_eac" aria-label="Explain defensible EAC">?</button></div>
+          <div class="metric-label">Detail-reconstructed EAC <button class="info-button" data-inspect="defensible_eac" aria-label="Explain detail-reconstructed EAC">?</button></div>
           <strong id="defensibleEac">—</strong><span>Actual cost + remaining forecast</span>
         </article>
         <article class="metric-card exposure-card" id="deterministicGapCard" data-tour-target="gap">

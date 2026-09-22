@@ -71,7 +71,7 @@ function inspectContribution(item) {
     <dl>
       <dt>Source</dt><dd>${escapeHtml(item.source || 'uploaded data')}</dd>
       <dt>Reported EAC</dt><dd>${formatMoney(item.reported_eac)}</dd>
-      <dt>Defensible EAC</dt><dd>${formatMoney(item.defensible_eac)}</dd>
+      <dt>Detail-reconstructed EAC</dt><dd>${formatMoney(item.defensible_eac)}</dd>
       <dt>Deterministic forecast gap</dt><dd>${formatMoney(deterministic)}</dd>
       <dt>Pending change</dt><dd>${formatMoney(item.pending_change)}</dd>
       <dt>Configured risk uplift</dt><dd>${formatMoney(risk)}</dd>
@@ -107,18 +107,18 @@ function inspectMetric(metric) {
       p.reported_eac,
     ],
     defensible_eac: [
-      'Defensible EAC',
+      'Detail-reconstructed EAC',
       'The sum of AC + ETC wherever both governed components are available. This exposes forecast summaries that disagree with their own detail.',
       p.defensible_eac,
     ],
     deterministic_forecast_gap: [
       'Deterministic forecast gap',
-      'Defensible EAC minus reported EAC. This isolates internal forecast contradiction without mixing in pending change or risk.',
+      'Detail-reconstructed EAC minus reported EAC. This isolates internal forecast contradiction without mixing in pending change or risk.',
       p.deterministic_forecast_gap ?? p.deterministic_gap,
     ],
     risk_adjusted_position: [
       'Risk-adjusted position',
-      'Defensible EAC plus declared pending change and configured risk uplift. This is an equation-derived bridge, not a probabilistic simulation.',
+      'Detail-reconstructed EAC plus declared pending change and configured risk uplift. This is an equation-derived bridge, not a probabilistic simulation.',
       p.reconstructed_risk_adjusted_eac ?? p.defensible_p80,
     ],
   };
@@ -207,6 +207,7 @@ function renderGraph() {
   for (const node of nodes) {
     const pos = positions.get(node.id);
     if (!pos) continue;
+    const label = node.id === 'metric:defensible' ? 'Detail-reconstructed EAC' : node.label;
     const group = document.createElementNS(ns, 'g');
     group.setAttribute('class', `graph-node ${node.kind}`);
     group.setAttribute('transform', `translate(${pos.x} ${pos.y})`);
@@ -214,7 +215,7 @@ function renderGraph() {
     group.setAttribute('role', 'button');
     group.setAttribute(
       'aria-label',
-      `Inspect ${node.kind} node ${node.label}${node.equation_id ? `, ${node.equation_id}` : ''}`,
+      `Inspect ${node.kind} node ${label}${node.equation_id ? `, ${node.equation_id}` : ''}`,
     );
     const rect = document.createElementNS(ns, 'rect');
     rect.setAttribute('width', pos.width);
@@ -222,9 +223,9 @@ function renderGraph() {
     const title = document.createElementNS(ns, 'text');
     title.setAttribute('x', 12);
     title.setAttribute('y', 21);
-    title.textContent = node.label.length > 34
-      ? `${node.label.slice(0, 33)}…`
-      : node.label;
+    title.textContent = label.length > 34
+      ? `${label.slice(0, 33)}…`
+      : label;
     const meta = document.createElementNS(ns, 'text');
     meta.setAttribute('x', 12);
     meta.setAttribute('y', 38);

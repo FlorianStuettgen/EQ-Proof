@@ -6,7 +6,9 @@ on:
     paths:
       - "src/eq_proof/web/**"
       - "examples/hyperscale_close/**"
+      - "examples/close_walkthrough/**"
       - "scripts/regenerate_control_room_demo.py"
+      - "scripts/regenerate_showcase_cases.py"
       - ".github/workflows/pages.yml"
       - "README.md"
   workflow_dispatch:
@@ -35,6 +37,7 @@ jobs:
       - name: Validate deployable bundle
         run: |
           python - <<'PY'
+          import hashlib
           import json
           import re
           from pathlib import Path
@@ -52,6 +55,10 @@ jobs:
               "showcase.js",
               "audit.js",
               "demo-data.json",
+              "browser-engine.js",
+              "browser-bridge.js",
+              "browser-workbench.css",
+              "showcase-cases.json",
           }
           missing = sorted(name for name in required if not (root / name).is_file())
           assert not missing, f"Missing Pages assets: {missing}"
@@ -79,6 +86,16 @@ jobs:
           assert payload["portfolio"]["reported_eac"] == 407_000_000
           assert payload["portfolio"]["defensible_eac"] == 418_000_000
           assert payload["portfolio"]["exposure_above_reported_eac"] == 76_000_000
+
+          showcase = json.loads((root / "showcase-cases.json").read_text(encoding="utf-8"))
+          assert showcase["schema_version"] == "eq-proof/showcase-cases@1"
+          assert [case["id"] for case in showcase["cases"]] == ["blocked", "review", "ready"]
+          for case in showcase["cases"]:
+              assert case["synthetic"] is True
+              assert case["control_room"]["gate"]["status"] == case["id"]
+              assert len(case["source_files"]) == 3
+              for source in case["source_files"]:
+                  assert hashlib.sha256(source["content"].encode("utf-8")).hexdigest() == source["sha256"]
           PY
 
       - name: Smoke-test static bundle
@@ -99,6 +116,7 @@ jobs:
           curl --fail --silent http://127.0.0.1:4173/audit.js >/dev/null
           curl --fail --silent http://127.0.0.1:4173/audit.css >/dev/null
           curl --fail --silent http://127.0.0.1:4173/demo-data.json >/tmp/eq-proof-demo.json
+          curl --fail --silent http://127.0.0.1:4173/showcase-cases.json >/dev/null
           python - <<'PY'
           import json
           from pathlib import Path

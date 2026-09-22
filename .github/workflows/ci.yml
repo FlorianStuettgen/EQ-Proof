@@ -43,6 +43,8 @@ jobs:
         run: npm run test:browser-engine
       - name: Build wheel
         run: python -m pip wheel . --no-deps -w dist
+      - name: Verify packaged application and sample downloads
+        run: python scripts/check_wheel.py
 
   evidence:
     name: Reproducible evidence and operational scenarios
@@ -61,6 +63,7 @@ jobs:
         run: |
           python scripts/regenerate_evidence.py
           python scripts/regenerate_control_room_demo.py
+          python scripts/regenerate_showcase_cases.py --check
           git diff --exit-code
       - name: Capture deterministic evidence drift
         if: steps.regenerate.outcome == 'failure'

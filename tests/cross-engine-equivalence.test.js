@@ -94,6 +94,11 @@ test('browser engine matches the Python-generated Control Room semantics', () =>
   assert.equal(actual.analysis.close_ready, expected.analysis.close_ready);
   assert.equal(actual.analysis.gate_status, expected.analysis.gate_status);
   assert.deepEqual(actual.analysis.summary, expected.analysis.summary);
+  assert.deepEqual(
+    actual.analysis.findings.map((item) => [item.equation_id, item.record_id, item.status, item.residual]),
+    expected.analysis.findings.map((item) => [item.equation_id, item.record_id, item.status, item.residual]),
+  );
+  assert.equal(expected.demo.synthetic, true);
 
   assert.deepEqual(
     actual.exceptions.map(compactException),

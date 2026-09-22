@@ -14,7 +14,7 @@ Describe the problem, the product boundary, and why this change belongs in EQ-Pr
 - [ ] The audited Control Room shell is reused rather than cosmetically redesigned.
 - [ ] Any UI change is tied to a functional requirement or a reproducible audit finding.
 - [ ] Keyboard, focus, mobile, reduced-motion, empty-state, and export behavior remain coherent.
-- [ ] Public demo mode and loopback local-file mode remain honestly distinguished.
+- [ ] Hosted browser, loopback Python and CLI execution/storage boundaries remain honestly distinguished.
 
 ## Validation
 

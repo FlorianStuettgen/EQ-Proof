@@ -32,9 +32,9 @@ EQ-Proof keeps these concepts separate:
 
 ```text
 reported EAC                    = submitted EAC
-defensible EAC                  = AC + ETC
-deterministic forecast gap      = defensible EAC - reported EAC
-reconstructed risk-adjusted EAC = defensible EAC + pending change + configured risk uplift
+detail-reconstructed EAC        = AC + ETC
+deterministic forecast gap      = detail-reconstructed EAC - reported EAC
+reconstructed risk-adjusted EAC = detail-reconstructed EAC + pending change + configured risk uplift
 risk-adjusted reconciliation    = reconstructed risk-adjusted EAC - submitted risk-adjusted EAC
 ```
 

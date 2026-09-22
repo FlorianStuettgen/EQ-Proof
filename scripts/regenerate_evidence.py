@@ -54,10 +54,12 @@ def main() -> int:
     (EVIDENCE / "portfolio-allocation.proof.json").write_text(
         json.dumps(proof, indent=2, sort_keys=True, ensure_ascii=False, allow_nan=False) + "\n",
         encoding="utf-8",
+        newline="\n",
     )
     (EVIDENCE / "portfolio-allocation.report.md").write_text(
         render_markdown(proof),
         encoding="utf-8",
+        newline="\n",
     )
     print("Regenerated deterministic evidence and verified semantic replay.")
     return 0

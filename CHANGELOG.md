@@ -6,12 +6,21 @@ All notable changes are documented here. The Python package follows semantic ver
 
 ### Added
 
+- Three source-backed close walkthroughs demonstrating blocked, review-required and ready-within-scope outcomes, with downloadable inputs and twelve inspectable evidence exports.
+- A browser showcase chooser that executes the packaged synthetic files through the real browser engine, with known-answer Python/JavaScript parity and browser regression coverage.
+- Deterministic showcase regeneration checks and an extracted-wheel smoke check for every packaged browser asset and route.
 - Canonical runtime and data-handling contract covering hosted-browser, loopback, CLI and numerical-proof modes.
 - Shared golden-fixture test comparing browser-engine gate, reconstruction, findings, source manifest and graph semantics with the Python-generated public Control Room artifact.
 - Browser controls and Playwright coverage for explicit workspace-persistence opt-in, session-only operation and clearing saved data.
 
 ### Changed
 
+- Reworked the visitor README and demo playbook around reproducible decisions, current browser file handling, explicit applicability and usable CLI setup instructions.
+- Corrected remaining reconstruction and severity labels in inspectors, exported briefs, guided-tour states and the active-result preview.
+- Retained per-record findings, equation definitions and synthetic-case labels in demonstration workspaces; exported briefs now disclose applicability and the approval boundary.
+- Serialized manual and example compilation so overlapping requests cannot leave workspace-storage interception active or overwrite results out of order.
+- Preserved canonical example/source-manifest bytes across Windows checkouts with LF attributes.
+- Included downloadable browser samples in built Python wheels.
 - Made the hosted workbench session-only by default; complete Control Room JSON is persisted in browser local storage only after explicit opt-in.
 - Reframed the visitor-facing `AC + ETC` state as **detail-reconstructed EAC** while retaining `defensible_eac` as a schema-compatibility field.
 - Reframed the displayed assurance number as a non-calibrated **control severity index** and made gate state and individual findings primary.

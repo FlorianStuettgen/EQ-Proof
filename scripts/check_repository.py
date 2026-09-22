@@ -28,12 +28,17 @@ def main() -> int:
         raise SystemExit("Module compilation failed")
     run(sys.executable, "scripts/regenerate_evidence.py")
     run(sys.executable, "scripts/regenerate_control_room_demo.py")
+    run(sys.executable, "scripts/regenerate_showcase_cases.py", "--check")
     if shutil.which("node"):
         for script in (
             "app.js",
             "renderers.js",
             "workflow.js",
             "showcase.js",
+            "static-bootstrap.js",
+            "audit.js",
+            "browser-engine.js",
+            "browser-bridge.js",
         ):
             run("node", "--check", f"src/eq_proof/web/{script}")
     if (ROOT / ".git").exists():

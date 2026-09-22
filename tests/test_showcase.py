@@ -31,7 +31,9 @@ def test_showcase_javascript_preserves_semantic_boundaries():
     script = (WEB / "showcase.js").read_text(encoding="utf-8")
     engine = (WEB / "browser-engine.js").read_text(encoding="utf-8")
     assert script.count("eyebrow: 'Step ") == 5
-    assert "deterministic contradiction—not a risk opinion" in script
+    assert "direct deterministic contradiction, separate from declared change and risk" in script
+    assert "The forecast reconciles to its supplied detail" in script
+    assert "Missing evidence does not establish that the forecast reconciles" in script
     assert "source record → failed equation" in script
     assert "schedule_assurance" in engine
     assert "severity heuristic, not a probability" in script
