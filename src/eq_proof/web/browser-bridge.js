@@ -175,7 +175,7 @@
       });
     } catch (error) {
       select.replaceChildren(new Option('Examples unavailable', ''));
-      status.textContent = error.name === 'TimeoutError'
+      status.textContent = ['TimeoutError', 'AbortError'].includes(error.name)
         ? 'Examples took too long to load. Reload to try again, or analyze your own files below.'
         : error.message;
     } finally {
