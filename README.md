@@ -6,7 +6,19 @@ EQ-Proof checks cost forecasts, change, risk and Primavera P6 exports, then trac
 
 [**Open the functional browser workbench**](https://florianstuettgen.github.io/EQ-Proof/) · [Worked examples](docs/SHOWCASE.md) · [Five-minute walkthrough](docs/DEMO_PLAYBOOK.md)
 
+**Beta · Independent open-source project · Synthetic demonstration data**
+
 ![Synthetic Control Room example with the close gate, forecast reconstruction and source-linked findings](docs/assets/showcase-overview.png)
+
+## What decision does it support?
+
+Before a monthly report is accepted, which figures disagree with their supporting detail, which controls failed, and what needs review? EQ-Proof produces a close gate and an exception register with the record, equation, input values and required action behind each finding. The reviewer retains the approval decision.
+
+| Your starting point | Where to go |
+| --- | --- |
+| See the business question in action | [Open the workbench](https://florianstuettgen.github.io/EQ-Proof/) and choose **Take the 90-second tour** |
+| Inspect an example without running software | [Read the submitted-close report](evidence/close-walkthrough/blocked/report.md) and [compare all three cases](docs/SHOWCASE.md) |
+| Assess the design and its limits | [Architecture](docs/PRODUCT_ARCHITECTURE.md), [data handling](docs/RUNTIME_MODES.md) and [current CI results](https://github.com/FlorianStuettgen/EQ-Proof/actions/workflows/ci.yml) |
 
 ## See the decision, then inspect the evidence
 
@@ -22,6 +34,8 @@ Files are processed entirely in the browser and are never uploaded by the hosted
 ## Three examples you can reproduce
 
 The [close walkthrough](examples/close_walkthrough/README.md) uses three deliberately constructed input sets for the same synthetic project. These are supplied scenarios, not automatic repairs or a cross-period comparison feature.
+
+EAC means **estimate at completion**, AC means **actual cost**, and ETC means **estimate to complete**. All example amounts are in USD.
 
 | Case | What the inputs demonstrate | Expected gate |
 | --- | --- | --- |
@@ -75,6 +89,12 @@ npm run test:ui
 
 Checks cover Python behavior and branch coverage, browser/Python equivalence, deterministic evidence, installed-wheel assets, and browser workflows across desktop, mobile and reduced-motion settings. The exact test count is recorded with each validated change; the Python branch-coverage gate is 92%.
 
+Three design choices are central to the implementation:
+
+- **Analysis runs where the files are:** a build-free browser engine supports immediate evaluation; the Python CLI supports repeatable batch checks. Shared fixtures compare the two implementations.
+- **Controls are explicit data:** restricted equation packs define fields, tolerances, severity and applicability. Reviewers can inspect why a check failed or could not run.
+- **Evidence travels with the result:** source hashes, the equation manifest and per-record results accompany the exports. Retain the original inputs to reproduce an analysis.
+
 [Architecture](docs/PRODUCT_ARCHITECTURE.md) · [Semantic model](docs/SEMANTIC_MODEL.md) · [Development](docs/DEVELOPMENT.md) · [Security](SECURITY.md)
 
 ## Scope
@@ -85,4 +105,4 @@ Current adapters cover CSV exports and P6 XER `TASK` records. EQ-Proof does not 
 
 The optional [`eq-proof` numerical engine](docs/ARCHITECTURE.md) provides numerical repair, signing and semantic replay; `eq-controls` runs the project-controls workflows shown here.
 
-Apache-2.0 · [License](LICENSE)
+Apache-2.0 · [License](LICENSE) · [More projects by Florian Stuettgen](https://github.com/FlorianStuettgen)

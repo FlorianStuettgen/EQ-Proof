@@ -4,11 +4,13 @@ EQ-Proof is a local-first project-controls Control Room backed by an independent
 
 ## Start with the operational product
 
+- [Open the browser workbench](https://florianstuettgen.github.io/EQ-Proof/) — no installation or account; start with the synthetic examples
+- [Worked examples](https://github.com/FlorianStuettgen/EQ-Proof/blob/main/docs/SHOWCASE.md) — three close gates with source inputs and generated evidence
+- [Quickstart](Quickstart) — run the Control Room and reproduce a close check
 - [Project Controls Workbench](Project-Controls-Workbench) — P6 XER, generic cost exports, tested equations, user rules and close-gate outputs
 - [Semantic Model](https://github.com/FlorianStuettgen/EQ-Proof/blob/main/docs/SEMANTIC_MODEL.md) — authoritative financial states, gate meanings, assurance boundary and impact routing
 - [Product Architecture](https://github.com/FlorianStuettgen/EQ-Proof/blob/main/docs/PRODUCT_ARCHITECTURE.md) — runtime modes, data flow, security and reproducibility
-- [Demo Playbook](https://github.com/FlorianStuettgen/EQ-Proof/blob/main/docs/DEMO_PLAYBOOK.md) — five-minute manager and engineering-panel walkthrough
-- [Quickstart](Quickstart) — install, validate, repair and verify
+- [Demo Playbook](https://github.com/FlorianStuettgen/EQ-Proof/blob/main/docs/DEMO_PLAYBOOK.md) — five-minute project-controls and technical walkthrough
 
 ## Core engine
 
