@@ -88,8 +88,15 @@ CSV ingestion recognizes common aliases such as `budget_at_completion`, `actual_
 
 `exceptions.csv` is intentionally flat and stable so it can be loaded directly into Excel, Power Query, Power BI, Smartsheet, SharePoint lists or an issue-management workflow.
 
-## Why this is useful
+## Where it fits in the reporting process
 
-Most controls QA happens through manually maintained spreadsheet checks that are difficult to reuse, version, test or audit. The workbench turns those checks into portable equation packs and combines them with a tested catalogue. The same close logic can therefore run against every reporting cycle and every project without copying formulas between workbooks.
+The workbench turns declared spreadsheet checks into portable equation packs and combines them with a tested catalogue. Teams can reuse the same checks across reporting cycles, with project-specific fields, tolerances and approval thresholds defined explicitly.
 
-The result is not another dashboard. It is an executable, versionable acceptance gate for the data feeding the dashboard.
+| Review question | Inspectable output |
+| --- | --- |
+| Does the forecast reconcile to actual cost plus remaining work? | Reported EAC, `AC + ETC` reconstruction and the difference between them |
+| Which source records need attention? | Exceptions with equation IDs, evaluated values, residuals and remediation |
+| Did every intended check run? | Passed, failed and not-applicable results, plus the selected equation manifest |
+| Can another reviewer reproduce the result? | Source hashes and generated artifacts, retained alongside the original exports and engine version |
+
+Use the gate as an input to the close review. A ready gate means no selected, applicable check failed; it does not establish complete records, correct commercial assumptions or approval. See the [three synthetic cases](SHOWCASE.md) for the distinction between reconciling the forecast and resolving the remaining schedule findings.
