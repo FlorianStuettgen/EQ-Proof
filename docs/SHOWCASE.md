@@ -20,13 +20,13 @@ All three cases retain **$65M of declared change and configured risk**, producin
 
 ## The 90-second demonstration
 
-1. Open **Showcase examples** in the workspace. Choose **1. Submitted close** and select **Run example**. The browser compiles the packaged CSV, P6 XER and equation files using the analysis engine.
+1. Select **Try three examples** on the landing page or **Showcase examples** in the workspace. Choose **1. Submitted close** and select **Run example**. The browser compiles the packaged CSV, P6 XER and equation files using the analysis engine.
 2. Read the **$11M deterministic forecast gap**. Open `MEP-200`: its $37M position above reported EAC contains a $7M forecast discrepancy, $12M of pending change and $18M of configured risk.
-3. Open the **Evidence graph** or **Exception command centre**. Follow a finding from its record to the equation, residual and required action. A schedule finding remains a schedule-assurance issue, with no invented financial impact.
+3. Open the **Evidence graph** or **Exceptions**. Follow a finding from its record to the equation, exact input values, residual and required action. A schedule finding remains a schedule-assurance issue, with no invented financial impact.
 4. Run **2. Forecast reconciled**. The cost discrepancies are resolved in the supplied inputs; two schedule checks still require attention. A zero forecast gap does not make the gate ready.
-5. Run **3. Selected controls satisfied**, inspect applicability, and download the brief or analysis JSON. The gate now reflects the selected applicable controls, not management approval.
+5. Run **3. Selected controls satisfied**. In **Controls & coverage**, expand **Inspect a control result** to inspect passed and not-applicable results. Download the brief or analysis JSON. The gate reflects the selected applicable controls, not management approval.
 
-For a slower guided walkthrough of the initial hyperscale demonstration, choose **Take the guided Control Room tour**. The default demo is preserved; the three showcase cases add the explicit authorization inputs needed to execute their custom rule.
+For a guided review of the active result, choose **Take the 90-second tour**. Its six steps cover the decision, forecast, source account, graph, actions and control coverage. The default demo is preserved; the three showcase cases add the explicit authorization inputs needed to execute their custom rule. **Workspace options** contains the reset, JSON reopening and storage controls.
 
 ## What changes between cases
 

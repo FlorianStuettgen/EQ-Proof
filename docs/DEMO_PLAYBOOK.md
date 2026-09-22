@@ -6,7 +6,7 @@ For project-controls leaders and technical reviewers. Use only the supplied synt
 
 ## 0:00–0:45 — Start with the decision
 
-Open **Showcase examples** in the workspace, select **1. Submitted close** under **Example case**, and choose **Run example**.
+Select **Try three examples** on the landing page or **Showcase examples** in the workspace. In **Examples**, select **1. Submitted close** under **Example case**, and choose **Run example**. **Analyze files** opens the separate **Your files** view for user-supplied inputs.
 
 Explain: the application reads the supplied source files and runs the controls. The gate is computed, not selected by the presenter. Running an example replaces the active analysis with that synthetic case.
 
@@ -30,7 +30,7 @@ Open **Evidence graph** and inspect a cost finding. Follow:
 source record → failed equation → declared metric or assurance domain → close gate
 ```
 
-In **Exception command centre**, inspect the equation, residual and prescribed remediation. Download the CSV if the reviewer wants to work through the findings in a spreadsheet.
+In **Exceptions**, inspect the equation ID, input values, residual and prescribed remediation. **Export all exceptions** downloads the complete register, regardless of the current display filters. On small screens, the graph scrolls horizontally; all four workspace tabs remain visible.
 
 Contrast a schedule finding: it affects schedule assurance and carries no invented dollar impact. The displayed control severity index is a severity heuristic, not a probability.
 
@@ -44,7 +44,7 @@ These cases are constructed input snapshots. The engine did not correct the reco
 
 ## 3:45–4:30 — Demonstrate the configurable control
 
-Inspect the included equation pack or exported analysis:
+Open **Controls & coverage**, expand **Inspect a control result**, select **Passed** and choose a `portfolio.board_authorization` result. **Inspect selected result** shows the exact EAC and authorization limit used by the equation:
 
 ```text
 EAC <= delegated_authorization
@@ -52,11 +52,13 @@ EAC <= delegated_authorization
 
 Each case supplies synthetic authorization limits for all three accounts, so the custom rule actually executes and passes. The input values illustrate a declared threshold; they are not evidence of real management approval.
 
-The equation workbench also accepts project-specific controls. Catalogue and custom equations use a restricted expression evaluator; imported code, attribute access, assignments and undeclared fields are rejected.
+Switch **Result status** to **Not applicable** to inspect the activity check that did not run. These recorded results are distinct from the catalogue and equation editor below, which configure the next file analysis. Editing a draft does not change the active result.
+
+Catalogue and custom equations use a restricted expression evaluator; imported code, attribute access, assignments and undeclared fields are rejected.
 
 ## 4:30–5:00 — Leave something inspectable
 
-Download the **executive brief** and **analysis JSON**. The brief gives the gate and findings; the JSON retains source hashes, per-record findings, equation definitions and applicability results. The analysis can be reopened in the browser. Keep the original source files alongside it; the JSON does not preserve every source field.
+Download the **executive brief** and **Export analysis JSON**. The brief gives the gate and findings; the JSON retains source hashes, per-record findings, equation definitions and applicability results. Expand **Workspace options** to reopen a JSON analysis, reset the demo or manage browser storage. Keep the original source files alongside the JSON; it does not preserve every source field.
 
 Explain the operating boundary:
 
@@ -70,4 +72,4 @@ Explain the operating boundary:
 
 Before a meeting, open each case once and confirm its expected gate. Use the [generated reports](SHOWCASE.md#inspect-the-outputs-without-installing-anything) as an offline fallback. The [fixture guide](../examples/close_walkthrough/README.md) records every input change and the expected CLI exit codes.
 
-The built-in **Take the guided Control Room tour** is a shorter walkthrough of whichever result is active. The original hyperscale demo remains available through the reset action.
+The built-in **Take the 90-second tour** is a six-step walkthrough of whichever result is active. Its guide appears above the relevant evidence and ends with control coverage and a brief download. **Open workspace** scrolls to the active analysis without replacing it. The original hyperscale demo remains available through **Workspace options → Reset to demo**.

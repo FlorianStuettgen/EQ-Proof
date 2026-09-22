@@ -1,67 +1,44 @@
-# EQ-Proof UI/UX Audit
+# EQ-Proof UI/UX audit
 
-This audit covers the hosted synthetic Control Room at:
+The hosted workbench is a functional browser application at [EQ-Proof](https://florianstuettgen.github.io/EQ-Proof/). Its initial data and three showcase cases are explicitly synthetic; visitors can also select their own files for analysis on their device.
 
-`https://florianstuettgen.github.io/EQ-Proof/`
+## Experience review
 
-## Scope
+The review follows a visitor from the landing page through the guided tour, example compilation, evidence inspection, file analysis, export and workspace reopening. It covers desktop, 390px mobile, 320px narrow-screen and reduced-motion behavior.
 
-The automated browser matrix exercises:
+The existing dark visual system is retained. Changes address observed reachability, obstruction and semantic discrepancies:
 
-- desktop Chromium;
-- a 390 × 844 mobile viewport with touch input;
-- reduced-motion preferences;
-- initial demo loading and deterministic values;
-- public-versus-local runtime messaging;
-- local-analysis dialog opening and closing;
-- tab semantics and keyboard navigation;
-- inspector focus management;
-- guided-tour completion and focus restoration;
-- keyboard activation of account contributions and exception rows;
-- exception filtering and empty states;
-- browser-side structural validation for draft equations;
-- executive-brief and CSV downloads;
-- page-level horizontal overflow; and
-- automated WCAG A/AA and best-practice checks for serious or critical findings.
+| Finding | Correction |
+| --- | --- |
+| The mobile tour overlapped gate counts and inspector evidence; later steps scrolled headings behind the sticky header. | The guide sits in the document above its target, with a header offset and no automatic competing inspector. Six steps end with coverage and a brief download. |
+| Keyboard activation of Next transferred focus into an automatically opened inspector. | Tour navigation keeps focus on Next; arrow keys outside the guide retain their normal behavior. |
+| Landing-page exposition and a large storage toolbar delayed the active result. | A shorter introduction provides direct example and workspace entry points. Forecast explanation is expandable; secondary storage actions live under Workspace options. |
+| Analyze files opened a long examples section before the actual inputs. | Your files and Examples are explicit dialog modes selected by the entry action. |
+| Two mobile feature tabs were outside the visible horizontal area. | All four tabs appear in a two-column mobile layout. The evidence graph has an explicit horizontal-scroll cue and a keyboard-focusable scroll area. |
+| A source-tracing promise led to inspectors without evaluated values. | Finding inspectors show equation IDs and values; account inspectors show AC and ETC when retained evidence supports them. |
+| Passing and not-applicable controls could only be inspected in exported JSON. | Controls & coverage exposes results from the active analysis, separately from controls selected for the next analysis. |
+| A prior search could hide every finding in the guided action step. | The guide clears unrelated filters before showing the highest-priority findings. |
+| Export CSV implied that only visible filtered rows would be exported. | Export all exceptions explicitly describes the complete-register download. |
+| Reopening an example replaced its identity with a generic storage-state title. | The case name and synthetic label remain visible; storage state has a separate status area. |
+| A malformed workspace could partly replace the active result before reporting failure. | Imports are validated transactionally; unsuccessful imports retain the previous result. |
+| A failed browser-storage write could still claim the workspace was saved. | Saving is verified and failures fall back to session-only operation with export guidance. |
+| Missing AC/ETC could show a reconstructed value despite no supporting control evidence. | The UI, tour and inspectors identify unavailable reconstruction instead of presenting fallback values as proven detail. |
 
-## Defects corrected
+## Validation
 
-1. **The dialog close control submitted the analysis form.**
-   The close button had the default submit type inside a form whose submit handler prevents native dialog closure. It is now an explicit button with a dedicated close action.
+Regression coverage lives in:
 
-2. **The closed inspector remained keyboard-focusable.**
-   The off-canvas inspector used `aria-hidden` without removing its controls from the tab sequence. Closed state now uses `inert`, and open/close transitions manage focus.
+- `tests/ui/control-room.spec.js`: navigation, responsive tour placement, keyboard focus, tab reachability, filters, downloads and accessibility.
+- `tests/ui/browser-workbench.spec.js`: file analysis, draft controls, session-only behavior, storage opt-in, failed storage and import preservation.
+- `tests/ui/showcase-cases.spec.js`: all three source-backed cases, dialog modes, export/reopening, source hashes and concurrent-analysis handling.
+- `tests/ui/evidence-review.spec.js`: source-value drilldown, passed and skipped controls, missing evidence and responsive accessibility.
 
-3. **Tabs were incomplete for keyboard and assistive technology users.**
-   Tabs now expose `aria-controls`, `aria-selected`, roving `tabindex`, labelled panels, hidden inactive panels, and Left/Right/Home/End keyboard navigation.
+Run `npm run test:ui` after installing the locked dependencies and Chromium. The canonical `ui-audit` workflow runs desktop, mobile and reduced-motion projects and retains failure screenshots, videos and traces. Deliberate per-project skips avoid repeating identical download and data-contract checks at every viewport.
 
-4. **Account cards and exception rows were mouse-only.**
-   Interactive generated records now receive keyboard focus, accessible labels, and Enter/Space activation.
+Local Windows runs with trace/video recording have intermittently stalled while reading static HTTP response bodies. Uninstrumented local runs support visual inspection; the canonical Linux workflow remains the release gate with its configured diagnostics enabled. Test counts and deployment verification belong to the associated pull request and workflow run.
 
-5. **Interactive SVG nodes lacked dependable accessible names.**
-   Evidence nodes now expose labels derived from their node type, record, and equation metadata, and Space no longer scrolls the page while activating a node.
+## Interpretation and storage
 
-6. **Public equation authoring overstated validation.**
-   Public mode now says `Add to draft pack`, distinguishes structural checks from authoritative engine validation, rejects multiple comparisons, invalid identifiers, statement separators, and oversized expressions, and deduplicates required fields.
+The gate reflects selected, applicable controls, not source completeness or management approval. A not-applicable result is not a pass. Declared change and configured risk remain separate from arithmetic forecast discrepancies; the displayed severity index is not a probability.
 
-7. **Empty result states rendered as blank panels.**
-   Control-account, domain, and exception areas now explain when no records or filtered results are available.
-
-8. **Generated downloads used a fragile object-URL lifecycle.**
-   Download anchors are attached before activation and object URLs are revoked after the browser has had time to begin the download. CSV output also includes a UTF-8 BOM for spreadsheet compatibility.
-
-9. **Reduced-motion settings did not cover JavaScript scrolling.**
-   Smooth `scrollIntoView` calls are normalized to immediate movement for users who request reduced motion.
-
-10. **The deployment pipeline did not prove these interaction assets existed.**
-    Pages validation and repository JavaScript checks now require the audit CSS and JavaScript, while a dedicated Playwright workflow preserves browser-level regression coverage.
-
-## Evidence
-
-The audit is implemented in:
-
-- `tests/ui/control-room.spec.js`;
-- `playwright.config.js`; and
-- `.github/workflows/ui-audit.yml`.
-
-Failure artifacts retain the Playwright HTML report, screenshots, videos, and traces for fourteen days.
+The hosted app is session-only by default. Remember workspace explicitly opts into browser storage; users can export JSON, reopen it, or clear saved data. The Python app processes uploads on loopback in request-scoped temporary storage. See [Runtime modes](RUNTIME_MODES.md) for the full boundary.

@@ -193,9 +193,10 @@
     if (typeof window.closeInspector === 'function' && !window.closeInspector.__eqProofAudited) {
       const originalCloseInspector = window.closeInspector;
       const auditedCloseInspector = function closeAuditedInspector(...args) {
+        const wasOpen = inspector.classList.contains('open');
         originalCloseInspector(...args);
         inspector.setAttribute('inert', '');
-        queueMicrotask(() => focusIfAvailable(inspectorReturnFocus));
+        if (wasOpen && !tourOpen) queueMicrotask(() => focusIfAvailable(inspectorReturnFocus));
       };
       auditedCloseInspector.__eqProofAudited = true;
       window.closeInspector = auditedCloseInspector;
@@ -238,9 +239,11 @@
       event.stopImmediatePropagation();
       return;
     }
-    if (event.key === 'Escape' && inspector?.classList.contains('open') && tour?.hidden) {
+    if (event.key === 'Escape' && inspector?.classList.contains('open')) {
       event.preventDefault();
+      event.stopImmediatePropagation();
       window.closeInspector?.();
+      queueMicrotask(() => focusIfAvailable(inspectorReturnFocus));
     }
   }, true);
 

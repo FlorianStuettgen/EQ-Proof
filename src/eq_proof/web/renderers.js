@@ -1,12 +1,13 @@
 'use strict';
 
 function renderCatalogue() {
+  renderControlCoverage();
   if (state.selectedCatalogueIds === null) {
     state.selectedCatalogueIds = new Set(
       state.catalogue.map((item) => item.id),
     );
   }
-  $('#equationCount').textContent = `${state.catalogue.length} tested controls`;
+  $('#equationCount').textContent = `${state.catalogue.length} available controls`;
   const cards = state.catalogue.map((item) => {
     const label = document.createElement('label');
     label.className = 'equation-card';
@@ -14,6 +15,7 @@ function renderCatalogue() {
     checkbox.type = 'checkbox';
     checkbox.checked = state.selectedCatalogueIds.has(item.id);
     checkbox.dataset.equationId = item.id;
+    checkbox.setAttribute('aria-label', `Include ${item.id} in the next file analysis`);
     checkbox.addEventListener('change', () => {
       if (checkbox.checked) state.selectedCatalogueIds.add(item.id);
       else state.selectedCatalogueIds.delete(item.id);
@@ -34,6 +36,72 @@ function renderCatalogue() {
     return label;
   });
   $('#catalogueGrid').replaceChildren(...cards);
+}
+
+function controlStatusLabel(status) {
+  return { pass: 'Passed', fail: 'Failed', not_applicable: 'Not applicable' }[status] || 'Unknown';
+}
+
+function renderControlCoverage() {
+  const panel = $('#panel-equations');
+  if (!panel || !state.data) return;
+  let section = $('#controlCoverage');
+  if (!section) {
+    section = document.createElement('section');
+    section.id = 'controlCoverage';
+    section.className = 'panel control-coverage';
+    section.setAttribute('aria-labelledby', 'controlCoverageTitle');
+    section.innerHTML = `
+      <h3 id="controlCoverageTitle">Controls in this result</h3>
+      <p id="controlCoverageSummary" role="status" aria-live="polite"></p>
+      <p class="evidence-note">These results belong to the active analysis. The catalogue and draft controls below configure the next file analysis; they do not change this result.</p>
+      <details id="controlCoverageDetails">
+        <summary>Inspect a control result</summary>
+        <div class="control-result-controls">
+          <div class="control-result-field"><label for="controlStatusFilter">Result status</label><select id="controlStatusFilter"><option value="all">All results</option><option value="fail">Failed</option><option value="pass">Passed</option><option value="not_applicable">Not applicable</option></select></div>
+          <div class="control-result-field"><label for="controlResultSelect">Control result</label><select id="controlResultSelect"></select></div>
+          <button id="inspectControlResult" class="button button-secondary" type="button">Inspect selected result</button>
+        </div>
+        <p id="controlResultCount" class="evidence-note" role="status" aria-live="polite"></p>
+      </details>`;
+    panel.prepend(section);
+  }
+  const findings = state.data.analysis?.findings;
+  const details = $('#controlCoverageDetails');
+  if (!Array.isArray(findings)) {
+    $('#controlCoverageSummary').textContent = 'Per-record control results are not included in this artifact. Analyze its source files to review passes, failures and applicability.';
+    details.hidden = true;
+    return;
+  }
+  const counts = Object.fromEntries(['pass', 'fail', 'not_applicable'].map((status) => [status, findings.filter((finding) => finding.status === status).length]));
+  $('#controlCoverageSummary').textContent = `${counts.pass} passed · ${counts.fail} failed · ${counts.not_applicable} not applicable. ${state.data.analysis.equations_executed} checks executed across ${state.data.analysis.records_analyzed} records.`;
+  details.hidden = findings.length === 0;
+  const filter = $('#controlStatusFilter');
+  const select = $('#controlResultSelect');
+  const inspect = $('#inspectControlResult');
+  const populate = () => {
+    const visible = findings.map((finding, index) => ({ finding, index }))
+      .filter(({ finding }) => filter.value === 'all' || finding.status === filter.value);
+    select.replaceChildren(...visible.map(({ finding, index }) => new Option(
+      `${finding.record_id} · ${finding.equation_id} · ${controlStatusLabel(finding.status)}`, String(index),
+    )));
+    select.disabled = visible.length === 0;
+    inspect.disabled = visible.length === 0;
+    if (!visible.length) select.append(new Option('No results with this status', ''));
+    $('#controlResultCount').textContent = `${visible.length} of ${findings.length} recorded results. Not applicable means the equation was not executed; it does not establish a pass.`;
+  };
+  filter.onchange = populate;
+  inspect.onclick = () => {
+    const finding = findings[Number(select.value)];
+    if (!select.disabled && finding) inspectFinding(finding);
+  };
+  populate();
+}
+
+function sourceValue(value) {
+  return typeof value === 'number' && Number.isFinite(value)
+    ? value.toLocaleString('en-US', { maximumSignificantDigits: 21 })
+    : String(value ?? 'Not retained');
 }
 
 function renderCustomEquations() {
@@ -57,6 +125,10 @@ function renderCustomEquations() {
 }
 
 function inspectContribution(item) {
+  const identityChecks = (state.data.analysis?.findings || []).filter((finding) => finding.equation_id === 'cost.eac_identity'
+    && finding.record_id === item.record_id && ['pass', 'fail'].includes(finding.status));
+  const values = identityChecks.length === 1 ? identityChecks[0].values : null;
+  const detailAvailable = Number.isFinite(values?.AC) && Number.isFinite(values?.ETC);
   const deterministic = item.deterministic_forecast_gap
     ?? item.deterministic_gap;
   const risk = item.configured_risk_uplift ?? item.risk_exposure;
@@ -71,35 +143,57 @@ function inspectContribution(item) {
     <dl>
       <dt>Source</dt><dd>${escapeHtml(item.source || 'uploaded data')}</dd>
       <dt>Reported EAC</dt><dd>${formatMoney(item.reported_eac)}</dd>
-      <dt>Detail-reconstructed EAC</dt><dd>${formatMoney(item.defensible_eac)}</dd>
-      <dt>Deterministic forecast gap</dt><dd>${formatMoney(deterministic)}</dd>
+      <dt>Actual cost (AC)</dt><dd>${detailAvailable ? escapeHtml(sourceValue(values.AC)) : 'Not evidenced'}</dd>
+      <dt>Estimate to complete (ETC)</dt><dd>${detailAvailable ? escapeHtml(sourceValue(values.ETC)) : 'Not evidenced'}</dd>
+      <dt>Detail-reconstructed EAC</dt><dd>${detailAvailable ? formatMoney(item.defensible_eac) : 'Not evidenced'}</dd>
+      <dt>Deterministic forecast gap</dt><dd>${detailAvailable ? formatMoney(deterministic) : 'Not evidenced'}</dd>
       <dt>Pending change</dt><dd>${formatMoney(item.pending_change)}</dd>
       <dt>Configured risk uplift</dt><dd>${formatMoney(risk)}</dd>
       <dt>Submitted risk-adjusted summary</dt><dd>${formatMoney(submitted)}</dd>
-      <dt>Reconstructed risk-adjusted position</dt><dd>${formatMoney(reconstructed)}</dd>
-      <dt>Risk-adjusted reconciliation gap</dt><dd>${formatMoney(reconciliation)}</dd>
-      <dt>Exposure above reported EAC</dt><dd>${formatMoney(exposure)}</dd>
+      <dt>Reconstructed risk-adjusted position</dt><dd>${detailAvailable ? formatMoney(reconstructed) : 'Not evidenced'}</dd>
+      <dt>Risk-adjusted reconciliation gap</dt><dd>${detailAvailable ? formatMoney(reconciliation) : 'Not evidenced'}</dd>
+      <dt>Exposure above reported EAC</dt><dd>${detailAvailable ? formatMoney(exposure) : 'Not evidenced'}</dd>
     </dl>
-    <div class="inspector-action"><strong>Interpretation boundary</strong><br>The risk-adjusted position applies declared pending change and configured risk uplift. It is not a Monte Carlo percentile unless the supplied risk field was produced by a governed probabilistic model.</div>
+    <p class="evidence-note">${detailAvailable ? `AC and ETC are the numeric values used by the recorded cost.eac_identity check, in ${escapeHtml(state.data.units?.currency || 'the selected currency')}.` : 'A unique executed EAC identity with both AC and ETC is not retained for this record. Its detail reconstruction cannot be confirmed from this artifact.'}</p>
+    <div class="inspector-action"><strong>Interpretation boundary</strong><br>The risk-adjusted position applies declared pending change and configured risk uplift. This arithmetic does not calculate or certify a Monte Carlo percentile or the methodology behind a supplied risk value.</div>
   `);
 }
 
 function inspectFinding(item) {
+  const equation = state.data.analysis?.equations?.find((candidate) => candidate.id === item.equation_id);
+  const values = Object.entries(item.values || {});
+  const sourceValues = values.length
+    ? `<dl class="source-values">${values.map(([field, value]) => `<dt>${escapeHtml(field)}</dt><dd>${escapeHtml(sourceValue(value))}</dd>`).join('')}</dl>`
+    : '<p class="evidence-note">No evaluated input values are retained for this result.</p>';
+  const applicability = item.status === 'not_applicable'
+    ? '<div class="inspector-action"><strong>Not executed</strong><br>Required inputs may be absent or non-numeric, or the applicability condition may not match. This retained result does not distinguish those reasons. Not applicable is not a pass.</div>'
+    : item.status === 'pass'
+      ? '<div class="inspector-action"><strong>Passed within scope</strong><br>The retained values satisfy this equation under its configured tolerance. This is not source verification or management approval.</div>'
+      : `<div class="inspector-action"><strong>Required action</strong><br>${escapeHtml(item.remediation)}</div>`;
   openInspector(item.domain.replaceAll('_', ' '), String(item.title), `
     <dl>
       <dt>Record</dt><dd>${escapeHtml(item.record_id)}</dd>
+      <dt>Equation ID</dt><dd>${escapeHtml(item.equation_id)}</dd>
+      <dt>Result</dt><dd>${escapeHtml(controlStatusLabel(item.status))}</dd>
       <dt>Severity</dt><dd>${escapeHtml(item.severity)}</dd>
-      <dt>Residual</dt><dd>${formatResidual(item.residual, item.residual_state)}</dd>
-      <dt>Declared impact</dt><dd>${escapeHtml(String(item.impact_metric || 'close_gate').replaceAll('_', ' '))}</dd>
+      ${item.status !== 'not_applicable' ? `<dt>Residual</dt><dd>${formatResidual(item.residual, item.residual_state)}</dd>` : ''}
+      ${item.impact_metric ? `<dt>Declared impact</dt><dd>${escapeHtml(String(item.impact_metric).replaceAll('_', ' '))}</dd>` : ''}
     </dl>
     <code>${escapeHtml(item.expression)}</code>
     <p>${escapeHtml(item.description)}</p>
-    <div class="inspector-action"><strong>Required action</strong><br>${escapeHtml(item.remediation)}</div>
+    <h4>Values used by the control</h4>
+    ${sourceValues}
+    ${equation?.required_fields ? `<p class="evidence-note">Required fields: ${equation.required_fields.map(escapeHtml).join(', ')}.</p>` : ''}
+    ${equation?.applicability_field ? `<p class="evidence-note">Applies when ${escapeHtml(equation.applicability_field)} matches ${equation.applicability_values.map(escapeHtml).join(', ')}.</p>` : ''}
+    ${applicability}
   `);
 }
 
 function inspectMetric(metric) {
   const p = state.data.portfolio;
+  const coverage = typeof forecastDetailAvailable === 'function' ? forecastDetailAvailable() : null;
+  const reconstructionUnavailable = coverage === false
+    && ['defensible_eac', 'deterministic_forecast_gap', 'risk_adjusted_position'].includes(metric);
   const descriptions = {
     reported_eac: [
       'Reported EAC',
@@ -128,7 +222,7 @@ function inspectMetric(metric) {
   openInspector(
     'Executive metric',
     title,
-    `<p>${description}</p><div class="inspector-action"><strong>${formatMoney(value)}</strong><br>Click an account contribution or evidence node to trace the value to declared source fields and equations.</div>`,
+    `<p>${reconstructionUnavailable ? 'The executed controls do not establish complete AC + ETC coverage. Inspect the recorded results and source fields before relying on forecast reconciliation.' : description}</p><div class="inspector-action"><strong>${reconstructionUnavailable ? 'Unavailable — AC and ETC not evidenced' : formatMoney(value)}</strong><br>Click an account contribution or evidence node to trace the value to declared source fields and equations.</div>`,
   );
 }
 

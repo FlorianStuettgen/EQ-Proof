@@ -7,6 +7,8 @@
 
   const WORKSPACE_KEY = 'eq-proof/browser-workspace@1';
   const PERSISTENCE_KEY = 'eq-proof/browser-persistence@1';
+  const SAVE_FAILURE = 'This browser could not save the analysis. It remains open for this session; export it to keep a copy.';
+  let saveFailed = false;
 
   window.EQ_PROOF_BROWSER_MODE = true;
 
@@ -56,15 +58,114 @@
 
   function retainSessionOnly(engine, payload) {
     markPersistence(payload, false);
-    engine.clearWorkspace();
+    try { engine.clearWorkspace(); } catch (error) {
+      console.warn('EQ-Proof could not clear browser storage:', error);
+    }
     engine.setCurrentPayload(payload, false);
     return payload;
   }
 
   function persistWorkspace(engine, payload) {
+    saveFailed = false;
     markPersistence(payload, true);
     engine.setCurrentPayload(payload, true);
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(WORKSPACE_KEY));
+      if (!persistenceEnabled() || JSON.stringify(saved?.payload) !== JSON.stringify(payload)) throw new Error('Workspace was not saved.');
+    } catch (error) {
+      setPersistencePreference(false);
+      const checkbox = document.getElementById('rememberWorkspaceInput');
+      if (checkbox) checkbox.checked = false;
+      retainSessionOnly(engine, payload);
+      saveFailed = true;
+    }
     return payload;
+  }
+
+  function setWorkspaceTitle(payload) {
+    const name = typeof payload.demo?.name === 'string' && payload.demo.name.trim()
+      ? payload.demo.name : 'Monthly close analysis';
+    $('#workspaceTitle').textContent = `${name}${payload.demo?.synthetic ? ' · synthetic' : ''}`;
+  }
+
+  function completeAnalysis(payload, engine) {
+    const count = (value) => Number.isInteger(value) && value >= 0;
+    return payload?.schema_version === engine.schemaVersion
+      && ['blocked', 'review', 'ready'].includes(payload.gate?.status)
+      && typeof payload.gate.label === 'string' && typeof payload.gate.headline === 'string'
+      && count(payload.gate.blockers) && count(payload.gate.failures)
+      && count(payload.analysis?.records_analyzed) && count(payload.analysis?.equations_executed)
+      && Array.isArray(payload.analysis.sources) && payload.analysis.sources.every((source) => typeof source === 'string')
+      && payload.portfolio && typeof payload.portfolio === 'object' && !Array.isArray(payload.portfolio)
+      && typeof payload.units?.currency === 'string' && /^[A-Z]{3}$/.test(payload.units.currency)
+      && Array.isArray(payload.graph?.nodes) && Array.isArray(payload.graph?.edges);
+  }
+
+  function compactWorkspaceControls() {
+    const bar = $('#browserWorkbenchBar');
+    if (!bar || $('#workspaceOptions')) return;
+    bar.querySelector('strong').textContent = 'Current analysis';
+    const status = $('#browserWorkspaceStatus');
+    status.setAttribute('role', 'status');
+    status.setAttribute('aria-live', 'polite');
+    const actions = bar.querySelector('.browser-workbench-actions');
+    const options = document.createElement('details');
+    options.id = 'workspaceOptions';
+    options.className = 'workspace-options';
+    options.innerHTML = '<summary>Workspace options</summary><div id="workspaceOptionsContent" class="workspace-options-content"></div>';
+    const content = options.querySelector('div');
+    ['openAnalysisButton', 'openAnalysisInput', 'resetWorkspaceButton'].forEach((id) => content.append(document.getElementById(id)));
+    actions.append(options);
+    $('#resetWorkspaceButton').addEventListener('click', () => closeTour(), true);
+    options.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        options.open = false;
+        options.querySelector('summary').focus();
+      }
+    });
+  }
+
+  function installDialogModes(examples) {
+    const form = $('#analysisForm');
+    const heading = form.querySelector('.dialog-heading');
+    const tabs = document.createElement('div');
+    tabs.className = 'analysis-modes';
+    tabs.setAttribute('role', 'tablist');
+    tabs.setAttribute('aria-label', 'Analysis source');
+    tabs.innerHTML = '<button id="filesModeButton" type="button" role="tab" aria-controls="fileAnalysisPanel">Your files</button><button id="examplesModeButton" type="button" role="tab" aria-controls="showcaseCases">Examples</button>';
+    const files = document.createElement('div');
+    files.id = 'fileAnalysisPanel';
+    files.setAttribute('role', 'tabpanel');
+    files.setAttribute('aria-labelledby', 'filesModeButton');
+    [...form.children].filter((child) => child !== heading && child !== examples).forEach((child) => files.append(child));
+    heading.insertAdjacentElement('afterend', tabs);
+    form.append(files);
+    examples.setAttribute('role', 'tabpanel');
+    examples.setAttribute('aria-labelledby', 'examplesModeButton');
+    function activate(mode, focus = false) {
+      const isFiles = mode === 'files';
+      $('#uploadTitle').textContent = isFiles ? 'Analyze your files' : 'Explore examples';
+      files.hidden = !isFiles;
+      examples.hidden = isFiles;
+      ['files', 'examples'].forEach((name) => {
+        const button = $(`#${name}ModeButton`);
+        button.setAttribute('aria-selected', String(name === mode));
+        button.tabIndex = name === mode ? 0 : -1;
+      });
+      if (focus) $(`#${mode}ModeButton`).focus();
+    }
+    ['files', 'examples'].forEach((mode) => {
+      $(`#${mode}ModeButton`).addEventListener('click', () => activate(mode));
+      $(`#${mode}ModeButton`).addEventListener('keydown', (event) => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        const next = event.key === 'Home' ? 'files' : event.key === 'End' ? 'examples' : mode === 'files' ? 'examples' : 'files';
+        activate(next, true);
+      });
+    });
+    activate('files');
+    return activate;
   }
 
   function updateAssuranceCopy() {
@@ -101,6 +202,7 @@
       <div id="showcaseCaseSources" class="showcase-case-sources" aria-label="Example source files"></div>
       <p id="showcaseCaseStatus" role="status" aria-live="polite"></p>`;
     $('#analysisForm .dialog-heading').insertAdjacentElement('afterend', section);
+    const activateMode = installDialogModes(section);
 
     const launcher = document.createElement('button');
     launcher.className = 'button button-secondary';
@@ -109,15 +211,32 @@
     launcher.textContent = 'Showcase examples';
     launcher.disabled = true;
     $('#workspaceTourButton').insertAdjacentElement('beforebegin', launcher);
-    let openedFromShowcase = false;
-    launcher.addEventListener('click', () => {
-      openedFromShowcase = true;
-      $('#uploadDialog').showModal();
-      $('#showcaseCaseSelect').focus();
+    let dialogTrigger = null;
+    const exampleTriggers = [launcher, $('#heroExamplesButton')].filter(Boolean);
+    const openExamples = (event) => {
+      dialogTrigger = event.currentTarget;
+      closeTour();
+      activateMode('examples');
+      if (!$('#uploadDialog').open) $('#uploadDialog').showModal();
+      ($('#showcaseCaseSelect').disabled ? $('#examplesModeButton') : $('#showcaseCaseSelect')).focus();
+    };
+    exampleTriggers.forEach((button) => {
+      button.disabled = true;
+      button.addEventListener('click', openExamples);
+    });
+    ['uploadButton', 'heroUploadButton'].forEach((id) => {
+      document.getElementById(id)?.addEventListener('click', (event) => {
+        dialogTrigger = event.currentTarget;
+        closeTour();
+        activateMode('files');
+        $('#filesModeButton').focus();
+        $('#uploadDialog').scrollTop = 0;
+      });
     });
     $('#uploadDialog').addEventListener('close', () => {
-      if (openedFromShowcase) queueMicrotask(() => launcher.focus());
-      openedFromShowcase = false;
+      const trigger = dialogTrigger;
+      if (trigger) queueMicrotask(() => trigger.focus({ preventScroll: true }));
+      dialogTrigger = null;
     });
 
     const select = $('#showcaseCaseSelect');
@@ -125,10 +244,10 @@
     const status = $('#showcaseCaseStatus');
     try {
       const response = await fetch('./showcase-cases.json', { signal: AbortSignal.timeout(8000) });
-      if (!response.ok) throw new Error('Examples could not be loaded. You can still analyze your own files below.');
+      if (!response.ok) throw new Error('Examples could not be loaded. You can still analyze your own files in Your files.');
       const bundle = await response.json();
       if (bundle.schema_version !== 'eq-proof/showcase-cases@1' || !Array.isArray(bundle.cases) || !bundle.cases.length) {
-        throw new Error('The example catalogue is unavailable. You can still analyze your own files below.');
+        throw new Error('The example catalogue is unavailable. You can still analyze your own files in Your files.');
       }
       select.replaceChildren();
       bundle.cases.forEach((example) => {
@@ -176,15 +295,15 @@
     } catch (error) {
       select.replaceChildren(new Option('Examples unavailable', ''));
       status.textContent = ['TimeoutError', 'AbortError'].includes(error.name)
-        ? 'Examples took too long to load. Reload to try again, or analyze your own files below.'
+        ? 'Examples took too long to load. Reload to try again, or analyze your own files in Your files.'
         : error.message;
     } finally {
-      launcher.disabled = false;
+      exampleTriggers.forEach((button) => { button.disabled = false; });
     }
   }
 
   function installPersistenceControls(engine, legacyWorkspaceCleared) {
-    const actions = document.querySelector('.browser-workbench-actions');
+    const actions = document.getElementById('workspaceOptionsContent');
     if (!actions || document.getElementById('rememberWorkspaceInput')) return;
 
     const toggle = document.createElement('label');
@@ -211,7 +330,7 @@
         setPersistencePreference(true);
         if (payload) {
           state.data = persistWorkspace(engine, payload);
-          if (status) status.textContent = 'Workspace persistence enabled. The active Control Room JSON is stored in this browser until you clear it.';
+          if (status) status.textContent = saveFailed ? SAVE_FAILURE : 'Saved in this browser. Export a copy or clear it in workspace options.';
         } else if (status) {
           status.textContent = 'Workspace persistence enabled. The next completed analysis will be stored in this browser.';
         }
@@ -221,7 +340,7 @@
       setPersistencePreference(false);
       if (payload) state.data = retainSessionOnly(engine, payload);
       else engine.clearWorkspace();
-      if (status) status.textContent = 'Session-only mode enabled. The active result remains open, but no Control Room workspace is stored after this tab closes.';
+      if (status) status.textContent = 'Session only. Export to keep this analysis.';
     });
 
     clearButton.addEventListener('click', () => {
@@ -230,7 +349,7 @@
       checkbox.checked = false;
       if (payload) state.data = retainSessionOnly(engine, payload);
       else engine.clearWorkspace();
-      if (status) status.textContent = 'Saved browser workspace and persistence preference cleared. The current page remains session-only.';
+      if (status) status.textContent = 'Saved copy cleared. This analysis remains open for this session.';
     });
 
     const originalOpenButton = document.getElementById('openAnalysisButton');
@@ -247,6 +366,23 @@
         if (!file) return;
         try {
           const payload = JSON.parse(await file.text());
+          if (!completeAnalysis(payload, engine)) {
+            throw new Error('This file is not a complete Control Room analysis. The current analysis was kept.');
+          }
+          closeTour();
+          const previous = { data: state.data, catalogue: state.catalogue, selectedCatalogueIds: state.selectedCatalogueIds };
+          try {
+            state.data = payload;
+            state.catalogue = payload.catalogue || engine.catalogue;
+            renderAll();
+            syncShowcaseSummary();
+          } catch (error) {
+            Object.assign(state, previous);
+            renderAll();
+            syncShowcaseSummary();
+            throw new Error('This analysis contains incomplete or unsupported data. The current analysis was kept.');
+          }
+          saveFailed = false;
           state.data = persistenceEnabled()
             ? persistWorkspace(engine, payload)
             : retainSessionOnly(engine, payload);
@@ -254,16 +390,14 @@
           if (state.selectedCatalogueIds === null) {
             state.selectedCatalogueIds = new Set(state.catalogue.map((item) => item.id));
           }
-          $('#workspaceTitle').textContent = persistenceEnabled()
-            ? 'Opened and saved browser workspace'
-            : 'Opened session-only browser workspace';
+          setWorkspaceTitle(state.data);
           renderAll();
           syncShowcaseSummary();
           updateAssuranceCopy();
           if (status) {
-            status.textContent = persistenceEnabled()
-              ? `${file.name} opened and stored in this browser.`
-              : `${file.name} opened for this session only. Export it before closing the tab.`;
+            status.textContent = saveFailed ? SAVE_FAILURE : persistenceEnabled()
+              ? 'Analysis opened and saved in this browser.'
+              : 'Analysis opened for this session. Export to keep a copy.';
           }
         } catch (error) {
           if (status) status.textContent = error.message;
@@ -277,9 +411,9 @@
       if (legacyWorkspaceCleared) {
         status.textContent = 'A workspace saved by an earlier version was cleared because persistence now requires explicit opt-in. This session is not stored.';
       } else if (checkbox.checked) {
-        status.textContent = 'Workspace persistence is enabled. Analysis stays on this device and remains in this browser until cleared.';
+        status.textContent = 'Saved in this browser. Export a copy or clear it in workspace options.';
       } else {
-        status.textContent = 'Session-only by default. Files stay on this device; enable Remember workspace only when this browser and device are appropriate for project data.';
+        status.textContent = 'Session only. Export to keep this analysis.';
       }
     }
   }
@@ -317,7 +451,8 @@
       if (state.selectedCatalogueIds === null) {
         state.selectedCatalogueIds = new Set(state.catalogue.map((item) => item.id));
       }
-      $('#workspaceTitle').textContent = 'Restored browser workspace';
+      closeTour();
+      setWorkspaceTitle(state.data);
       renderAll();
       syncShowcaseSummary();
     } else if (state.data) {
@@ -328,6 +463,7 @@
     state.apiAvailable = true;
     setRuntimeMode();
     engine.installBrowserUi();
+    compactWorkspaceControls();
     installPersistenceControls(engine, legacyWorkspaceCleared);
     updateAssuranceCopy();
 
@@ -343,6 +479,7 @@
       $('#gateCard').setAttribute('aria-busy', 'true');
       try {
         const payload = await runWithWorkspaceWritePolicy(() => engine.analyzeForm(payloadForm));
+        closeTour();
         if (example) {
           payload.demo = { name: example.title, description: example.description, synthetic: true, showcase_case: example.id };
           state.selectedCatalogueIds = new Set(engine.catalogue.map((equation) => equation.id));
@@ -353,11 +490,12 @@
           closeTour();
           activateTab('overview');
         }
+        saveFailed = false;
         state.data = persistenceEnabled()
           ? persistWorkspace(engine, payload)
           : retainSessionOnly(engine, payload);
         state.catalogue = payload.catalogue || engine.catalogue;
-        $('#workspaceTitle').textContent = example ? `${example.title} · synthetic` : 'Browser-compiled monthly close';
+        setWorkspaceTitle(state.data);
         renderAll();
         syncShowcaseSummary();
         updateAssuranceCopy();
@@ -365,7 +503,8 @@
           ? 'Analysis complete. The result is stored in this browser and available for export.'
           : 'Analysis complete in session-only mode. Export the result before closing this tab if you need to retain it.';
         const workspaceStatus = document.getElementById('browserWorkspaceStatus');
-        if (workspaceStatus) workspaceStatus.textContent = $('#apiStatus').textContent;
+        if (workspaceStatus) workspaceStatus.textContent = saveFailed ? SAVE_FAILURE : persistenceEnabled()
+          ? 'Analysis complete and saved in this browser.' : 'Analysis complete. Session only; export to keep a copy.';
         $('#uploadDialog').close();
         $('#workspace').scrollIntoView({ behavior: 'smooth' });
       } finally {

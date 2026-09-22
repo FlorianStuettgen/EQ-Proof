@@ -7,8 +7,15 @@ function moneyFromPortfolio(name, fallback = null) {
   return formatMoney(portfolioValue(name, fallback));
 }
 
+function gateNarrative() {
+  if (state.data.analysis?.equations_executed === 0) return 'No controls executed. Review missing fields and applicability before relying on this result.';
+  if (state.data.gate.status === 'ready') return 'No selected, applicable controls failed. Review skipped checks and the approval boundary.';
+  return state.data.gate.headline;
+}
+
 function syncShowcaseSummary() {
   if (!state.data) return;
+  const coverage = forecastDetailAvailable();
   const values = {
     showcaseReported: moneyFromPortfolio('reported_eac'),
     showcaseDefensible: moneyFromPortfolio('defensible_eac'),
@@ -22,6 +29,23 @@ function syncShowcaseSummary() {
   });
   const gap = $('#showcaseGap');
   if (gap) gap.parentElement.replaceChildren('Difference between supplied detail and reported forecast: ', gap, '.');
+  if (coverage === false) {
+    $('#showcaseDefensible').textContent = 'Unavailable';
+    $('#showcaseGap').textContent = 'not established';
+    $('#showcaseRiskAdjusted').textContent = 'Unavailable';
+    $('#showcaseExposure').textContent = 'not established';
+    ['#defensibleEac', '#deterministicGap', '#riskAdjustedPosition'].forEach((selector) => {
+      if ($(selector).textContent !== 'Unavailable') $(selector).textContent = 'Unavailable';
+    });
+  }
+  const currency = state.data.units?.currency || 'USD';
+  const identity = state.data.demo?.synthetic ? 'Synthetic example' : 'Active analysis';
+  $('#gateHeadline').textContent = gateNarrative();
+  $('#heroContext').textContent = `${identity} · ${currency} · No account required`;
+  $('#previewContext').textContent = `${identity} · ${currency}`;
+  $('#workspaceContext').textContent = `${currency} · ${identity} · ${state.data.analysis.records_analyzed} source records`;
+  $('#gateScope').textContent = `${state.data.analysis.equations_executed} checks executed · ${state.data.analysis.summary?.not_applicable ?? 'Unknown'} not applicable. The gate does not establish source completeness or approve the close.`;
+  $('#deterministicGapCard').classList.toggle('has-discrepancy', coverage !== false && Number(portfolioValue('deterministic_forecast_gap', 'deterministic_gap')) !== 0);
   const previewGate = $('.preview-gate');
   if (previewGate) {
     previewGate.querySelector('strong').textContent = state.data.gate.label;
@@ -31,8 +55,8 @@ function syncShowcaseSummary() {
   }
   const previewValues = [
     ['.preview-metric:not(.hot) strong', values.showcaseReported],
-    ['.preview-metric.hot strong', values.showcaseGap],
-    ['.preview-exposure strong', values.showcaseExposure],
+    ['.preview-metric.hot strong', coverage === false ? 'Unavailable' : values.showcaseGap],
+    ['.preview-exposure strong', coverage === false ? 'Unavailable' : values.showcaseExposure],
   ];
   previewValues.forEach(([selector, value]) => { if ($(selector)) $(selector).textContent = value; });
 }
@@ -55,12 +79,12 @@ function forecastDetailAvailable(recordId = null) {
 
 const tourSteps = [
   {
-    eyebrow: 'Step 1 · decision', title: 'Start at the gate', target: '[data-tour-target="gate"]', tab: 'overview',
+    eyebrow: 'Step 1 · decision', title: 'Start at the gate', target: '[data-tour-target="gate"]', anchor: '#gateCard', tab: 'overview',
     body: () => `${state.data.gate.label} follows ${state.data.gate.failures} failed controls, including ${state.data.gate.blockers} blockers, across ${state.data.analysis.records_analyzed} source records. Only selected, applicable controls contribute to the gate.`,
     action: () => closeInspector(),
   },
   {
-    eyebrow: 'Step 2 · reconstruction', title: 'Check the forecast arithmetic', target: '[data-tour-target="gap"]', tab: 'overview',
+    eyebrow: 'Step 2 · reconstruction', title: 'Check the forecast arithmetic', target: '.metric-grid', anchor: '.metric-grid', tab: 'overview',
     body: () => {
       const gap = portfolioValue('deterministic_forecast_gap', 'deterministic_gap');
       const coverage = forecastDetailAvailable();
@@ -71,40 +95,49 @@ const tourSteps = [
         : `The ${formatMoney(gap)} difference is a direct deterministic contradiction, separate from declared change and risk.`;
       return `Reported EAC is ${moneyFromPortfolio('reported_eac')}, while AC + ETC reconstructs to ${moneyFromPortfolio('defensible_eac')}. ${result}`;
     },
-    action: () => inspectMetric('deterministic_forecast_gap'),
+    action: () => closeInspector(),
   },
   {
-    eyebrow: 'Step 3 · material account', title: 'Inspect the largest account', target: '[data-tour-target="account"]', tab: 'overview',
+    eyebrow: 'Step 3 · material account', title: 'Inspect the largest account', target: '[data-tour-target="account"]', anchor: '#panel-overview .two-column', tab: 'overview',
     body: () => {
       const account = highestExposureAccount();
       if (!account) return 'Account-level reconstruction is unavailable for this data set.';
       const exposure = account.exposure_above_reported_eac ?? account.hidden_exposure ?? 0;
       const deterministic = account.deterministic_forecast_gap ?? account.deterministic_gap ?? 0;
-      if (forecastDetailAvailable(account.record_id) !== true) return `${account.record_id} has a displayed position ${formatMoney(exposure)} above reported EAC, with a ${formatMoney(deterministic)} forecast difference. Complete AC + ETC coverage has not been established; inspect its supplied fields and applicable checks.`;
-      return `${account.record_id} contributes ${formatMoney(exposure)} above reported EAC. ${deterministic === 0 ? 'Its supplied forecast detail reconciles; the remaining amount is declared change and risk.' : `${formatMoney(deterministic)} is a deterministic forecast contradiction.`}`;
+      if (forecastDetailAvailable(account.record_id) !== true) return `${account.record_id}: Complete AC + ETC coverage has not been established. Its forecast gap and reconstructed exposure are not evidenced by the retained control results; inspect the supplied fields and applicability.`;
+      return `${account.record_id} contributes ${formatMoney(exposure)} above reported EAC. ${deterministic === 0 ? 'Its supplied forecast detail reconciles; the remaining amount is declared change and risk.' : `${formatMoney(deterministic)} is a deterministic forecast contradiction.`} Select the account to inspect its source values.`;
     },
     action: () => {
       closeInspector();
-      const account = highestExposureAccount();
-      if (account) inspectContribution(account);
     },
   },
   {
-    eyebrow: 'Step 4 · lineage', title: 'Trace source to decision', target: '[data-tour-target="graph"]', tab: 'graph',
-    body: () => 'The graph preserves declared lineage: source record → failed equation → affected metric or assurance domain → close gate.',
+    eyebrow: 'Step 4 · lineage', title: 'Trace source to decision', target: '#graphStage', anchor: '#panel-graph .panel', tab: 'graph',
+    body: () => state.data.gate.failures
+      ? 'Follow source record → failed equation → affected metric or control domain → close gate. Select a node to inspect the evidence; scroll the graph horizontally on a small screen.'
+      : 'No selected controls failed, so this graph has no failed-equation path. The next steps show the empty exception register and the full control results, including checks that could not run.',
     action: () => closeInspector(),
   },
   {
-    eyebrow: 'Step 5 · action', title: 'Review the required actions', target: '[data-tour-target="exceptions"]', tab: 'exceptions',
+    eyebrow: 'Step 5 · action', title: 'Review the required actions', target: '#panel-exceptions .panel', anchor: '#panel-exceptions .panel', tab: 'exceptions',
     body: () => state.data.gate.failures
       ? 'The exception register ranks failures, retains the exact equation and residual, and provides the required action.'
       : 'No selected, applicable controls failed. Review missing or not-applicable checks and the governance boundary before relying on this result.',
     action: () => {
       closeInspector();
-      state.exceptionFilters.severity = state.data.gate.blockers ? 'blocker' : 'all';
+      state.exceptionFilters = { search: '', severity: state.data.gate.blockers ? 'blocker' : 'all', domain: 'all' };
+      $('#exceptionSearch').value = '';
       $('#exceptionSeverity').value = state.exceptionFilters.severity;
+      $('#exceptionDomain').value = 'all';
       renderExceptions();
     },
+  },
+  {
+    eyebrow: 'Step 6 · evidence', title: 'Check coverage and keep the result', target: '#controlCoverage', anchor: '#controlCoverage', tab: 'equations',
+    body: () => 'Inspect passed, failed and not-applicable controls in this result. Catalogue and equation edits below apply to the next file analysis. ' + (window.EQ_PROOF_BROWSER_MODE
+      ? 'Download a brief here, or export the complete analysis JSON from the workspace toolbar.'
+      : 'Download a brief here, or use Export all exceptions in the Exceptions tab.'),
+    action: () => closeInspector(),
   },
 ];
 
@@ -120,16 +153,18 @@ function showTourStep(index) {
   step.action?.();
   clearTourFocus();
   const target = $(step.target);
-  if (target) {
-    target.classList.add('tour-focus');
-    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
+  if (target) target.classList.add('tour-focus');
   $('#tourProgress').textContent = `${tourIndex + 1} / ${tourSteps.length}`;
   $('#tourEyebrow').textContent = step.eyebrow;
   $('#tourTitle').textContent = step.title;
   $('#tourBody').textContent = step.body();
   $('#tourBack').disabled = tourIndex === 0;
   $('#tourNext').textContent = tourIndex === tourSteps.length - 1 ? 'Finish' : 'Next';
+  $('#tourExport').hidden = tourIndex !== tourSteps.length - 1;
+  const anchor = $(step.anchor || step.target);
+  if (anchor) anchor.before($('#tourCard'));
+  $('#tourCard').scrollIntoView({ behavior: 'auto', block: 'start' });
+  if (tourOpen) $('#tourNext').focus({ preventScroll: true });
 }
 
 function startTour() {
@@ -174,13 +209,15 @@ function buildExecutiveBrief() {
     : coverage === null ? 'This compact artifact omits per-check coverage; inspect the original source evidence before relying on reconciliation.\n\n' : '';
   const detailValue = coverage === false ? 'Unavailable — AC and ETC not evidenced' : formatMoney(portfolio.defensible_eac);
   const gapValue = coverage === false ? 'Unavailable — AC and ETC not evidenced' : formatMoney(portfolio.deterministic_forecast_gap ?? portfolio.deterministic_gap);
+  const riskValue = coverage === false ? 'Unavailable — AC and ETC not evidenced' : formatMoney(portfolio.reconstructed_risk_adjusted_eac ?? portfolio.defensible_p80);
+  const exposureValue = coverage === false ? 'Unavailable — AC and ETC not evidenced' : formatMoney(portfolio.exposure_above_reported_eac ?? portfolio.hidden_exposure);
   const sourceLines = sources.length
     ? sources.map((item) => `- \`${markdownCell(item.name)}\` — SHA-256 \`${markdownCell(item.sha256)}\``).join('\n')
     : '- No source manifest supplied.';
   const exceptionRows = exceptions.slice(0, 8).length
     ? exceptions.slice(0, 8).map((item) => `| ${markdownCell(item.severity)} | ${markdownCell(item.record_id)} | ${markdownCell(item.title)} | ${markdownCell(item.remediation)} |`).join('\n')
     : '| — | — | No exceptions | Review applicability, source completeness and approval boundary |';
-  return `# EQ-Proof Executive Close Brief\n\n${caseNote}${reconstructionNote}## Decision\n\n**${data.gate.label}** — ${data.gate.headline}\n\n| Decision state | Value |\n| --- | ---: |\n| Reported EAC | ${formatMoney(portfolio.reported_eac)} |\n| Detail-reconstructed EAC (AC + ETC) | ${detailValue} |\n| Deterministic forecast gap | ${gapValue} |\n| Declared change and configured risk | ${formatMoney(portfolio.configured_change_and_risk ?? portfolio.quantified_change_and_risk)} |\n| Reconstructed risk-adjusted position | ${formatMoney(portfolio.reconstructed_risk_adjusted_eac ?? portfolio.defensible_p80)} |\n| Exposure above reported EAC | ${formatMoney(portfolio.exposure_above_reported_eac ?? portfolio.hidden_exposure)} |\n\n## Control summary\n\n- Records analyzed: **${data.analysis.records_analyzed}**\n- Equations executed: **${data.analysis.equations_executed}**\n- Not-applicable checks: **${data.analysis.summary?.not_applicable ?? '—'}**\n- Blockers: **${blockers.length}**\n- Total exceptions: **${exceptions.length}**\n- Control severity index: **${data.assurance?.score ?? '—'} / 100** — severity heuristic, not a probability\n\n## Ranked actions\n\n| Severity | Source record | Control | Required action |\n| --- | --- | --- | --- |\n${exceptionRows}\n\n## Source evidence\n\n${sourceLines}\n\n## Interpretation boundary\n\nThis brief reports internal consistency under the selected and applicable equations. It does not certify contractual truth, approve change, replace Primavera P6 calculations, perform currency conversion, or calculate probabilistic risk.\n`;
+  return `# EQ-Proof Executive Close Brief\n\n${caseNote}${reconstructionNote}## Decision\n\n**${data.gate.label}** — ${gateNarrative()}\n\n| Decision state | Value |\n| --- | ---: |\n| Reported EAC | ${formatMoney(portfolio.reported_eac)} |\n| Detail-reconstructed EAC (AC + ETC) | ${detailValue} |\n| Deterministic forecast gap | ${gapValue} |\n| Declared change and configured risk | ${formatMoney(portfolio.configured_change_and_risk ?? portfolio.quantified_change_and_risk)} |\n| Reconstructed risk-adjusted position | ${riskValue} |\n| Exposure above reported EAC | ${exposureValue} |\n\n## Control summary\n\n- Records analyzed: **${data.analysis.records_analyzed}**\n- Equations executed: **${data.analysis.equations_executed}**\n- Not-applicable checks: **${data.analysis.summary?.not_applicable ?? '—'}**\n- Blockers: **${blockers.length}**\n- Total exceptions: **${exceptions.length}**\n- Control severity index: **${data.assurance?.score ?? '—'} / 100** — severity heuristic, not a probability\n\n## Ranked actions\n\n| Severity | Source record | Control | Required action |\n| --- | --- | --- | --- |\n${exceptionRows}\n\n## Source evidence\n\n${sourceLines}\n\n## Interpretation boundary\n\nThis brief reports internal consistency under the selected and applicable equations. It does not certify contractual truth, approve change, replace Primavera P6 calculations, perform currency conversion, or calculate probabilistic risk.\n`;
 }
 
 function exportExecutiveBrief() {
@@ -196,12 +233,13 @@ function initShowcase() {
   $('#tourNext')?.addEventListener('click', nextTourStep);
   $('#tourBack')?.addEventListener('click', previousTourStep);
   $('#downloadBriefButton')?.addEventListener('click', exportExecutiveBrief);
+  $('#tourExport')?.addEventListener('click', exportExecutiveBrief);
   document.addEventListener('keydown', (event) => {
-    const formControl = event.target?.matches?.('input, textarea, select, [contenteditable="true"]');
-    if (formControl && ['ArrowRight', 'ArrowLeft'].includes(event.key)) return;
+    if (event.defaultPrevented) return;
     if (event.key === 'Escape' && tourOpen) closeTour();
-    if (event.key === 'ArrowRight' && tourOpen) nextTourStep();
-    if (event.key === 'ArrowLeft' && tourOpen) previousTourStep();
+    if (!event.target?.closest?.('#tourCard')) return;
+    if (event.key === 'ArrowRight' && tourOpen) { event.preventDefault(); nextTourStep(); }
+    if (event.key === 'ArrowLeft' && tourOpen) { event.preventDefault(); previousTourStep(); }
   });
   const metricGrid = document.querySelector('.metric-grid');
   if (metricGrid) new MutationObserver(syncShowcaseSummary).observe(metricGrid, { childList: true, subtree: true, characterData: true });
