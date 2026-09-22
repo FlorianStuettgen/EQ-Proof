@@ -21,7 +21,7 @@ def test_showcase_surface_exposes_guided_decision_workflow():
     for identifier in required_ids:
         assert f'id="{identifier}"' in html
     assert "Take the 90-second tour" in html
-    assert "Not another dashboard. A reproducible decision system." in html
+    assert "From source records to a reviewable result." in html
     assert "full test matrix enforced" in html
     assert "automated tests" not in html
     assert "no telemetry" in html.lower()
@@ -30,7 +30,7 @@ def test_showcase_surface_exposes_guided_decision_workflow():
 def test_showcase_javascript_preserves_semantic_boundaries():
     script = (WEB / "showcase.js").read_text(encoding="utf-8")
     engine = (WEB / "browser-engine.js").read_text(encoding="utf-8")
-    assert script.count("eyebrow: 'Step ") == 5
+    assert script.count("eyebrow: 'Step ") == 6
     assert "direct deterministic contradiction, separate from declared change and risk" in script
     assert "The forecast reconciles to its supplied detail" in script
     assert "Missing evidence does not establish that the forecast reconciles" in script
@@ -51,7 +51,7 @@ def test_workflow_loads_showcase_only_after_core_initialization():
 def test_readme_and_case_study_present_the_same_showcase():
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
     case_study = (ROOT / "docs" / "SHOWCASE.md").read_text(encoding="utf-8")
-    assert "Take the guided Control Room tour" in readme
+    assert "Take the 90-second tour" in readme
     assert "docs/SHOWCASE.md" in readme
     assert "$11M" in readme and "$65M" in readme and "$76M" in readme
     assert "The 90-second demonstration" in case_study

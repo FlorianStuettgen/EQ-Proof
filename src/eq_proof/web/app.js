@@ -27,7 +27,7 @@ function escapeHtml(value) {
 }
 
 function formatMoney(value) {
-  if (!Number.isFinite(Number(value))) return '—';
+  if (value === null || value === undefined || value === '' || !Number.isFinite(Number(value))) return '—';
   const currency = state.data?.units?.currency || 'USD';
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -70,6 +70,7 @@ async function fetchJson(url, options = {}) {
 }
 
 function setRuntimeMode() {
+  $('#heroExamplesButton').hidden = state.apiAvailable && !window.EQ_PROOF_BROWSER_MODE;
   const inputs = ['#p6Input', '#costInput', '#equationInput', '#compileButton'];
   inputs.forEach((selector) => {
     $(selector).disabled = !state.apiAvailable;
@@ -205,6 +206,7 @@ function renderContributions() {
   );
   $('#contributionCount').textContent = `${contributions.length} accounts`;
   const elements = contributions.map((item) => {
+    const missingDetail = typeof forecastDetailAvailable === 'function' && forecastDetailAvailable(item.record_id) === false;
     const exposure = item.exposure_above_reported_eac
       ?? item.hidden_exposure
       ?? 0;
@@ -229,7 +231,8 @@ function renderContributions() {
     name.textContent = item.record_id;
     const amount = document.createElement('strong');
     amount.className = 'contribution-amount';
-    amount.textContent = formatMoney(exposure);
+    amount.textContent = missingDetail ? 'Not evidenced' : formatMoney(exposure);
+    if (missingDetail) bar.hidden = true;
     top.append(name, amount);
     const detail = document.createElement('div');
     detail.className = 'contribution-detail';
@@ -239,7 +242,7 @@ function renderContributions() {
       ['risk uplift', risk],
     ].map(([label, value]) => {
       const span = document.createElement('span');
-      span.textContent = `${label} ${formatMoney(value)}`;
+      span.textContent = `${label} ${label === 'forecast gap' && missingDetail ? 'not established' : formatMoney(value)}`;
       return span;
     });
     detail.replaceChildren(...pieces);
@@ -250,10 +253,11 @@ function renderContributions() {
   $('#contributionList').replaceChildren(...elements);
 
   const p = state.data.portfolio;
+  const missingDetail = typeof forecastDetailAvailable === 'function' && forecastDetailAvailable() === false;
   const bridge = [
     ['Submitted reported EAC', p.reported_eac, ''],
     [
-      'Deterministic forecast contradiction',
+      'Forecast difference',
       p.deterministic_forecast_gap ?? p.deterministic_gap,
       '+',
     ],
@@ -273,7 +277,7 @@ function renderContributions() {
     const left = document.createElement('span');
     left.textContent = `${symbol} ${label}`.trim();
     const right = document.createElement('strong');
-    right.textContent = formatMoney(value);
+    right.textContent = missingDetail && [1, 3].includes(index) ? 'Unavailable' : formatMoney(value);
     row.append(left, right);
     return row;
   });

@@ -6,6 +6,7 @@ All notable changes are documented here. The Python package follows semantic ver
 
 ### Added
 
+- In-app inspection of passed, failed and not-applicable control results, with equation IDs and evaluated source values.
 - Three source-backed close walkthroughs demonstrating blocked, review-required and ready-within-scope outcomes, with downloadable inputs and twelve inspectable evidence exports.
 - A browser showcase chooser that executes the packaged synthetic files through the real browser engine, with known-answer Python/JavaScript parity and browser regression coverage.
 - Deterministic showcase regeneration checks and an extracted-wheel smoke check for every packaged browser asset and route.
@@ -15,6 +16,10 @@ All notable changes are documented here. The Python package follows semantic ver
 
 ### Changed
 
+- Shortened the landing page and workspace controls, exposed all view tabs on mobile, and separated example selection from file analysis.
+- Replaced overlapping tour overlays with a six-step contextual guide that preserves keyboard navigation and ends with coverage review and export.
+- Preserved synthetic-case identity when reopening workspaces; invalid imports retain the active result and failed storage writes report session-only operation.
+- Aligned the UI, inspectors and walkthrough documentation on missing evidence, export scope and controls configured for the next analysis.
 - Reworked the visitor README and demo playbook around reproducible decisions, current browser file handling, explicit applicability and usable CLI setup instructions.
 - Corrected remaining reconstruction and severity labels in inspectors, exported briefs, guided-tour states and the active-result preview.
 - Retained per-record findings, equation definitions and synthetic-case labels in demonstration workspaces; exported briefs now disclose applicability and the approval boundary.

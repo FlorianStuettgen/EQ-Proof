@@ -128,9 +128,9 @@ def test_pages_bundle_is_a_functional_project_path_safe_browser_application():
     assert "sha256File" in engine
     assert "restoreWorkspace" in engine
     assert "Export analysis JSON" in engine
-    assert "Browser-compiled monthly close" in bridge
+    assert "setWorkspaceTitle(payload)" in bridge
     assert "PERSISTENCE_KEY" in bridge
-    assert "Session-only by default" in bridge
+    assert "Session only. Export to keep this analysis." in bridge
     assert "rememberWorkspaceInput" in bridge
     assert "clearLocalWorkspaceButton" in bridge
 
@@ -171,7 +171,7 @@ def test_browser_audit_covers_function_accessibility_and_real_workflows():
     assert "accepts files" in workbench_spec
     assert "session-only evidence by default" in workbench_spec
     assert "explicit persistence opt-in" in workbench_spec
-    assert "Restored browser workspace" in workbench_spec
+    assert "await page.reload()" in workbench_spec
     assert "validated by the browser engine" in workbench_spec
     assert "cross-engine-equivalence.test.js" in package
     assert "Python-generated Control Room semantics" in equivalence_spec

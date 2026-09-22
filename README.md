@@ -12,8 +12,9 @@ EQ-Proof checks cost forecasts, change, risk and Primavera P6 exports, then trac
 
 Start with the [functional browser workbench](https://florianstuettgen.github.io/EQ-Proof/). No installation or account is required.
 
-- **Take the guided Control Room tour** to follow the submitted forecast, the discrepancy, the source record and the required action.
-- Open **Showcase examples**, choose a case, and select **Run example** to compile synthetic source files in your browser and see what produces a blocked, review-required or ready result.
+- **Take the 90-second tour** to follow the decision, forecast, source account, evidence graph, actions and control coverage.
+- Select **Try three examples** on the landing page or **Showcase examples** in the workspace, choose a case, and select **Run example** to compile synthetic source files in your browser.
+- Open **Controls & coverage** to inspect passed, failed and not-applicable results, including each control's evaluated input values.
 - **Download the executive brief, exceptions CSV or analysis JSON** to inspect the result outside the app. You can export and reopen the complete analysis.
 
 Files are processed entirely in the browser and are never uploaded by the hosted workbench. It is session-only by default; keeping a workspace in browser storage requires explicit opt-in. See [Runtime Modes and Data Handling](docs/RUNTIME_MODES.md).

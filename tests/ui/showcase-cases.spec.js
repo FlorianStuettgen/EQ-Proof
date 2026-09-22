@@ -59,6 +59,8 @@ for (const example of bundle.cases) {
     await page.locator('#tourNext').click();
     await expect(page.locator('#exceptionFilterCount')).toContainText(`${example.expected.blockers || example.expected.failures} of ${example.expected.failures}`);
     await page.locator('#tourNext').click();
+    await expect(page.locator('#tourProgress')).toHaveText('6 / 6');
+    await page.locator('#tourNext').click();
     await expect(page.locator('#workspaceTourButton')).toBeFocused();
   });
 }
@@ -102,7 +104,7 @@ test('examples ignore draft inputs and export verified sources and current resul
   await expect(page.locator('#inspectorTitle')).toHaveText('Detail-reconstructed EAC');
   await page.locator('#inspectorClose').click();
   await page.locator('#openAnalysisInput').setInputFiles(require.resolve('../../evidence/close-walkthrough/ready/control-room.json'));
-  await expect(page.locator('#workspaceTitle')).toContainText('Opened session-only');
+  await expect(page.locator('#workspaceTitle')).toContainText(`${example.title} · synthetic`);
   const [reopenedBrief] = await Promise.all([page.waitForEvent('download'), page.locator('#downloadBriefButton').click()]);
   expect(await fs.readFile(await reopenedBrief.path(), 'utf8')).toContain(`Synthetic showcase example: **${example.title}**`);
 });
@@ -122,8 +124,9 @@ test('unavailable examples leave manual file analysis usable', async ({ page }, 
   await page.route('**/showcase-cases.json', (route) => route.fulfill({ status: 503, body: 'Unavailable' }));
   await page.goto('/');
   await page.locator('#showcaseCasesButton').click();
-  await expect(page.locator('#showcaseCaseStatus')).toContainText('You can still analyze your own files below');
+  await expect(page.locator('#showcaseCaseStatus')).toContainText('You can still analyze your own files in Your files');
   await expect(page.locator('#runShowcaseCase')).toBeDisabled();
+  await page.locator('#filesModeButton').click();
   await expect(page.locator('#costInput')).toBeEnabled();
   await page.locator('#costInput').setInputFiles({ name: 'simple.csv', mimeType: 'text/csv', buffer: Buffer.from('EAC,AC,ETC\n10,5,5\n') });
   await page.locator('#compileButton').click();
@@ -134,6 +137,7 @@ test('unavailable examples leave manual file analysis usable', async ({ page }, 
 test('analysis cannot overlap and restores storage behavior after success and failure', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await openExamples(page);
+  await page.locator('#filesModeButton').click();
   await page.locator('#costInput').setInputFiles({ name: 'simple.csv', mimeType: 'text/csv', buffer: Buffer.from('EAC,AC,ETC\n10,5,5\n') });
   await page.evaluate(() => {
     window.originalAnalysis = EQProofBrowser.analyzeForm;
@@ -164,7 +168,9 @@ test('analysis cannot overlap and restores storage behavior after success and fa
   await expect(page.locator('#compileButton')).toBeEnabled();
   expect(await page.evaluate(() => Storage.prototype.setItem === window.originalStorageWrite)).toBe(true);
   await page.locator('#dialogClose').click();
+  await page.locator('#workspaceOptions summary').click();
   await page.locator('#rememberWorkspaceInput').check();
+  await page.locator('#workspaceOptions summary').click();
   await page.evaluate(() => { EQProofBrowser.analyzeForm = window.originalAnalysis; });
   await page.locator('#showcaseCasesButton').click();
   await runExample(page, 'ready');
@@ -177,6 +183,7 @@ test('analysis cannot overlap and restores storage behavior after success and fa
 test('tour does not claim reconciliation when AC and ETC are absent', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await openExamples(page);
+  await page.locator('#filesModeButton').click();
   await page.locator('#costInput').setInputFiles({ name: 'partial.csv', mimeType: 'text/csv', buffer: Buffer.from('control_account_id,EAC\nONLY-EAC,100\n') });
   await page.locator('#compileButton').click();
   await expect(page.locator('#uploadDialog')).not.toBeVisible();
@@ -192,4 +199,28 @@ test('tour does not claim reconciliation when AC and ETC are absent', async ({ p
   const content = await fs.readFile(await brief.path(), 'utf8');
   expect(content).toContain('Forecast reconciliation is unavailable');
   expect(content).toContain('Detail-reconstructed EAC (AC + ETC) | Unavailable');
+});
+
+test('entry points choose the right dialog mode and return keyboard focus', async ({ page }) => {
+  await page.goto('/');
+  for (const trigger of ['heroExamplesButton', 'showcaseCasesButton']) {
+    await page.locator(`#${trigger}`).click();
+    await expect(page.locator('#examplesModeButton')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#showcaseCases')).toBeVisible();
+    await expect(page.locator('#fileAnalysisPanel')).toBeHidden();
+    await page.keyboard.press('Escape');
+    await expect(page.locator(`#${trigger}`)).toBeFocused();
+  }
+  for (const trigger of ['uploadButton', 'heroUploadButton']) {
+    await page.locator(`#${trigger}`).click();
+    await expect(page.locator('#filesModeButton')).toHaveAttribute('aria-selected', 'true');
+    await expect(page.locator('#fileAnalysisPanel')).toBeVisible();
+    await expect(page.locator('#showcaseCases')).toBeHidden();
+    await page.locator('#filesModeButton').focus();
+    await page.keyboard.press('ArrowRight');
+    await expect(page.locator('#examplesModeButton')).toBeFocused();
+    await expect(page.locator('#showcaseCases')).toBeVisible();
+    await page.keyboard.press('Escape');
+    await expect(page.locator(`#${trigger}`)).toBeFocused();
+  }
 });

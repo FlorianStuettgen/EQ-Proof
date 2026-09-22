@@ -1,5 +1,7 @@
 const { test, expect } = require('@playwright/test');
 const AxeBuilder = require('@axe-core/playwright').default;
+const fs = require('node:fs/promises');
+const path = require('node:path');
 
 async function loadControlRoom(page) {
   const consoleErrors = [];
@@ -17,6 +19,28 @@ async function loadControlRoom(page) {
   await page.waitForFunction(() => document.querySelector('.tab')?.dataset.keyboardReady === 'true');
   return { consoleErrors, pageErrors };
 }
+
+test('loopback mode omits hosted-only examples and JSON toolbar instructions', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  const web = path.resolve(__dirname, '../../src/eq_proof/web');
+  const demo = JSON.parse(await fs.readFile(path.join(web, 'demo-data.json'), 'utf8'));
+  await page.route('http://127.0.0.1:8765/**', async (route) => {
+    const pathname = new URL(route.request().url()).pathname;
+    if (pathname === '/api/health') return route.fulfill({ json: { status: 'ok', mode: 'local-first' } });
+    if (pathname === '/api/demo') return route.fulfill({ json: demo });
+    if (pathname === '/api/catalogue') return route.fulfill({ json: demo.catalogue });
+    const file = pathname === '/' ? 'index.html' : pathname.slice(1);
+    const contentType = file.endsWith('.js') ? 'text/javascript' : file.endsWith('.css') ? 'text/css' : 'text/html';
+    return route.fulfill({ body: await fs.readFile(path.join(web, file)), contentType });
+  });
+  await page.goto('http://127.0.0.1:8765/');
+  await expect(page.locator('#heroExamplesButton')).toBeHidden();
+  await page.locator('#guidedDemoButton').click();
+  for (let step = 1; step < 6; step += 1) await page.locator('#tourNext').click();
+  await expect(page.locator('#tourBody')).toContainText('Export all exceptions');
+  await expect(page.locator('#tourBody')).not.toContainText('JSON from the workspace toolbar');
+  await expect(page.locator('#tourExport')).toBeVisible();
+});
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => {
@@ -78,9 +102,51 @@ test('guided review completes and returns focus', async ({ page }) => {
   await launcher.click();
   await expect(page.locator('#tourCard')).toBeVisible();
   await expect(page.locator('#tourClose')).toBeFocused();
-  for (let step = 0; step < 5; step += 1) await page.locator('#tourNext').click();
+  for (let step = 0; step < 6; step += 1) await page.locator('#tourNext').click();
   await expect(page.locator('#tourCard')).toBeHidden();
   await expect(launcher).toBeFocused();
+});
+
+test('tour stays above its evidence and keyboard navigation does not open competing panels', async ({ page }) => {
+  await loadControlRoom(page);
+  await page.locator('#tab-exceptions').click();
+  await page.locator('#exceptionSearch').fill('no-such-record');
+  await page.locator('#workspaceTourButton').click();
+  for (let step = 1; step <= 6; step += 1) {
+    await expect(page.locator('#tourProgress')).toHaveText(`${step} / 6`);
+    await expect(page.locator('#inspector')).not.toHaveClass(/open/);
+    const layout = await page.evaluate(() => {
+      const card = document.querySelector('#tourCard').getBoundingClientRect();
+      const target = document.querySelector('.tour-focus').getBoundingClientRect();
+      const header = document.querySelector('.topbar').getBoundingClientRect();
+      return { cardTop: card.top, cardBottom: card.bottom, targetTop: target.top, headerBottom: header.bottom };
+    });
+    expect(layout.cardTop).toBeGreaterThanOrEqual(layout.headerBottom);
+    expect(layout.targetTop).toBeGreaterThanOrEqual(layout.cardBottom);
+    if (step === 5) {
+      await expect(page.locator('#exceptionSearch')).toHaveValue('');
+      await expect(page.locator('#exceptionFilterCount')).toContainText('3 of 5');
+    }
+    if (step === 6) await expect(page.locator('#tourExport')).toBeVisible();
+    await page.locator('#tourNext').focus();
+    await page.keyboard.press('Enter');
+  }
+  await expect(page.locator('#tourCard')).toBeHidden();
+  await expect(page.locator('#workspaceTourButton')).toBeFocused();
+});
+
+test('all view tabs are visible and the skip link reaches the workspace', async ({ page }, testInfo) => {
+  await loadControlRoom(page);
+  if (testInfo.project.name === 'mobile') await page.setViewportSize({ width: 320, height: 740 });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(1);
+  for (const tab of await page.locator('.tab').all()) {
+    const box = await tab.boundingBox();
+    expect(box.x).toBeGreaterThanOrEqual(0);
+    expect(box.x + box.width).toBeLessThanOrEqual(page.viewportSize().width);
+  }
+  await page.locator('.skip-link').focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#workspace')).toBeFocused();
 });
 
 test('cards and action rows are keyboard operable', async ({ page }) => {

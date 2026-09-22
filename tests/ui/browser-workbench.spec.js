@@ -3,8 +3,14 @@ const { test, expect } = require('@playwright/test');
 async function loadWorkbench(page) {
   await page.goto('/');
   await expect(page.locator('#browserWorkbenchBar')).toBeVisible();
-  await expect(page.locator('#rememberWorkspaceInput')).toBeVisible();
+  await expect(page.locator('#rememberWorkspaceInput')).toBeAttached();
   await expect(page.locator('#gateCard')).toHaveAttribute('aria-busy', 'false');
+}
+
+async function openWorkspaceOptions(page) {
+  if (!await page.locator('#workspaceOptions').evaluate((element) => element.open)) {
+    await page.locator('#workspaceOptions summary').click();
+  }
 }
 
 async function compileCostFixture(page) {
@@ -33,7 +39,7 @@ test.beforeEach(async ({ page }) => {
 test('hosted dialog accepts files and states the local-only boundary', async ({ page }) => {
   await loadWorkbench(page);
   await expect(page.locator('#rememberWorkspaceInput')).not.toBeChecked();
-  await expect(page.locator('#browserWorkspaceStatus')).toContainText('Session-only by default');
+  await expect(page.locator('#browserWorkspaceStatus')).toContainText('Session only');
   await expect(page.locator('#uploadButton')).toHaveText('Analyze files');
   await page.locator('#uploadButton').click();
   await expect(page.locator('#uploadDialog')).toBeVisible();
@@ -43,6 +49,8 @@ test('hosted dialog accepts files and states the local-only boundary', async ({ 
   await expect(page.locator('#apiStatus')).toContainText('Browser engine ready');
   await expect(page.locator('#uploadDescription')).toContainText('Nothing is uploaded');
   await expect(page.locator('#browserSampleInputs a')).toHaveCount(3);
+  await expect(page.locator('#fileAnalysisPanel')).toBeVisible();
+  await expect(page.locator('#showcaseCases')).toBeHidden();
 });
 
 test('compiles a cost file as session-only evidence by default', async ({ page }, testInfo) => {
@@ -86,13 +94,14 @@ test('compiles a cost file as session-only evidence by default', async ({ page }
 
   await page.reload();
   await expect(page.locator('#browserWorkbenchBar')).toBeVisible();
-  await expect(page.locator('#workspaceTitle')).not.toHaveText('Restored browser workspace');
+  await expect(page.locator('#workspaceTitle')).not.toHaveText('Browser-compiled monthly close');
   await expect(page.locator('#reportedEac')).toContainText('407');
 });
 
 test('explicit persistence opt-in restores and can clear a workspace', async ({ page }, testInfo) => {
   test.skip(testInfo.project.name !== 'desktop');
   await loadWorkbench(page);
+  await openWorkspaceOptions(page);
   await page.locator('#rememberWorkspaceInput').check();
   await compileCostFixture(page);
 
@@ -107,10 +116,11 @@ test('explicit persistence opt-in restores and can clear a workspace', async ({ 
 
   await page.reload();
   await expect(page.locator('#browserWorkbenchBar')).toBeVisible();
-  await expect(page.locator('#workspaceTitle')).toHaveText('Restored browser workspace');
+  await expect(page.locator('#workspaceTitle')).toHaveText('Browser-compiled monthly close');
   await expect(page.locator('#reportedEac')).toContainText('12');
   await expect(page.locator('#rememberWorkspaceInput')).toBeChecked();
 
+  await openWorkspaceOptions(page);
   await page.locator('#clearLocalWorkspaceButton').click();
   await expect(page.locator('#rememberWorkspaceInput')).not.toBeChecked();
   await expect(page.locator('#reportedEac')).toContainText('12');
@@ -120,6 +130,87 @@ test('explicit persistence opt-in restores and can clear a workspace', async ({ 
   }));
   expect(cleared.preference).toBeNull();
   expect(cleared.workspace).toBeNull();
+});
+
+test('workspace options are keyboard accessible without crowding the result', async ({ page }) => {
+  await loadWorkbench(page);
+  await expect(page.locator('#exportAnalysisButton')).toBeVisible();
+  await expect(page.locator('#rememberWorkspaceInput')).toBeHidden();
+  await expect(page.locator('#openAnalysisButton')).toBeHidden();
+  const toolbar = await page.locator('#browserWorkbenchBar').boundingBox();
+  expect(toolbar.height).toBeLessThan(180);
+  const summary = page.locator('#workspaceOptions summary');
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('#rememberWorkspaceInput')).toBeVisible();
+  await page.keyboard.press('Tab');
+  await expect(page.locator('#rememberWorkspaceInput')).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(summary).toBeFocused();
+  await expect(page.locator('#rememberWorkspaceInput')).toBeHidden();
+});
+
+test('invalid analysis files preserve the active result and saved copy', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await loadWorkbench(page);
+  await openWorkspaceOptions(page);
+  await page.locator('#rememberWorkspaceInput').check();
+  const before = await page.evaluate(() => ({
+    payload: JSON.parse(JSON.stringify(EQProofBrowser.getCurrentPayload())),
+    saved: localStorage.getItem('eq-proof/browser-workspace@1'),
+    title: document.querySelector('#workspaceTitle').textContent,
+  }));
+  const partial = { schema_version: 'eq-proof/control-room@2', gate: { status: 'ready', label: 'CLOSE READY' }, analysis: {}, portfolio: { reported_eac: 1 } };
+  const badRendering = JSON.parse(JSON.stringify(before.payload));
+  badRendering.domain_summary = [{ domain: null }];
+  for (const payload of [partial, badRendering]) {
+    await page.locator('#openAnalysisInput').setInputFiles({ name: 'invalid-analysis.json', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify(payload)) });
+    await expect(page.locator('#browserWorkspaceStatus')).toContainText('current analysis was kept');
+    await expect(page.locator('#workspaceTitle')).toHaveText(before.title);
+    await expect(page.locator('#gateLabel')).toHaveText(before.payload.gate.label);
+    expect(await page.evaluate(() => EQProofBrowser.getCurrentPayload())).toEqual(before.payload);
+    expect(await page.evaluate(() => localStorage.getItem('eq-proof/browser-workspace@1'))).toBe(before.saved);
+  }
+});
+
+test('a full browser store keeps the analysis session-only and explains recovery', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await loadWorkbench(page);
+  await page.evaluate(() => {
+    const original = Storage.prototype.setItem;
+    Storage.prototype.setItem = function fullWorkspaceStorage(key, value) {
+      if (key === 'eq-proof/browser-workspace@1') throw new DOMException('Quota exceeded', 'QuotaExceededError');
+      return original.call(this, key, value);
+    };
+  });
+  await openWorkspaceOptions(page);
+  await page.locator('#rememberWorkspaceInput').click();
+  await expect(page.locator('#browserWorkspaceStatus')).toContainText('could not save');
+  await expect(page.locator('#rememberWorkspaceInput')).not.toBeChecked();
+  expect(await page.evaluate(() => EQProofBrowser.getCurrentPayload().runtime.persisted_locally)).toBe(false);
+  expect(await page.evaluate(() => localStorage.getItem('eq-proof/browser-workspace@1'))).toBeNull();
+  await page.locator('#workspaceOptions summary').click();
+  const [download] = await Promise.all([page.waitForEvent('download'), page.locator('#exportAnalysisButton').click()]);
+  expect(download.suggestedFilename()).toBe('eq-proof-control-room.json');
+});
+
+test('restoring a synthetic example keeps its case identity', async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== 'desktop');
+  await loadWorkbench(page);
+  await openWorkspaceOptions(page);
+  await page.locator('#rememberWorkspaceInput').check();
+  await page.locator('#workspaceOptions summary').click();
+  await page.locator('#showcaseCasesButton').click();
+  await page.locator('#showcaseCaseSelect').selectOption('ready');
+  await page.locator('#runShowcaseCase').click();
+  await expect(page.locator('#uploadDialog')).not.toBeVisible();
+  await expect(page.locator('#workspaceTitle')).toContainText('Selected controls satisfied');
+  const title = await page.locator('#workspaceTitle').textContent();
+  expect(title).toContain('synthetic');
+  await page.reload();
+  await expect(page.locator('#browserWorkbenchBar')).toBeVisible();
+  await expect(page.locator('#workspaceTitle')).toHaveText(title);
+  await expect(page.locator('#browserWorkspaceStatus')).toContainText('Saved in this browser');
 });
 
 test('browser equation authoring validates and adds safe controls', async ({ page }) => {
